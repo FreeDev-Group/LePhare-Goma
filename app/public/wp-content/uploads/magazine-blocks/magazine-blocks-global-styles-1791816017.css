@@ -1,0 +1,12 @@
+:root {--mzb-colors-primary: #8269df;
+--mzb-colors-secondary: #e14d36;
+--mzb-colors-text: #1e1e1e;
+--mzb-colors-accent: #f09819;
+--mzb-colors-custom-color-1: #e0e0e0;
+--mzb-colors-custom-color-2: #afa192;
+--mzb-colors-custom-color-3: #909090;
+--mzb-colors-custom-color-5: #818181;
+--mzb-font-weights-primary: 600;
+--mzb-font-weights-secondary: 400;
+--mzb-font-weights-text: 600;
+--mzb-font-weights-accent: 500;}.mzb-typography-primary {font-weight: var(--mzb-font-weights-primary) !important;}.mzb-typography-secondary {font-weight: var(--mzb-font-weights-secondary) !important;}.mzb-typography-text {font-weight: var(--mzb-font-weights-text) !important;}.mzb-typography-accent {font-weight: var(--mzb-font-weights-accent) !important;}

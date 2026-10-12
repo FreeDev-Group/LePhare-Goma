@@ -1,0 +1,2 @@
+2026/10/12 10:21:46 [alert] 12144#9436: worker process 4792 exited with code C0000142
+2026/10/12 17:30:53 [alert] 21936#21644: select() failed (10055: An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full)

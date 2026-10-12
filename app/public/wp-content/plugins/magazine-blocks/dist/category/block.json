@@ -1,0 +1,242 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "magazine-blocks/category",
+    "title": "Category",
+    "description": "Feature various categories and their posts",
+    "keywords": [
+        "category"
+    ],
+    "category": "magazine-blocks-utility-blocks",
+    "textdomain": "magazine-blocks",
+    "supports": {
+        "className": false,
+        "customClassName": false
+    },
+    "example": {
+        "attributes": {}
+    },
+    "attributes": {
+        "clientId": {
+            "type": "string"
+        },
+        "alignment": {
+            "type": "object",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list {text-align: {{VALUE}}; justify-content: {{VALUE}}; }"
+                }
+            ],
+            "default": {
+                "desktop": "left"
+            }
+        },
+        "category": {
+            "type": "number"
+        },
+        "categoryColor": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item {color: {{VALUE}}; }"
+                }
+            ]
+        },
+        "categoryBackground": {
+            "type": "object",
+            "default": {
+                "background": 1
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item"
+                }
+            ]
+        },
+        "categoryHoverColor": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item:hover {color: {{VALUE}}; }"
+                }
+            ]
+        },
+        "categoryHoverBackground": {
+            "type": "object",
+            "default": {
+                "background": 1
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item:hover"
+                }
+            ]
+        },
+        "categoryPadding": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item { padding: {{VALUE}}; }"
+                }
+            ]
+        },
+        "categoryBorder": {
+            "type": "object",
+            "default": {
+                "border": 1,
+                "radius": {
+                    "desktop": {
+                        "lock": true
+                    }
+                },
+                "size": {
+                    "desktop": {
+                        "lock": true
+                    }
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item"
+                }
+            ]
+        },
+        "categoryHoverBorder": {
+            "type": "object",
+            "default": {
+                "border": 1,
+                "radius": {
+                    "desktop": {
+                        "lock": true
+                    }
+                },
+                "size": {
+                    "desktop": {
+                        "lock": true
+                    }
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item:hover"
+                }
+            ]
+        },
+        "categoryBoxShadow": {
+            "type": "object",
+            "default": {
+                "boxShadow": 1
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item"
+                }
+            ]
+        },
+        "categoryBoxShadowHover": {
+            "type": "object",
+            "default": {
+                "boxShadow": 1
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item:hover"
+                }
+            ]
+        },
+        "categoryTypography": {
+            "type": "object",
+            "default": {
+                "typography": 1,
+                "weight": 400
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-category-list .mzb-category-item"
+                }
+            ]
+        },
+        "blockHTML": {
+            "type": "string",
+            "default": "div"
+        },
+        "blockMargin": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockPadding": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockZIndex": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+                }
+            ]
+        },
+        "cssID": {
+            "type": "string"
+        },
+        "hideOnDesktop": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none; } }"
+                }
+            ]
+        },
+        "hideOnTablet": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none; } }"
+                }
+            ]
+        },
+        "hideOnMobile": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none; } }"
+                }
+            ]
+        },
+        "blockCSS": {
+            "type": "string"
+        },
+        "className": {
+            "type": "string"
+        }
+    },
+    "style": "magazine-blocks-blocks",
+    "editorScript": "magazine-blocks-blocks",
+    "editorStyle": "magazine-blocks-blocks-editor"
+}

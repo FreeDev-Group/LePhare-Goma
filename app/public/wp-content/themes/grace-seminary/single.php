@@ -1,0 +1,1 @@
+<?php get_header(); ?><main><section class="content"><div class="container"><article class="entry"><?php while(have_posts()):the_post();?><span class="eyebrow"><?php echo esc_html(get_the_date()); ?></span><h1><?php the_title(); ?></h1><?php if(has_post_thumbnail())the_post_thumbnail('large');the_content();endwhile;?></article></div></section></main><?php get_footer(); ?>

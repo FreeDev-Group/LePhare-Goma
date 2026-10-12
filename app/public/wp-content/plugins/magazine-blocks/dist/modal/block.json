@@ -1,0 +1,335 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "magazine-blocks/modal",
+  "title": "Pop Up",
+  "description": "Add Popup Modal on click.",
+  "keywords": [
+    "modal",
+    "popup"
+  ],
+  "category": "magazine-blocks",
+  "textdomain": "magazine-blocks",
+  "supports": {
+    "className": false,
+    "customClassName": false
+  },
+  "example": {
+    "attributes": {}
+  },
+  "attributes": {
+    "modalTrigger": {
+      "type": "string",
+      "default": "button"
+    },
+    "clientId": {
+      "type": "string"
+    },
+    "triggerText": {
+      "type": "string",
+      "default": "Click Here"
+    },
+    "icon": {
+      "type": "string",
+      "default": "send-o"
+    },
+    "iconColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger.mzb-modal-trigger svg {fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "closeIcon": {
+      "type": "string",
+      "default": "close"
+    },
+    "closeIconPosition": {
+      "type": "string",
+      "default": "popup-top-right"
+    },
+    "image": {
+      "type": "object",
+      "default": {}
+    },
+    "imageWidth": {
+      "type": "number",
+      "default": "",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} {width {{VALUE}}; }"
+        }
+      ]
+    },
+    "alignment": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger {text-align: {{VALUE}}; justify-content: {{VALUE}}; }"
+        }
+      ]
+    },
+    "style": {
+      "type": "string",
+      "default": "filled"
+    },
+    "buttonText": {
+      "type": "string",
+      "default": "Click Here"
+    },
+    "size": {
+      "type": "string",
+      "default": "large"
+    },
+    "buttonIcon": {
+      "type": "object",
+      "default": {
+        "enable": false,
+        "icon": "arrowRight"
+      }
+    },
+    "tButtonIconPosition": {
+      "type": "string",
+      "default": "after"
+    },
+    "tButtonIconSize": {
+      "type": "object",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "icon",
+              "relation": "!=",
+              "value": ""
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-icon .mzb-icon { width: {{VALUE}}; height: auto; }"
+        }
+      ]
+    },
+    "tButtonIconGap": {
+      "type": "object",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "icon",
+              "relation": "!=",
+              "value": ""
+            },
+            {
+              "key": "tButtonIconPosition",
+              "relation": "==",
+              "value": "before"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-icon { margin-right: {{VALUE}}; }"
+        },
+        {
+          "condition": [
+            {
+              "key": "icon",
+              "relation": "!=",
+              "value": ""
+            },
+            {
+              "key": "tButtonIconPosition",
+              "relation": "==",
+              "value": "after"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-icon { margin-left: {{VALUE}}; }"
+        }
+      ]
+    },
+    "buttonPadding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "size",
+              "relation": "==",
+              "value": "custom"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link.is-custom { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "width": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-popup-wrap { width: {{VALUE}}%; }"
+        }
+      ]
+    },
+    "buttonIconSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger svg { width: {{VALUE}}; height: auto;  }"
+        }
+      ]
+    },
+    "buttonImageSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger img { width: {{VALUE}}; height: auto;  }"
+        }
+      ]
+    },
+    "maxHeight": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-popup-wrap { max-height: {{VALUE}} }"
+        }
+      ]
+    },
+    "height": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-popup-wrap { height: {{VALUE}} }"
+        }
+      ]
+    },
+    "popupBackground": {
+      "type": "object",
+      "default": {
+        "background": 1,
+        "color": "#E5D7FD"
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} > .mzb-modal-popup.active, {{WRAPPER}} > .mzb-modal-popup.active .mzb-modal-overlay"
+        }
+      ]
+    },
+    "modalBackground": {
+      "type": "object",
+      "default": {
+        "background": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} > .mzb-modal-popup.active .mzb-modal-popup-wrap"
+        }
+      ]
+    },
+    "triggerButtonBackground": {
+      "type": "object",
+      "default": {
+        "background": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-modal-wrapper .mzb-modal-trigger .mzb-button-link"
+        }
+      ]
+    },
+    "padding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-popup.active .mzb-modal-popup-wrap { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "border": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-popup.active .mzb-modal-popup-wrap"
+        }
+      ]
+    },
+    "closeIconSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-popup-close svg { width: {{VALUE}}; height: auto; }"
+        }
+      ]
+    },
+    "color": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-popup-close svg {fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "triggerTextColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger {color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "triggerTextTypography": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger"
+        }
+      ]
+    },
+    "triggerBtnTextColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger span {color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "triggerBtnTextTypo": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-modal-trigger .mzb-button-link"
+        }
+      ]
+    }
+  },
+  "style": "magazine-blocks-blocks",
+  "editorScript": "magazine-blocks-blocks",
+  "editorStyle": "magazine-blocks-blocks-editor",
+  "viewScript": "magazine-blocks-frontend-modal"
+}

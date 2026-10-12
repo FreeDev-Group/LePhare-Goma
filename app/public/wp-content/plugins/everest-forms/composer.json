@@ -1,0 +1,95 @@
+{
+  "name": "wpeverest/everest-forms",
+  "description": "Easily allows to create form.",
+  "homepage": "https://everestforms.net/",
+  "type": "wordpress-plugin",
+  "license": "GPL-3.0-or-later",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "EverestForms\\Addons\\": "addons/",
+      "EverestForms\\Traits\\": "traits/",
+      "EverestForms\\Helpers\\":"includes/Helpers"
+    },
+		"files": [
+      "vendor/themegrill/themegrill-sdk/load.php"
+    ]
+  },
+  "authors": [
+    {
+      "name": "wpeverest",
+      "email": "support@wpeverest.com"
+    }
+  ],
+  "config": {
+    "process-timeout": 0,
+    "sort-packages": true,
+    "preferred-install": "dist",
+    "allow-plugins": {
+      "composer/installers": true,
+      "roots/wordpress-core-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "require": {
+    "php": ">=5.6.20",
+    "composer/installers": "2.0.1",
+    "scssphp/scssphp": "^1.13.0",
+    "themegrill/themegrill-sdk": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5 || ^7",
+    "roots/wordpress": "5.8.0",
+    "spatie/phpunit-watcher": "1.8.3",
+    "psr/container": "1.0.0",
+    "jolicode/jolinotif": "2.3.0",
+    "vlucas/phpdotenv": "5.4.1",
+    "wp-cli/db-command": "2.0.19",
+    "wp-cli/i18n-command": "2.2.13",
+    "wp-phpunit/wp-phpunit": "5.8.2",
+    "wpeverest/wpeverest-sniffs": "0.1.2"
+  },
+  "scripts": {
+    "phpcs": [
+      "phpcs -s -p"
+    ],
+    "phpcs-pre-commit": [
+      "phpcs -s -p -n"
+    ],
+    "phpcbf": [
+      "phpcbf -p"
+    ],
+    "test": [
+      "@test:reset",
+      "phpunit --verbose"
+    ],
+    "test:watch": [
+      "phpunit-watcher watch"
+    ],
+    "test:reset": [
+      "wp db reset --yes --path=tests/wordpress --color"
+    ],
+    "makepot": [
+      "@makepot:audit --skip-audit"
+    ],
+    "makepot:audit": [
+      "wp --allow-root i18n make-pot . --exclude=\".github,.wordpress-org,bin,node_modules,vendor,tests\" --slug=everest-forms"
+    ],
+    "post-update-cmd": [
+      "@php -r \"! file_exists( 'tests/.env' ) && copy( 'tests/.env.example', 'tests/.env' );\""
+    ]
+  },
+  "extra": {
+    "wordpress-install-dir": "tests/wordpress",
+    "scripts-description": {
+      "phpcs": "Analyze code against the WordPress coding standard with PHP_CodeSniffer",
+      "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier",
+      "test": "Run unit tests",
+      "test:watch": "Automatically re-run unit tests on source file change",
+      "test:reset": "Removes all tables from the test database",
+      "makepot": "Generate langauges/everest-forms.pot file",
+      "makepot:audit": "Generate langauges/everest-forms.pot file and run audit"
+    }
+  }
+}

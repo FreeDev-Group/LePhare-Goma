@@ -1,0 +1,231 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "magazine-blocks/news-ticker",
+  "title": "News Ticker",
+  "description": "Sliding posts to show breaking news",
+  "keywords": [
+    "news-ticker"
+  ],
+  "category": "magazine-blocks",
+  "textdomain": "magazine-blocks",
+  "supports": {
+    "className": false,
+    "customClassName": false
+  },
+  "example": {
+    "attributes": {}
+  },
+  "attributes": {
+    "clientId": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "all"
+    },
+    "postCount": {
+      "type": "number",
+      "default": 4
+    },
+    "enableLabel": {
+      "type": "boolean",
+      "default": true
+    },
+    "label": {
+      "type": "string",
+      "default": "Breaking News"
+    },
+    "enableIcon": {
+      "type": "boolean",
+      "default": true
+    },
+    "icon": {
+      "type": "string",
+      "default": "flash"
+    },
+    "labelTypography": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-news-ticker .mzb-heading"
+        }
+      ]
+    },
+    "bodyTypography": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-news-ticker .mzb-news-ticker-box ul li a"
+        }
+      ]
+    },
+    "iconSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-weather svg { height: {{VALUE}}; width: {{VALUE}}; }"
+        }
+      ]
+    },
+    "iconGap": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-weather { margin-right: {{VALUE}}; }"
+        }
+      ]
+    },
+    "iconColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-weather svg { fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "color": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-heading { color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "colorHover": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-heading:hover { color: {{VALUE}}; "
+        }
+      ]
+    },
+    "textColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-news-ticker-box .mzb-news-ticker-list li a { color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "textColorHover": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-news-ticker-box .mzb-news-ticker-list li a:hover { color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "enableArrows": {
+      "type": "boolean",
+      "default": false
+    },
+    "tickerEffect": {
+      "type": "string",
+      "default": "fade"
+    },
+    "tickerDirection": {
+      "type": "string",
+      "default": "ltr"
+    },
+    "delayTimer": {
+      "type": "number",
+      "default": 4000
+    },
+    "autoPlay": {
+      "type": "boolean",
+      "default": true
+    },
+    "scrollSpeed": {
+      "type": "number",
+      "default": 2
+    },
+    "stopOnHover": {
+      "type": "boolean",
+      "default": true
+    },
+    "blockHTML": {
+      "type": "string",
+      "default": "div"
+    },
+    "blockMargin": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockPadding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockZIndex": {
+      "type": "number",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+        }
+      ]
+    },
+    "cssID": {
+      "type": "string"
+    },
+    "hideOnDesktop": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "blockCSS": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    }
+  },
+  "style": "magazine-blocks-blocks",
+  "editorScript": "magazine-blocks-blocks",
+  "editorStyle": "magazine-blocks-blocks-editor",
+  "viewScript": "magazine-blocks-news-ticker"
+}

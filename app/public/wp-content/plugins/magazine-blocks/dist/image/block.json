@@ -1,0 +1,336 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "magazine-blocks/image",
+  "title": "Image",
+  "description": "Visual communication with your visitor via images.",
+  "keywords": [
+    "image"
+  ],
+  "category": "magazine-blocks",
+  "textdomain": "magazine-blocks",
+  "supports": {
+    "className": false,
+    "customClassName": false
+  },
+  "example": {
+    "attributes": {}
+  },
+  "attributes": {
+    "clientId": {
+      "type": "string"
+    },
+    "link": {
+      "type": "object",
+      "default": {}
+    },
+    "image": {
+      "type": "object",
+      "default": {}
+    },
+    "alt1": {
+      "type": "string"
+    },
+    "alt2": {
+      "type": "string"
+    },
+    "alignment": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} {text-align: {{VALUE}}; }"
+        }
+      ]
+    },
+    "objectFit": {
+      "type": "string",
+      "default": "fill",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img {object-fit: {{VALUE}}; }"
+        }
+      ]
+    },
+    "border": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img"
+        }
+      ]
+    },
+    "hoverBorder": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img:hover"
+        }
+      ]
+    },
+    "boxShadow": {
+      "type": "object",
+      "default": {
+        "boxShadow": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img"
+        }
+      ]
+    },
+    "boxShadowHover": {
+      "type": "object",
+      "default": {
+        "boxShadow": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img:hover"
+        }
+      ]
+    },
+    "width": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img { width: {{VALUE}} }"
+        }
+      ]
+    },
+    "maxWidth": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img { max-width: {{VALUE}} }"
+        }
+      ]
+    },
+    "height": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img { height: {{VALUE}} }"
+        }
+      ]
+    },
+    "opacity": {
+      "type": "number",
+      "default": 1,
+      "style": [
+        {
+          "selector": "{{WRAPPER}} img { opacity: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockMargin": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockPadding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockZIndex": {
+      "type": "number",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+        }
+      ]
+    },
+    "cssID": {
+      "type": "string"
+    },
+    "animation": {
+      "type": "string"
+    },
+    "interaction": {
+      "type": "object"
+    },
+    "position": {
+      "type": "object"
+    },
+    "hideOnDesktop": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "colReverseOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:62em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+        }
+      ]
+    },
+    "colReverseOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+        }
+      ]
+    },
+    "blockCSS": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    },
+    "enableCaption": {
+      "type": "boolean",
+      "default": false
+    },
+    "caption": {
+      "type": "string"
+    },
+    "hoverEffect": {
+      "type": "string",
+      "default": "static"
+    },
+    "overlay": {
+      "type": "boolean",
+      "default": false
+    },
+    "overlayContent": {
+      "type": "string"
+    },
+    "showHeadingOn": {
+      "type": "string",
+      "default": "always"
+    },
+    "overlayContentPosition": {
+      "type": "string",
+      "default": "top-center"
+    },
+    "borderStyle": {
+      "type": "string",
+      "default": "none"
+    },
+    "overlayBorder": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.overlay .overlay-content"
+        }
+      ]
+    },
+    "maskShape": {
+      "type": "string",
+      "default": "none"
+    },
+    "maskSize": {
+      "type": "string",
+      "default": "auto"
+    },
+    "maskPosition": {
+      "type": "string",
+      "default": "center-center"
+    },
+    "maskRepeat": {
+      "type": "string",
+      "default": "no-repeat"
+    },
+    "separatorStyle": {
+      "type": "string",
+      "default": "none"
+    },
+    "separatorPosition": {
+      "type": "string",
+      "default": "after-title"
+    },
+    "showSeparatorOn": {
+      "type": "string",
+      "default": "always"
+    },
+    "showDescription": {
+      "type": "string",
+      "default": "always"
+    },
+    "imageFilter": {
+      "type": "string",
+      "default": "none"
+    }
+  },
+  "style": "magazine-blocks-blocks",
+  "editorScript": "magazine-blocks-blocks",
+  "editorStyle": "magazine-blocks-blocks-editor"
+}

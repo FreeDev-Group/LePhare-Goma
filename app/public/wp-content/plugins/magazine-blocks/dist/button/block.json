@@ -1,0 +1,560 @@
+{
+  "apiVersion": 3,
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "name": "magazine-blocks/button",
+  "title": "Button",
+  "description": "Redirect user to your important pages or websites by clicking button.",
+  "keywords": [
+    "button",
+    "icon"
+  ],
+  "category": "magazine-blocks",
+  "textdomain": "magazine-blocks",
+  "supports": {
+    "className": false,
+    "customClassName": false
+  },
+  "example": {
+    "attributes": {}
+  },
+  "attributes": {
+    "clientId": {
+      "type": "string"
+    },
+    "alignment": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { text-align: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockHTML": {
+      "type": "string",
+      "default": "div"
+    },
+    "link": {
+      "type": "object"
+    },
+    "text": {
+      "type": "string",
+      "default": "Button"
+    },
+    "style": {
+      "type": "string",
+      "default": "filled"
+    },
+    "buttonHover": {
+      "type": "string",
+      "default": "none"
+    },
+    "buttonAnimation": {
+      "type": "string",
+      "default": "none"
+    },
+    "size": {
+      "type": "string",
+      "default": "large"
+    },
+    "width": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-button-link { width: {{VALUE}}%; }"
+        }
+      ]
+    },
+    "padding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "size",
+              "relation": "==",
+              "value": "custom"
+            },
+            {
+              "key": "style",
+              "relation": "!=",
+              "value": "plain"
+            },
+            {
+              "key": "style",
+              "relation": "!=",
+              "value": "link"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link.is-custom { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "typography": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-button-link"
+        }
+      ]
+    },
+    "icon": {
+      "type": "object",
+      "default": {
+        "enable": false,
+        "icon": ""
+      }
+    },
+    "iconPosition": {
+      "type": "string",
+      "default": "right"
+    },
+    "iconSize": {
+      "type": "object",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "icon",
+              "relation": "!=",
+              "value": ""
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-icon .magazine-blocks-icon { width: {{VALUE}}; height: auto; }"
+        }
+      ]
+    },
+    "iconGap": {
+      "type": "object",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "icon",
+              "relation": "!=",
+              "value": ""
+            },
+            {
+              "key": "iconPosition",
+              "relation": "==",
+              "value": "left"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-icon { margin-right: {{VALUE}}; }"
+        },
+        {
+          "condition": [
+            {
+              "key": "icon",
+              "relation": "!=",
+              "value": ""
+            },
+            {
+              "key": "iconPosition",
+              "relation": "==",
+              "value": "right"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-icon { margin-left: {{VALUE}}; }"
+        }
+      ]
+    },
+    "color1": {
+      "type": "string",
+      "default": "#fff",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link { color: {{VALUE}}; }{{WRAPPER}} .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "color2": {
+      "type": "string",
+      "default": "#7331ed",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "!=",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link{ color: {{VALUE}}; }{{WRAPPER}} .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "hoverColor1": {
+      "type": "string",
+      "default": "",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link:hover { color: {{VALUE}} }{{WRAPPER}} .mzb-button-link:hover .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}} }{{WRAPPER}} .mzb-button-link:focus { color: {{VALUE}} }{{WRAPPER}} .mzb-button-link:focus .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}} }{{WRAPPER}} .mzb-button-link:active { color: {{VALUE}} }{{WRAPPER}} .mzb-button-link:active .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}} }"
+        }
+      ]
+    },
+    "hoverColor2": {
+      "type": "string",
+      "default": "",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "!=",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link:hover { color: {{VALUE}} }{{WRAPPER}} .mzb-button-link:hover .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}} }{{WRAPPER}} .mzb-button-link:focus { color: {{VALUE}} }{{WRAPPER}} .mzb-button-link:focus .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}} }{{WRAPPER}} .mzb-button-link:active { color: {{VALUE}} }{{WRAPPER}} .mzb-button-link:active .mzb-button-icon .magazine-blocks-icon { fill: {{VALUE}} }"
+        }
+      ]
+    },
+    "background1": {
+      "type": "object",
+      "default": {
+        "background": 1,
+        "type": "color",
+        "color": "#7331ed"
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link"
+        }
+      ]
+    },
+    "background2": {
+      "type": "object",
+      "default": {
+        "background": 1
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "outline"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link.is-style-outline"
+        }
+      ]
+    },
+    "hoverBackground1": {
+      "type": "object",
+      "default": {
+        "background": 1
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link:hover, {{WRAPPER}} .mzb-button-link:focus, {{WRAPPER}} .mzb-button-link:active"
+        }
+      ]
+    },
+    "hoverBackground2": {
+      "type": "object",
+      "default": {
+        "background": 1
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "outline"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link.is-style-outline:hover, {{WRAPPER}} .mzb-button-link.is-style-outline:focus, {{WRAPPER}} .mzb-button-link.is-style-outline:active"
+        }
+      ]
+    },
+    "border1": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link"
+        }
+      ]
+    },
+    "hoverBorder1": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "filled"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link:hover, {{WRAPPER}} .mzb-button-link:focus, {{WRAPPER}} .mzb-button-link:active"
+        }
+      ]
+    },
+    "border2": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "color": "#2563EB",
+        "type": "solid",
+        "radius": {
+          "desktop": {
+            "top": 2,
+            "right": 2,
+            "bottom": 2,
+            "left": 2,
+            "unit": "px",
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "top": 1,
+            "right": 1,
+            "bottom": 1,
+            "left": 1,
+            "unit": "px",
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "outline"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link"
+        }
+      ]
+    },
+    "hoverBorder2": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "style",
+              "relation": "==",
+              "value": "outline"
+            }
+          ],
+          "selector": "{{WRAPPER}} .mzb-button-link:hover, {{WRAPPER}} .mzb-button-link:focus, {{WRAPPER}} .mzb-button-link:active"
+        }
+      ]
+    },
+    "boxShadow": {
+      "type": "object",
+      "default": {
+        "boxShadow": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-button-link"
+        }
+      ]
+    },
+    "boxShadowHover": {
+      "type": "object",
+      "default": {
+        "boxShadow": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-button-link:hover, {{WRAPPER}} .mzb-button-link:focus, {{WRAPPER}} .mzb-button-link:active"
+        }
+      ]
+    },
+    "blockMargin": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockPadding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockZIndex": {
+      "type": "number",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockOpacity": {
+      "type": "number",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { opacity: {{VALUE}}; }"
+        }
+      ]
+    },
+    "cssID": {
+      "type": "string"
+    },
+    "animation": {
+      "type": "string"
+    },
+    "interaction": {
+      "type": "object"
+    },
+    "position": {
+      "type": "object"
+    },
+    "hideOnDesktop": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none !important; } }"
+        }
+      ]
+    },
+    "hideOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none !important; } }"
+        }
+      ]
+    },
+    "hideOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none !important; } }"
+        }
+      ]
+    },
+    "colReverseOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:62em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+        }
+      ]
+    },
+    "colReverseOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+        }
+      ]
+    },
+    "blockCSS": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    }
+  },
+  "style": "magazine-blocks-blocks",
+  "editorScript": "magazine-blocks-blocks",
+  "editorStyle": "magazine-blocks-blocks-editor"
+}

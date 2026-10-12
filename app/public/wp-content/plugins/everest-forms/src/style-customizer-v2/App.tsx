@@ -1,0 +1,432 @@
+/**
+ * Style Customizer v2 — panel app. Renders the sub-tabs (Design / Templates / Custom CSS)
+ * and portals the live preview into the builder's content area.
+ */
+import React from 'react';
+import { createPortal } from 'react-dom';
+import { AiAssistant } from './AiAssistant';
+import { ColorsPane, CustomCssPane, DesignList, ElementSlate, TemplatesPane } from './panes';
+import { ConfirmModal, ConfirmState } from './Popover';
+import { PreviewPane } from './PreviewPane';
+import { getActiveBridge, SelectionInfo } from './PreviewBridge';
+import { DEVICE_LABELS, STATE_FORCE } from './constants';
+import { useStore } from './store';
+import { Section } from './types';
+
+const __ = ( window as any ).wp?.i18n?.__ || ( ( s: string ) => s );
+const apiFetch = ( window as any ).wp?.apiFetch;
+
+// Temporarily disabled for this release — the AI form-building chat's own styling side effect
+// is disabled the same way, server-side, via EVF_AI_API::client_supports_style(). Re-enable by
+// flipping this back to true.
+const STYLE_AI_ENABLED = false;
+
+/** Single-list navigation: 'list' is the home screen (PRE-DEFINED + Elements + Advanced);
+ *  the rest are drill-downs reached from it, each with its own "← Back" header. */
+type View = 'list' | 'element' | 'templates' | 'colors' | 'css';
+
+interface Toast {
+	msg: string;
+	actLabel?: string;
+	onAct?: () => void;
+	kind?: 'success' | 'info';
+}
+
+export function App() {
+	const store = useStore();
+	const [ view, setView ] = React.useState< View >( 'list' );
+	const [ curSection, setCurSection ] = React.useState< string | null >( null );
+	const [ activeState, setActiveState ] = React.useState< Record< string, string > >( {} );
+	const [ confirm, setConfirm ] = React.useState< ConfirmState | null >( null );
+	const [ toast, setToast ] = React.useState< Toast | null >( null );
+	const [ saving, setSaving ] = React.useState( false );
+	const [ saveError, setSaveError ] = React.useState( '' );
+	const [ saveErrorConflict, setSaveErrorConflict ] = React.useState( false );
+	const [ selectPulse, setSelectPulse ] = React.useState( 0 );
+	const toastTimer = React.useRef< ReturnType< typeof setTimeout > | null >( null );
+
+	const sections: Section[] = React.useMemo(
+		() => Object.keys( store.sections ).map( ( key ) => ( { key, ...store.sections[ key ] } ) ),
+		[ store.sections ]
+	);
+
+	const dirty = store.isDirty();
+	// Lets the AI assistant panel dismiss itself — a click here may be about to open a native
+	// <select>, which always paints above fixed UI (see EVF-2698).
+	const onPreviewClick = React.useCallback( () => {
+		store.notePreviewInteraction();
+	}, [ store ] );
+
+	const showToast = React.useCallback( ( t: Toast ) => {
+		setToast( t );
+		if ( toastTimer.current ) {
+			clearTimeout( toastTimer.current );
+		}
+		toastTimer.current = setTimeout( () => setToast( null ), 4200 );
+	}, [] );
+
+	const pauseToast = React.useCallback( () => {
+		if ( toastTimer.current ) {
+			clearTimeout( toastTimer.current );
+			toastTimer.current = null;
+		}
+	}, [] );
+
+	const resumeToast = React.useCallback( () => {
+		if ( toastTimer.current ) {
+			clearTimeout( toastTimer.current );
+		}
+		toastTimer.current = setTimeout( () => setToast( null ), 4200 );
+	}, [] );
+
+	React.useEffect( () => {
+		store.onPaletteUnlinked = ( name: string ) => {
+			showToast( {
+				msg: `${ __( 'Unlinked from the', 'everest-forms' ) } “${ name }” ${ __( 'palette after your edit.', 'everest-forms' ) }`,
+			} );
+		};
+		return () => {
+			store.onPaletteUnlinked = null;
+		};
+	}, [ store, showToast ] );
+
+	/* ---- navigation ---- */
+	const openSection = ( key: string ) => {
+		setView( 'element' );
+		setCurSection( key );
+	};
+	const backToList = () => {
+		setCurSection( null );
+		setView( 'list' );
+		getActiveBridge()?.clearSelection();
+	};
+
+	const inSlate = view === 'element' && !! curSection;
+	const section = curSection ? sections.find( ( s ) => s.key === curSection ) : null;
+
+	const tabsFor = ( s: Section | null ) => ( s ? s.states || s.variants || null : null );
+	const currentStateFor = ( s: Section ): string | null => {
+		const tabs = tabsFor( s );
+		if ( ! tabs ) {
+			return null;
+		}
+		return activeState[ s.key ] || tabs[ 0 ];
+	};
+
+	const forceClass = ( () => {
+		if ( ! inSlate || ! section ) {
+			return null;
+		}
+		const st = currentStateFor( section );
+		return st ? STATE_FORCE[ st ] || null : null;
+	} )();
+
+	/* ---- click-to-edit: a preview element was clicked ---- */
+	const onSelectElement = React.useCallback( ( info: SelectionInfo ) => {
+		setView( 'element' );
+		setCurSection( info.section );
+		if ( info.variant ) {
+			setActiveState( ( m ) => ( { ...m, [ info.section ]: info.variant as string } ) );
+		}
+		setSelectPulse( ( n ) => n + 1 );
+	}, [] );
+
+	/* ---- save (invoked by the builder's Save button) ---- */
+	const save = React.useCallback( async () => {
+		// A just-migrated record is, by definition, not "dirty" (nothing has been edited yet) —
+		// but it still needs one real save to actually persist as v2, or the migration banner's
+		// own "hit Save to keep it" is a lie: the record stays legacy-shaped forever.
+		if ( ! apiFetch || ( ! store.isDirty() && ! store.migration.just_migrated ) ) {
+			return;
+		}
+		setSaving( true );
+		setSaveError( '' );
+		setSaveErrorConflict( false );
+		try {
+			const data: Record< string, unknown > = {
+				record: store.toRecord(),
+				base_updated_at: store.baseUpdatedAt,
+			};
+			// Only sent when touched this session, to avoid clobbering the legacy preview page's own toggle for the same meta.
+			if ( store.applyThemeStyleTouched ) {
+				data.apply_theme_style = store.applyThemeStyle;
+			}
+			const res = await apiFetch( {
+				path: `${ store.settings.restBase }/${ store.settings.formId }`,
+				method: 'POST',
+				data,
+			} );
+			store.markSaved( res.record );
+		} catch ( e: any ) {
+			const status = e && e.data && e.data.status;
+			setSaveErrorConflict( status === 409 );
+			setSaveError(
+				status === 409
+					? __( 'These styles changed elsewhere — reload before saving.', 'everest-forms' )
+					: ( e && e.message ) || __( 'Failed to save styles.', 'everest-forms' )
+			);
+		} finally {
+			setSaving( false );
+		}
+	}, [ store ] );
+
+	const saveRef = React.useRef( save );
+	saveRef.current = save;
+
+	React.useEffect( () => {
+		const onClick = ( e: MouseEvent ) => {
+			const target = e.target as HTMLElement;
+			if ( target && target.closest && target.closest( '.everest-forms-save-button' ) ) {
+				saveRef.current();
+			}
+		};
+		document.addEventListener( 'click', onClick, true );
+		return () => document.removeEventListener( 'click', onClick, true );
+	}, [] );
+
+	React.useEffect( () => {
+		const handler = ( e: BeforeUnloadEvent ) => {
+			if ( store.isDirty() ) {
+				e.preventDefault();
+				e.returnValue = '';
+			}
+		};
+		window.addEventListener( 'beforeunload', handler );
+		return () => window.removeEventListener( 'beforeunload', handler );
+	}, [ store ] );
+
+	/* ---- undo/redo: confirm what just happened, with a one-click reverse (mirrors the
+	 *  "Applied palette X [Undo]" pattern already used for apply-palette/reset-all/apply-template) ---- */
+	const handleUndo = React.useCallback( () => {
+		if ( ! store.canUndo() ) {
+			return;
+		}
+		const label = store.undoLabel();
+		store.undo();
+		showToast( {
+			msg: `${ __( 'Undid:', 'everest-forms' ) } ${ label }`,
+			actLabel: __( 'Redo', 'everest-forms' ),
+			onAct: () => store.redo(),
+		} );
+	}, [ store, showToast ] );
+
+	const handleRedo = React.useCallback( () => {
+		if ( ! store.canRedo() ) {
+			return;
+		}
+		const label = store.redoLabel();
+		store.redo();
+		showToast( {
+			msg: `${ __( 'Redid:', 'everest-forms' ) } ${ label }`,
+			actLabel: __( 'Undo', 'everest-forms' ),
+			onAct: () => store.undo(),
+		} );
+	}, [ store, showToast ] );
+
+	React.useEffect( () => {
+		const onKey = ( e: KeyboardEvent ) => {
+			const target = e.target as HTMLElement;
+			if ( target && /^(INPUT|TEXTAREA|SELECT)$/.test( target.tagName ) ) {
+				return;
+			}
+			if ( ( e.ctrlKey || e.metaKey ) && e.key.toLowerCase() === 'z' ) {
+				e.preventDefault();
+				if ( e.shiftKey ) {
+					handleRedo();
+				} else {
+					handleUndo();
+				}
+				return;
+			}
+			// Ctrl+Y: the conventional Windows/Linux redo shortcut, alongside Ctrl+Shift+Z. Not
+			// Cmd+Y (macOS binds that to the browser's own History, which this shouldn't swallow).
+			if ( e.ctrlKey && ! e.metaKey && e.key.toLowerCase() === 'y' ) {
+				e.preventDefault();
+				handleRedo();
+			}
+		};
+		window.addEventListener( 'keydown', onKey );
+		return () => window.removeEventListener( 'keydown', onKey );
+	}, [ handleUndo, handleRedo ] );
+
+	/* ---- render ---- */
+	const previewHost = document.getElementById( 'evf-scv2-preview' );
+
+	const browseMeta: Record< string, { title: string } > = {
+		templates: { title: __( 'Templates', 'everest-forms' ) },
+		colors: { title: __( 'Colors', 'everest-forms' ) },
+		css: { title: __( 'Custom CSS', 'everest-forms' ) },
+	};
+	const resetLabels: Record< string, string > = {
+		templates: __( 'Reset templates', 'everest-forms' ),
+		colors: __( 'Reset colors', 'everest-forms' ),
+		css: __( 'Reset Custom CSS', 'everest-forms' ),
+	};
+
+	return (
+		<div className="scv2-panel">
+			{ inSlate && section && (
+				<div className="navback">
+					<button type="button" className="bk" onClick={ backToList }>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={ 2.2 }>
+							<path d="m15 18-6-6 6-6" />
+						</svg>
+						<span>{ section.title }</span>
+					</button>
+					{ ! ( section.tier === 'pro' && ! store.proActive ) && (
+						<button
+							type="button"
+							className="uxbtn"
+							title={ __( 'Reset this section', 'everest-forms' ) }
+							aria-label={ __( 'Reset this section', 'everest-forms' ) + ' — ' + section.title }
+							onClick={ () => store.resetSection( section.key ) }
+						>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={ 2 } aria-hidden="true">
+								<path d="M3 12a9 9 0 1 0 3-6.7" />
+								<path d="M3 4v5h5" />
+							</svg>
+						</button>
+					) }
+				</div>
+			) }
+
+			{ ( view === 'templates' || view === 'colors' || view === 'css' ) && (
+				<div className="navback">
+					<button type="button" className="bk" onClick={ () => setView( 'list' ) }>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={ 2.2 }>
+							<path d="m15 18-6-6 6-6" />
+						</svg>
+						<span>{ browseMeta[ view ].title }</span>
+					</button>
+					{ ( view === 'templates' || view === 'colors' || view === 'css' ) && (
+						<button
+							type="button"
+							className="uxbtn"
+							title={ resetLabels[ view ] }
+							aria-label={ resetLabels[ view ] }
+							onClick={ () => {
+								if ( view === 'templates' ) {
+									store.resetTemplate();
+								} else if ( view === 'colors' ) {
+									store.resetPalette();
+								} else {
+									store.resetCustomCss();
+								}
+							} }
+						>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={ 2 } aria-hidden="true">
+								<path d="M3 12a9 9 0 1 0 3-6.7" />
+								<path d="M3 4v5h5" />
+							</svg>
+						</button>
+					) }
+				</div>
+			) }
+
+			{ store.device !== 'desktop' && (
+				<div className="ctxbar">
+					<span>
+						{ __( 'Editing', 'everest-forms' ) }{ ' ' }
+						<b>
+							{ DEVICE_LABELS[ store.device ] } · ≤ { store.breakpoints[ store.device ] }px
+						</b>{ ' ' }
+						— { __( 'inherits Desktop', 'everest-forms' ) }
+					</span>
+					<button type="button" className="back" onClick={ () => store.setDevice( 'desktop' ) }>
+						{ __( 'Back to Desktop', 'everest-forms' ) }
+					</button>
+				</div>
+			) }
+
+			<div className="panel-scroll">
+				{ view === 'element' && section ? (
+					<ElementSlate
+						key={ section.key }
+						section={ section }
+						activeState={ currentStateFor( section ) }
+						onChangeState={ ( id ) => setActiveState( ( m ) => ( { ...m, [ section.key ]: id } ) ) }
+						pulse={ selectPulse }
+					/>
+				) : view === 'list' ? (
+					<DesignList
+						sections={ sections }
+						onOpen={ openSection }
+						onNavigateTemplates={ () => setView( 'templates' ) }
+						onNavigateColors={ () => setView( 'colors' ) }
+						onNavigateCss={ () => setView( 'css' ) }
+						onUndo={ handleUndo }
+						onRedo={ handleRedo }
+						canUndo={ store.canUndo() }
+						canRedo={ store.canRedo() }
+						undoLabel={ store.undoLabel() }
+						redoLabel={ store.redoLabel() }
+						onResetAll={ () =>
+							setConfirm( {
+								title: __( 'Reset all styles?', 'everest-forms' ),
+								message: __(
+									'Resets every element to default — palette, fonts, spacing, and more. You can undo right after.',
+									'everest-forms'
+								),
+								confirmLabel: __( 'Reset all', 'everest-forms' ),
+								danger: true,
+								onConfirm: () => {
+									store.resetAll();
+									showToast( {
+										msg: __( 'All styles reset to default.', 'everest-forms' ),
+										actLabel: __( 'Undo', 'everest-forms' ),
+										onAct: () => store.undo(),
+									} );
+								},
+							} )
+						}
+					/>
+				) : view === 'templates' ? (
+					<TemplatesPane
+						onPreview={ ( ov ) => getActiveBridge()?.previewValues( ov ) }
+						onClearPreview={ () => getActiveBridge()?.revert() }
+						onApplied={ ( name ) =>
+							showToast( {
+								kind: 'success',
+								msg: `${ __( 'Applied template', 'everest-forms' ) } “${ name }”`,
+								actLabel: __( 'Undo', 'everest-forms' ),
+								onAct: () => store.undo(),
+							} )
+						}
+					/>
+				) : view === 'colors' ? (
+					<ColorsPane
+						onToast={ showToast }
+						onPreviewPalette={ ( colors ) => getActiveBridge()?.previewPalette( colors ) }
+						onClearPreview={ () => getActiveBridge()?.revert() }
+					/>
+				) : (
+					<CustomCssPane />
+				) }
+			</div>
+
+			{ confirm && <ConfirmModal state={ confirm } onClose={ () => setConfirm( null ) } /> }
+
+			{ previewHost &&
+				createPortal(
+					<PreviewPane
+						forceClass={ forceClass }
+						saving={ saving }
+						dirty={ dirty }
+						saveError={ saveError }
+						saveErrorConflict={ saveErrorConflict }
+						onSelect={ onSelectElement }
+						onIframeClick={ onPreviewClick }
+						onUndo={ handleUndo }
+						onRedo={ handleRedo }
+						toast={ toast }
+						onToastPause={ pauseToast }
+						onToastResume={ resumeToast }
+					/>,
+					previewHost
+				) }
+
+			{ /* Portaled to <body> so position:fixed isn't trapped by a transformed ancestor. */ }
+			{ STYLE_AI_ENABLED && createPortal( <AiAssistant />, document.body ) }
+		</div>
+	);
+}

@@ -1,0 +1,200 @@
+{
+  "apiVersion": 3,
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "name": "magazine-blocks/breadcrumbs",
+  "title": "Breadcrumbs",
+  "description": "Displays a hierarchical navigation path, guiding users to easily trace their location within a website.",
+  "keywords": [
+    "breadcrumbs"
+  ],
+  "category": "magazine-blocks-utility-blocks",
+  "textdomain": "magazine-blocks",
+  "supports": {
+    "className": false,
+    "customClassName": false
+  },
+  "example": {
+    "attributes": {}
+  },
+  "attributes": {
+    "clientId": {
+      "type": "string"
+    },
+    "blockMargin": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": false,
+          "top": 20,
+          "bottom": 20
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockPadding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": false,
+          "top": 50,
+          "right": 20,
+          "bottom": 50,
+          "left": 20
+        }
+      },
+      "style": [
+        {
+          "selector": ".mzb-blockquote{{WRAPPER}} { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockZIndex": {
+      "type": "number",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+        }
+      ]
+    },
+    "cssID": {
+      "type": "string"
+    },
+    "animation": {
+      "type": "string"
+    },
+    "interaction": {
+      "type": "object"
+    },
+    "position": {
+      "type": "object"
+    },
+    "hideOnDesktop": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "colReverseOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:62em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+        }
+      ]
+    },
+    "colReverseOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+        }
+      ]
+    },
+    "blockCSS": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    },
+    "separator": {
+      "type": "string",
+      "default": "/"
+    },
+    "showHomeLink": {
+      "type": "boolean",
+      "default": true
+    },
+    "homeLabel": {
+      "type": "string",
+      "default": "Home"
+    },
+    "color": {
+      "type": "string",
+      "default": "#333",
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-breadcrumbs a.mzb-breadcrumb-link {color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "hoverColor": {
+      "type": "string",
+      "default": "#666",
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-breadcrumbs a.mzb-breadcrumb-link:hover {color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "separatorColor": {
+      "type": "string",
+      "default": "#666",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-breadcrumb-separator {color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "spacing": {
+      "type": "object",
+      "default": {
+        "desktop": {
+          "value": 10,
+          "unit": "px"
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-breadcrumb-separator { margin-left: {{VALUE}};  margin-right: {{VALUE}}; }"
+        }
+      ]
+    },
+    "alignment": {
+      "type": "string",
+      "default": "left",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} {text-align: {{VALUE}}; justify-content: {{VALUE}}; }"
+        }
+      ]
+    },
+    "typography": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-breadcrumbs"
+        }
+      ]
+    }
+  },
+  "style": "magazine-blocks-blocks",
+  "editorScript": "magazine-blocks-blocks",
+  "editorStyle": "magazine-blocks-blocks-editor"
+}

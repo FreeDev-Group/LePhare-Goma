@@ -1,0 +1,791 @@
+== Changelog ==
+= 1.8.9 - 14-09-2026 =
+* Fix - Section block showing an extra 24px gap between blocks in the editor that doesn't appear on the frontend.
+* Fix - Split Feed block cutting off post content regardless of the excerpt limit setting.
+* Fix - Tab Post block's excerpt toggle hiding the post title instead of the excerpt.
+* Fix - Compatibility issues with PHP 8.5 and WordPress 7.1.
+* Fix - Style reset button closing the popover instead of just resetting the value.
+* Fix - Block icons rendering black instead of purple in the editor's List View.
+* Fix - Tab Post block's Popular tab post titles rendering larger than the Latest tab in the editor.
+* Fix - Tab Post block's Category and Excerpt settings not reflected in the editor preview for the Popular tab.
+
+= 1.8.8 - 08-09-2026 =
+* Added - Alignment control (Left/Center/Right) to the Button block.
+* Improved - Post title HTML Markup default changed to H6 for Banner Posts, Featured Posts, Tab Post, Latest Posts, and Category List.
+* Fix - Post List block's alignment setting behaving inconsistently.
+* Fix - Advertisement block's alignment setting not applying on the frontend.
+* Fix - Category tag becoming invisible on hover in Post List and other post-listing blocks.
+* Fix - Block icons rendering black or invisible in the block inserter panel, list view, and slash command autocomplete popup.
+* Fix - Split Feed block's category meta breaking the layout.
+* Fix - Featured Posts block's Styles 5 and 6 rendering differently in the editor than on the frontend.
+* Fix - Category List block's icon not appearing on the frontend.
+* Fix - Tab Post block's tab title layout not matching the selected preset style.
+* Fix - Border showing on the frontend by default when no border size was configured, despite not appearing in the editor.
+* Fix - Post title HTML Markup setting not controlling font size across post-listing blocks, leaving titles stuck at one fixed size regardless of the selected heading level (H1-H6).
+* Fix - Split Feed block's second column misaligning in the editor preview and breaking layout when post tags were displayed.
+* Fix - Grid Module block's post title font size not applying in the editor or on the frontend.
+* Fix - Tab Post block's post title HTML Markup setting not working.
+* Fix - Image block's layout alignment not working when overlay was enabled.
+* Fix - Button block's width slider not applying full width when set to 100%.
+* Fix - Featured Posts block's Style 1 showing a gap between the image and title at 2 columns.
+* Fix - Featured Posts block's Style 5 truncating post content.
+* Fix - Icon block misaligning with its container on block themes.
+* Fix - Post Slider block's heading divider sitting off-center in Preset Styles 6 and 7 on the frontend.
+* Fix - Icon block's hide-on-tablet/mobile setting not applying on the frontend.
+* Fix - Button block taking full browser width in the editor instead of the container width.
+* Fix - Editor canvas duplicating when clicking the title, author, or date inside Grid Module, Latest Posts, Featured Posts, and other post-listing blocks.
+* Fix - Post Count slider limited to 15 (20 for News Ticker) posts across Grid Module, Featured Categories, Featured Posts, News Ticker, Post List, and Slider blocks; now allows up to 100.
+* Fix - Grid Module block's heading text not showing on the frontend unless "View More" was also enabled.
+* Fix - Split Feed post cards in the Featured Categories block missing author/date meta and showing incorrectly sized images.
+* Fix - Section block's background settings affecting the original section when a duplicated section was edited.
+* Fix - Background Image control's remove-image button being invisible.
+* Fix - Editor crashing with a security error when clicking a real link (e.g. post title, "View More") inside a post-related block.
+* Fix - Font Size slider and number input sharing the same maximum, blocking custom values above it.
+* Fix - Font Size, Line Height, and Letter Spacing values of 0 not applying in the editor or on the frontend.
+* Fix - Typography sliders (Font Size, Line Height, Letter Spacing) lagging while dragging.
+
+= 1.8.7 - 20-08-2026 =
+* Security - Escaped the News Ticker block's internal ID attribute to close a stored cross-site scripting vulnerability.
+* Security - Restricted Site Builder template management to Administrators to close an authorization bypass that let lower-privileged users take over site-wide templates.
+
+= 1.8.6 - 14-08-2026 =
+* Added - "Popular", "Comments", and "Modified Date" order-by options for Banner Posts, Featured Posts, Post List, Post Slider, and Grid Module blocks.
+* Added - Post/Highlighted style switcher to the Post Card panel in the Featured Posts block.
+* Added - Include/Exclude toggle and a new "Exclude Tag" option for Category and Tag filtering on all post-listing blocks.
+* Added - Hover tooltips to Post List's Horizontal and Vertical Alignment controls.
+* Added - Default state and hover labels for Social Icons block's Icon Alignment control.
+* Added - Helper note explaining why Column Gap has no effect when Social Icons alignment is set to "Space Between".
+* Added - Placeholder and helper text for the CSS ID and Additional CSS Class(es) fields in the Advanced panel.
+* Added - Opt-in usage tracking to help prioritize future development.
+* Improved - Standardized the Post Options query field order across all post-listing blocks.
+* Improved - Renamed the "Border" settings panel to "Border & Shadow" in Button, Image, Social Icons, Section, Icon, Column, and Category List blocks.
+* Improved - Section block's Horizontal/Vertical Alignment labels, icons, and tooltips for clarity.
+* Improved - Post List block now only shows the Image Position control for Style 1.
+* Fix - Banner Posts block ignoring the selected Order By value on the frontend.
+* Fix - "Popular" and "Comments" order-by options showing a blank block preview in the editor.
+* Fix - "Popular" order-by option excluding posts with no recorded views.
+* Fix - Excerpt limit not applying to posts with a manually-set excerpt.
+* Fix - Post List block's "Right" image position option not working.
+* Fix - Post List block missing Post Box padding and border/border-radius options.
+* Fix - Post List block's Style 2 preset overflowing on narrow screens.
+* Fix - Post List block's Style 4 preset image sizing and content alignment.
+* Fix - Post Video block's featured image not sizing correctly.
+* Fix - Removed the non-functional pagination option from the Banner Posts block.
+* Fix - Post List's Vertical Alignment control using the same icons as Horizontal Alignment.
+* Fix - Missing borders between panels in the Global Settings sidebar.
+* Fix - Template Builder's template list showing a spinner instead of a skeleton loader.
+* Fix - Template Builder's Edit/Delete dropdown overflowing outside the panel.
+* Fix - Pagination not applying on the frontend for Grid Module, Post List, Featured Posts, and Latest Posts blocks.
+* Fix - Grid Module's pagination preview rendering as an unstyled, slow list in the editor.
+* Fix - Social Icons block's Icon Alignment and Column Gap controls not updating visually in the editor.
+* Fix - Category block settings not applying and category selection not persisting.
+* Fix - Section block's Horizontal Alignment "Center" icon matching Vertical Alignment's icon.
+* Fix - Section block's Alignment and Row Gap labels breaking translation due to a wrong text domain.
+* Fix - CSS ID and Additional CSS Class(es) fields in the Advanced panel not applying to the frontend for most blocks.
+* Fix - Heading block dropping its custom CSS class on the frontend.
+* Fix - Magazine Blocks Library panel icon not opening.
+* Fix - Heading block showing a validation error when no global typography preset was set.
+* Fix - Responsive condition panel's grey overlay not matching the device being previewed.
+* Fix - Banner Posts (and other blocks with a Random order option) disappearing in the editor when Order By is set to Random.
+* Fix - Several CSS validation errors reported by the W3C validator.
+* Fix - Settings could not be saved from any tab due to a validation issue in the Integrations tab.
+* Fix - News Ticker block loading its script from both the free and Pro plugin when Pro is active.
+* Fix - Latest Posts block pagination rendering as raw text, not updating posts, and misplaced in the layout.
+* Fix - Banner Posts Style 10 second post inheriting the highlighted title's font size on the frontend.
+* Fix - Custom header/footer templates stripping scripts/styles and blocking block CSS from loading site-wide.
+* Fix - Infinite recursion in the Post Content block causing a fatal memory error.
+
+= 1.8.5 - 22-07-2026 =
+* Improved - Migrated all blocks to the latest block API version for better compatibility with the WordPress block editor.
+* Improved - General code quality, PHP 8.4 compatibility, and minor block display fixes across the plugin.
+* Security - Sanitized block style values to prevent malicious code from running via unescaped style output.
+* Security - Enforced AJAX nonce verification to block forged requests when saving block CSS.
+* Fix - Fixed a bug where importing the ColorMag Starter Templates demo could crash the block editor.
+* Fix - Fixed custom header, footer, and page templates not being sanitized correctly in the Template Builder.
+* Fix - Fixed duplicate confirmation dialogs appearing when deleting a template in the Template Builder.
+
+= 1.8.4 - 02-04-2026 =
+* Security - Fixed authenticated stored XSS vulnerability in block attributes.
+
+= 1.8.3 - 03-11-2025 =
+* Update   - Readme update.
+
+= 1.8.2 - 15-10-2025 =
+* Fix   - Block editor CSS loading in the customizer area.
+
+= 1.8.1 - 24-09-2025 =
+* Added - Theme Palette addition in color picker pop over.
+
+= 1.8.0 - 10-09-2025 =
+* Renamed - Featured Categories block to Split feed.
+* Renamed - Slider block to Post Slider.
+* Renamed - Modal Block to Pop up.
+* Renamed - Query setting to post options on all post blocks.
+* Improved - Global block settings structure.
+* Improved - Architecture and Code Quality.
+* Improved - UI for all Post Blocks’ preset menu.
+* Improved - Default states of various blocks.
+* Improved - Section & column block UI and UX.
+* Improved - Block grouping in the block inserter area.
+* Improved - Only shown styling settings for enabled elements for all blocks.
+* Improved - UI-UX for weather block.
+* Improved - Z index input type.
+* Improved - UI-UX for the news ticker block.
+* Improved - Max value of range sliders for font size.
+* Improved - Default typography font weight from 500 to default (theme inherited).
+* Improved - Disabled link clicked in the builder area.
+* Improved - Post options setting placement.
+* Improved - Single width control in image block.
+* Added - Layout menu for all blocks.
+* Added - Customization options for all heading presets.
+* Added - Animation options for news ticker block.
+* Added - Missing reset buttons throughout the plugin.
+* Added - Keyboard navigation toggle for Slider block.
+* Added - Arrow Position for Slider blocks presets.
+* Added - Card padding option in general for layout 2 style 1 preset in grid module block.
+* Added - Category position option in header meta for slider style 3 in slider block.
+* Added - Category margin option for header meta in slider block.
+* Added - Padding and Justification option for meta in slider block.
+* Added - Padding and border option for post title in slider block.
+* Added - Padding, background and border option for post box in slider block for slider style 3.
+* Added - Read time and view count option for meta in slider block.
+* Added - New Button Block.
+* Added - New Tabs Block.
+* Added - New Paragraph block.
+* Added - Category lists presets (Layout 2 Style 2, Layout 2 Style 3, and Layout 3 Style 2).
+* Added - New Preset Style 4 on Post Video Block.
+* Added - Advertisement Management System.
+* Added - Header Meta Position option in Slider block.
+* Added - Card Border and Box Shadow option in Slider block.
+* Added - Meta Separator option with customization (position, color, spacing) in Slider block.
+* Added - Card Padding option for Layout 2 Style 1 preset in Grid Module block.
+* Added - Category Position option in Header Meta for Slider Style 3.
+* Added - Category Margin option in Header Meta for Slider block.
+* Added - Padding and Border option for Post Title in Slider block.
+* Added - Arrow Position option for Slider block presets.
+* Added - Category Lists presets (Layout 2 Style 2, Layout 2 Style 3, Layout 3 Style 2).
+* Added - New Preset Style 4 in Post Video block.
+* Added - General Block and Post Block grouping.
+* Added - Option to control Heading across blocks.
+* Added - Option to control News Ticker type, speed, and autoplay.
+* Fix - Heading typography not working issue for layout 3 style 1 preset in post list block.
+* Fix - Header meta margin not working when category position is inside image in post list block.
+* Fix - Meta icon color not working in layout 2 style 1 preset in grid module block.
+* Fix - Update wrapper for arrows border and box shadow options on slider block.
+* Fix - Change opacity type from string to number in Image Block.
+* Fix - 3-digit fields requiring multiple backspaces
+* Fix - Color contrast issues on toggle buttons.
+* Fix - Global colors not reflecting on responsive mode.
+* Fix - Dimension control value not clearing.
+* Fix - PopUp Block height option issue.
+* Fix - Link clickable issue in editor.
+
+= 1.7.2 - 04-07-2025 =
+* Added - Separator header meta styles for highlighted post and post box in featured posts block.
+* Added - Meta Typography option for highlighted post in featured posts block.
+* Added - Typography option for read more in featured posts block.
+* Added - Padding and margin option for post title in featured posts block.
+* Fix - Meta separator displaying even when separator is disabled in featured posts block.
+* Fix - View all not displaying in bottom position in frontend in featured posts block.
+* Fix- Icon color and link color of meta not applied to read time and view count in featured posts block.
+* Fix - Text hover color of read more not applying in read more icon in featured posts block.
+* Fix - Border displaying even when enable border option of read more is disabled in featured posts block.
+* Fix - Text hover color of view all not applying in view all icon in featured posts block.
+* Fix - Border displaying even when enable border option of view all is disabled in featured posts block.
+* Fix - Radius option in image not working in layout 2 style 1 preset in featured posts block.
+* Fix - Image height and width option not working in layout 5 style 1 preset in featured posts block.
+* Fix - Image width not working for all presets in post list block.
+* Fix - Image height not working for layout 2 style 1 preset in post list block.
+* Fix - Post content issue in frontend in post list block.
+* Fix - Update featured image block name to post image.
+
+= 1.7.1 - 30-06-2025 =
+* Added - New Category Block.
+* Added - New Featured Image Block.
+* Added - New Post Title Block.
+* Added - New Post Content Block.
+* Added - New Post Meta Block.
+
+= 1.7.0 - 24-06-2025 =
+* Fix - Image hover animation issue in frontend of banner posts block.
+* Fix - Heading Border option not working properly for all presets in heading block.
+* Fix - Style option in typography default not working issue.
+* Added - New Site Builder Feature.
+* Added - Template Library implementation.
+* Added - New Breadcrumbs Block.
+* Added - Typography option for excerpt in grid module block.
+* Added - Enable-disable comment and meta position option for header meta in grid module block.
+* Added - Number list option along with its presets in grid module block.
+* Added - Post card background, padding and border options in featured posts block.
+* Added - Separate style options for highlighted post and post box header meta in featured posts block.
+* Added - Featured Posts Layout 6 preset in featured posts block.
+* Added - Layout 4 Style 1 and Style 2 preset in banner posts block.
+* Added - Layout 5 Style 1 and Style 2 preset in banner posts block.
+* Added - Excerpt position option in banner posts block.
+* Added - Post content alignment, padding and overlay option in highlighted post and overlay option in post box for Layout 5 Style 2 preset in banner posts block.
+* Added - Post box wrapper style section with background, padding, margin and border option for Layout 5 Style 2 preset in banner posts block.
+* Added - Post box padding option in banner posts block.
+* Added - Preset 3 in post video block.
+* Added - Meta position option in post video block.
+* Added - Overlay option for highlighted post and post box in post video block.
+* Added - Highlighted post content padding option for preset 3 in post video block.
+* Added - Separate header meta controls for highlighted and post box in featured posts block.
+* Added - Header meta position and margin option in featured posts block.
+* Added - Column 3 option for layout 1 preset 1 in featured posts block.
+* Added - Icon option in the Read More section of the Featured Posts block, including options for icon color, spacing, and size.
+* Added - Featured Posts Layout 6 preset in featured posts block.
+* Added - Highlighted post height option in banner posts block.
+* Added - Container option for layout 5 style 2 preset in banner posts block.
+* Added - Justification and Padding option for meta in grid module block.
+* Added - Post box controls (background and border option) for layout 2 style 1 preset in grid module block.
+* Added - Post title padding and border option in grid module block.
+* Added - Time customization option on DateTimePicker component.
+* Added - Heading Border after option for layout 6 and layout 7 preset in heading block.
+* Added - Heading padding option for all presets in heading block.
+* Added - Heading margin option in heading block.
+* Added - Typography option for sub heading in heading block.
+* Enhancement - Advertisement Block.
+* Enhancement - Grid Module Block.
+* Enhancement - Update the Facebook Community link on Join Our Community section dashboard.
+
+= 1.6.0 - 19-05-2025 =
+* Added - Post Type select control on Slider block.
+* Added - View All text Typography controls on Featured Posts Block.
+* Added - View All text Typography controls on Grid Module Block.
+* Added - View All text Typography controls on Post Lists Block.
+* Added - Heading layout 6 preset in all posts blocks heading.
+* Added - Option to change orientation, justification, alignment and row gap in section block.
+
+= 1.5.0 - 13-05-2025 =
+* Added - Highlighted post height option on post video block.
+* Added - New Heading Presets and controls on Heading block and all post blocks heading.
+* Added - Color and hover color options for icon in Social Icon block.
+* Added - Background color and hover background color for icon in Social Icon block.
+* Added - Header Meta Typography option on Featured Categories block.
+* Added - Post box padding option on Featured Categories block.
+* Added - View All Typography option on Featured Categories block.
+* Added - Enable-disable option for author and date on Featured Categories block.
+* Enhancement - Mobile Responsiveness on Post List Layout 1 Style 1 preset.
+* Enhancement - Responsiveness on featured categories block for tablet and mobile view.
+* Enhancement - Tablet and Mobile Responsiveness on post video style 1 preset for.
+
+= 1.4.3 - 08-05-2025 =
+* Fix - Post title markup line height issue in slider block.
+* Fix - Meta link color issue on Grid module block preset layout 2.
+* Fix - Heading Typography option not working issue in heading block.
+* Fix - Query settings frontend rendering issue in slider block.
+* Fix - Dots pagination on Slider block.
+* Fix - Highlight Post and Post Box category toggle on Post Video block.
+* Fix - Background gradient color not working issue.
+* Fix - Heading block border bottom issue in the editor on tablet and mobile view.
+* Fix - Responsive issue in the slider block on mobile view.
+* Added - New Preset design for Post List block.
+* Added - Options for Number List on Post List block.
+* Added - Posts Separator option on Post List block.
+* Added - View All Button Icon spacing settings.
+* Added - Background color and padding option in slider block for style3 preset.
+* Added - Icon enable-disable option for meta in all posts block.
+* Added - Typography option for meta in all posts block.
+* Added - Meta separator color option in all posts block.
+* Added - Heading Layout 6 preset in heading block.
+* Added - Free Vs Pro menu on Dashboard.
+* Added - Content Padding option on Post List Block.
+* Enhancement - Decimal value option on steps of Slider Control.
+* Enhancement - Video Preview option on Media Control.
+* Enhancement - Mobile Responsiveness on Grid Module Layout2.
+* Enhancement - Width control and image overlay structure in Post Video block.
+* Enhancement - View All Button Link options.
+* Enhancement - Embed button visibility on highlight post of Post Video block.
+* Enhancement - Content overlay visibility of post content on highlight post of Post Video block.
+* Enhancement - Display meta fields only on highlighted post for Preset2 Style3 on Banner Posts block.
+
+= 1.4.2 - 25-04-2025 =
+* Enhancement - Revert Site Builder due to some issues.
+
+= 1.4.1 - 24-04-2025 =
+* Fix - Frontend rendering of presets in Post Video block.
+* Fix - Gap issue on Grid Module block.
+* Fix - Background color of arrows in Slider block.
+* Fix - Content height issue on preset style3 on Slider block.
+* Added - Highlight post height option on Featured Categories block.
+* Added - Post content padding option on Featured Categories block.
+* Added - Post Box height and width options on Featured Categories block.
+* Added - Border option for arrows in Slider Block.
+* Added - Box Shadow option for arrows in Slider block.
+* Added - Separate color option for active and inactive dots on Slider block.
+* Added - Featured Image border radius option in post blocks.
+* Added - Heading Layout Preset Styles.
+* Added - Border Option for Heading Layouts in post blocks.
+* Added - Width options for posts and highlighted posts in post video block.
+* Added - Meta Style options for Post video block.
+* Added - Category enable-disable option for Highlight Post in Post Video block.
+* Added - Padding option for post content in Grid Module block.
+* Added - Column option for Grid Module block.
+* Added - Offset option on each Post blocks frontend.
+* Added - Meta Separator presets for all post blocks.
+* Added - Query settings for the Tab Post block.
+* Added - Meta and header Meta settings for the Tab Post block.
+* Added - Tab Header preset style on Tab Post Block.
+* Added - Border and Box Shadow option for Tab Header on Tab Post Block.
+* Added - Border and Box Shadow option for Tab Header on Tab Post Block.
+* Added - Icon size, color, padding, and border options for view more icon on all Post Blocks.
+* Added - View More Url option on all Post Blocks.
+* Added - Highlight Post text color option on Post Video Block.
+* Added - Content Padding option on Post Video Block.
+* Added - Post box height and width option on Post Video Block.
+* Added - Styling options for embed play button on Post Video Block.
+* Enhancement - View More Button and Heading Presets on all Post blocks.
+* Enhancement - Inspector Settings of Date and Weather block.
+* Enhancement - Grid Module block content padding Control.
+* Enhancement - Type checking for Get Icon Rendering Method.
+* Enhancement - Compatibility with WordPress version 6.8.
+* Enhancement - Frontend rendering for Latest Posts Block.
+
+= 1.3.32 - 04-04-2025 =
+* Fix - Post query based on categories in News Ticker block.
+* Fix - Icon type in News Ticker block frontend.
+* Added - Ticker label and body color on News Ticker block.
+* Enhancement - Z-index property for popover drawer.
+
+= 1.3.31 - 01-04-2025 =
+* Fix - Post Title Markup issue on Slider Block.
+* Fix - Meta position issue in frontend of Slider Block.
+* Fix - Slider height issue in all slider styles of Slider Block.
+* Fix - Content alignment issue on Slider Block
+* Fix - Card border radius issue in all slider styles of Slider Block.
+* Fix - Remove padding in arrows of Slider Block.
+* Fix - View all option not displayed in frontend on Featured Posts Block.
+* Fix - Meta link hover color issue in editor on Featured Posts Block.
+* Fix -  Post box shadow issue in frontend on Featured Posts Block.
+* Fix - Heading layout 2 background issue on Featured Posts Block.
+* Fix - View all option not displayed in frontend on Featured Categories Block.
+* Fix - Update frontend structure of Post List block on frontend.
+* Added - Template Library.
+* Added - Icon Controls on Date & Weather block.
+* Added - Post List block column and typography option.
+* Added - Icon Controls on News Ticker Block.
+* Added - New Layout option on Banner Posts block.
+* Added - Post content padding option on Featured Posts block.
+* Added - Width option for highlighted post and post blocks in Banner Post Block.
+* Enhancement - Update Icon for Image position control on Post List Block.
+* Enhancement - Update banner image and icon for wordpress.org.
+* Enhancement - Update Sidebar Icons.
+* Enhancement - Pagination border design on Featured Posts Block.
+* Enhancement - Icons updated for meta position on Slider Block.
+* Enhancement - Icons updated for meta position on Featured Categories Block.
+
+= 1.3.30 - 25-03-2025 =
+* Fix - Top Bottom Separator on Section Block.
+* Fix - Wrap Columns in frontend.
+* Fix - Subheading default color on Heading Block.
+* Fix - Heading Layouts border color on Heading Block.
+* Fix - Subheading Background color.
+* Fix - Subheading Border and Box Shadow.
+* Fix - Adjust gaps on Media Control and Url Input Control.
+* Fix - Check activation time to show review notification.
+* Fix - Image Position and Content Alignment Issues on Post Lists.
+* Enhance - Border tab design in section block.
+* Enhance - Added Remove icon in Background Image Control.
+* Added - Time and time zone option to schedule ads.
+* Added - Gradient option on Background Control.
+* Added - Horizontal Alignment setting on Post Lists block.
+* Added - Preset Styles on Post Video block.
+* Added - Preset Styles on Featured Posts block.
+
+= 1.3.29 - 18-03-2025 =
+* Fix - Box Shadow spacing.
+* Fix - Heading Layout background color on Featured Posts block.
+* Fix - Layout Styles of Grid Module block.
+* Fix - Refactor the class wrapper condition on Grid Module block.
+* Fix - Grid Module Heading Layout Styles improvements.
+* Fix - Adjust Categories fetch on grid module block.
+* Fix - Post Title markup option on Grid Module.
+* Fix - Make pagination full width in Grid Module block.
+* Fix - Remove the double border line on Inspector Control tabs.
+* Enhancement - Spacing between the label and responsive control in Dimension Control.
+* Enhancement - Tab Style on Border control.
+* Enhancement - Border control type dropdown height.
+* Enhancement - Add reset button on Grid Module margin settings.
+* Enhancement - Inspector Settings Label color.
+
+= 1.3.28 - 13-03-2025 =
+* Fix - Title markup change on banner posts.
+* Fix - Typography for posts in Banner Post block.
+* Fix - Hover color and hover background color in Banner Post.
+* Fix - Pagination Border options.
+* Fix -  Pagination Border color popover design in all blocks.
+* Fix - Spacing of advanced controls options.
+* Enhancement - Adjust inline spacing of select control.
+* Enhancement - Update the toggle button control styles.
+* Enhancement - Icons updated for pagination alignment and meta position.
+* Enhancement - Design of Dimension Control.
+* Enhancement - Design of pagination border type button.
+* Enhancement - Update Preset icons of all blocks.
+* Enhancement - Add "Read More" and "Excerpt" options for all posts in the Banner Post block.
+* Enhancement - Reduce font size of inputs in Dimension Control.
+
+= 1.3.27 - 05-03-2025 =
+* Fix - Arrows style on news ticker block.
+
+= 1.3.25 - 05-03-2025 =
+* Fix - Post Lists block layout in frontend.
+* Fix - Grid Module block column styles.
+* Feature - View All Button Option in Post Blocks.
+* Feature - New Preset for slider block style.
+* Feature - News ticker block arrows option.
+* Enhancement - Dashboard color and icons.
+* Enhancement - Advertisement Block.
+* Enhancement - Refine block lists on dashboard.
+
+= 1.3.24 - 13-02-2025 =
+* Fix         - Add link to the posts count in Category List block.
+* Enhancement - Option to add longitude and latitude for Date and Weather block .
+
+= 1.3.23 - 29-01-2025 =
+* Tweak - Update `Tested up to`.
+
+= 1.3.22 - 28-01-2025 =
+* Feature - Offset option on post blocks.
+* Fix - Translation ready titles in Tab Post Block.
+
+= 1.3.21 - 19-11-2024 =
+* Fix - Blocks dynamic styles generation issue.
+* Fix - General security measures.
+
+= 1.3.19 - 15-11-2024 =
+* Added - New Icon Block.
+* Added - New Image Block.
+* Added - New Social Share Block.
+* Feature - Post view count feature in post blocks.
+* Feature - Post read time view feature in post blocks.
+* Fix - Translation ready text in Tab Post.
+* Fix - Video thumbnail issue in Post Video Block.
+* Fix - Image displaying issue when schedule data is not set in Advertisement Block.
+
+= 1.3.18 - 07-10-2024 =
+* Enhancement - Feature image clickable and link to the post in grid module block.
+* Enhancement - General Security measures.
+
+= 1.3.15 - 01-10-2024 =
+* Enhancement - General security measures.
+
+= 1.3.14 - 03-09-2024 =
+* Feature - Option to schedule advertisement
+* Fix - Exclude category issue in featured categories block
+* Fix - Exclude category issue in banner posts block
+* Fix - Exclude category issue in grid module block
+* Fix - Exclude category issue in featured posts block
+* Fix - Exclude category issue in post list block
+* Fix - Exclude category issue in slider block
+* Fix - Exclude category issue in latest posts block
+
+= 1.3.13 - 17-07-2024 =
+* Fix - Compatibility issue with 6.6 version of WordPress.
+
+= 1.3.12 - 09-07-2024 =
+* Fix - PHP error
+
+= 1.3.9 - 08-07-2024 =
+* Added  - Style option for slider block.
+* Added  - Heading style on each block.
+* Added  - New latest posts block.
+* Added  - Option to change alignment and color on date and weather block.
+* Added  - Grid Modules block category typography, margin and border option.
+* Added  - Border radius option for card in slider style 2.
+* Update - Feature block image max width and height.
+* Update - Swiper Js implementation in slider block.
+* Fix    - Active inspector tab color.
+
+= 1.3.8 - 29-05-2024 =
+* Fix   - Grid Module block issue.
+* Fix   - Advertisement block issue.
+* Added - Banner post block layout 3 and styles option.
+* Added - Grid Modules block post count option.
+* Added - Grid Modules block category enable, color,background and padding option.
+* Added - Grid Modules block content alignment option.
+* Added - Grid Modules border options.
+
+= 1.3.7 - 26-04-2024 =
+* Update - Readme document content.
+* Enhancement - General security measures.
+
+= 1.3.6 - 18-04-2024 =
+* Added - New modal block.
+* Fix   - Dashboard design and content.
+* Fix   - Feature image clickable in banner posts block.
+* Fix   - Global color issue.
+* Fix   - Global typography issue.
+
+= 1.3.5 - 04-03-2024 =
+* Added - Option to change tab block active background.
+* Added - Option to change tab block tabs color.
+* Added - Option to change tab block tabs typography.
+* Fix   - Font Awesome icon issue on social icon block.
+* Fix   - Font Awesome icon issue on news ticker block.
+* Fix   - Frontend scripts 404 issue.
+* Fix   - Style guide design issue.
+
+= 1.3.4 - 12-02-2024 =
+* Fix - Slider block issue.
+* Fix - Tab block click issue.
+* Fix - Image blur issue.
+
+= 1.3.3 - 01-29-2024 =
+* Added - Banner post block layout 2 style 2 preset option.
+* Added - Post list block layout 1 style 2 preset option.
+* Added - Category list block Layout 3 preset option.
+* Added - Category list separator option.
+* Added - Banner post block post box height option.
+* Added - Banner post block post box radius option.
+* Added - Grid module block post title enable option.
+* Added - Featured post block post box border style.
+* Added - Featured Post block post box border color option.
+* Added - Featured Posts block image border radius option.
+* Added - Featured Posts block image width option.
+* Added - Featured Posts block image height option.
+* Added - Featured categories block post box border style.
+* Added - Featured categories block post box border color option.
+* Added - Featured categories block image border radius option.
+* Added - Featured categories block heading enable option.
+* Added - Post list block image border radius option.
+* Fix   - Post list block image toggle issue.
+* Fix   - Slider block visibility issue on frontend.
+* Fix   - TabPost block, tab switch issue.
+
+= 1.3.2 - 01-22-2024 =
+* Added – Left Sidebar Panel.
+* Added – Global color and typography setting.
+* Enhancement – Slider Control.
+* Enhancement – Dimension Control.
+* Enhancement – Color Control.
+* Enhancement – Background Control.
+* Enhancement – Preset Control.
+* Enhancement – Alignment Control.
+* Enhancement – Select Control.
+* Enhancement – Typography Control.
+* Enhancement – Border Control.
+* Enhancement – Box shadow Control.
+* Enhancement – Icon Picker Control.
+* Enhancement – Library modal design.
+
+= 1.3.1 - 01-02-2024 =
+* Fix - Featured posts first post highlight spacing issue.
+* Fix - Featured posts read more button spacing issue.
+
+= 1.3.0.1 - 12-06-2023 =
+* Fix - Slider options not working.
+* Fix - Slider arrow design in editor.
+
+= 1.3.0 - 12-05-2023 =
+* Fix     - Category list gap issue.
+* Fix     - Heading typography issue.
+* Fix     - Grid Module excerpt margin issue.
+* Feature - Load Google fonts locally.
+* Feature - Preload local fonts.
+* Feature - Maintenance mode.
+* Feature - Editor options.
+* Feature - Option to add top separator on section block.
+* Feature - Option to add bottom separator on section block.
+* Feature - Block Advanced options.
+* Enhancement - Dashboard design.
+
+= 1.2.7 - 11-6-2023 =
+* Add - Pagination styling options.
+* Add - Image hover animation options.
+* Fix - Featured posts block first post highlight image width issue.
+* Fix - Featured categories block content width issue.
+
+= 1.2.6 - 10-18-2023 =
+* Fix - Post list block excerpt margin issue.
+* Fix - Post list block read more border issue.
+* Fix - Featured posts block read more color issue.
+* Fix - Featured posts block read more box shadow issue.
+* Add - Review notice.
+
+= 1.2.5 - 10-11-2023 =
+* Feature - Option to change responsive condition.
+* Feature - Option to change grid module block layout.
+* Feature - Option to change featured posts block layout.
+* Feature - Option to change banner posts block layout.
+* Feature - Option to change featured categories alignment.
+* Feature - Option to change slider speed.
+* Feature - Option to change slider auto play.
+* Feature - Option to change slider pause on hover.
+* Feature - Option to enable slider arrow.
+* Feature - Option to change slider post title typography.
+* Feature - Option to enable slider category.
+* Feature - Option to change slider meta position.
+* Feature - Option to enable slider excerpt.
+* Feature - Option to enable slider read more.
+* Feature - Option to enable slider dots.
+* Feature - Option to change category list layout.
+* Feature - Option to change category list title typography.
+* Feature - Option to change category list count color.
+* Feature - Option to change category list count background color.
+* Feature - Option to change category list count width.
+* Feature - Option to change post list block layout.
+* Feature - Option to change post list image height.
+* Feature - Option to change post list image width.
+* Feature - Option to change post list gap.
+* Feature - Option to change post list vertical alignment.
+* Feature - Option to enable post list excerpt.
+* Feature - Advance query option on featured posts block.
+* Feature - Advance query option on featured categories block.
+* Feature - Advance query option on banner posts block.
+* Feature - Advance query option on grid module block.
+* Feature - Advance query option on slider block.
+* Feature - Advance query option on post list block.
+* Feature - Pagination option on featured posts block.
+* Feature - Pagination option on grid module block.
+* Feature - Pagination option on post list block.
+* Feature - Pagination option on banner block.
+* Feature - Read more styling options.
+
+= 1.2.4 - 09-19-2023 =
+* Fix - Alignment issue on post list block.
+* Fix - Editor design.
+
+= 1.2.3 - 09-12-2023 =
+* Feature – Introducing heading block.
+* Feature - Option to change box shadow of post box on post list block.
+* Feature - Option to change box shadow of post box on featured post block.
+* Feature - Option to change box shadow of post box on featured categories block.
+* Feature - Option to change post title typography on banner posts block.
+* Feature - Option to change post title typography on featured post block.
+* Feature - Option to change post title typography on post list block.
+* Feature - Option to change post title typography on grid module block.
+* Feature - Option to change post title typography on tab post block.
+* Feature - Option to change post title typography on featured categories block.
+* Feature - Option to change post title color on grid module block.
+
+= 1.2.2 - 09-05-2023 =
+* Feature - Introducing slider block.
+* Feature - Option to change height on grid module block.
+* Feature - Option to change column on grid module block.
+* Feature - Option to enable heading on grid module block.
+* Feature - Option to change post gap on grid module block.
+* Feature - Option to change heading style on featured post block.
+* Feature - Option to change heading style on post list block.
+* Feature - Option to enable excerpt on featured post block.
+* Feature - Option to change excerpt color on featured post block.
+* Feature - Option to change read more color on featured post block.
+
+= 1.2.1 - 08-22-2023 =
+* Feature - Option to change heading and border color on category list block.
+* Feature - Option to change heading and border color on featured posts block.
+* Feature - Option to change heading and border color on featured categories block.
+* Feature - Option to change heading and border color on grid module block.
+
+= 1.2.0 - 08-15-2023 =
+* Feature - Option to change post box background color on post list block.
+* Feature - Option to change post title color on post list block.
+* Feature - Option to change post title color on featured posts block.
+* Feature - Option to change post title color on tab post block.
+* Feature - Option to change post title color on featured categories block.
+* Feature - Option to change heading and border color on post list block.
+* Feature - Option to change meta icon color on post list block.
+* Feature - Option to change meta link color on post list block.
+* Fix     - Featured categories content width issue.
+* Fix     - Featured posts content width issue.
+
+= 1.1.9.1 - 03-21-2023 =
+* Update - Stable tag.
+
+= 1.1.9 - 03-21-2023 =
+* Tweak - Magazine Blocks Pro support.
+
+= 1.1.8 - 01-13-2023 =
+* Fix - WP Media upload button issue on Advertisement block.
+
+= 1.1.7 - 01-04-2023 =
+* Fix - Post list content alignment issue.
+
+= 1.1.6 =
+* Fix - Padding issue in popover content in block editor.
+* Fix - Block CSS generation issue in frontend.
+* Fix - Advertisement block image upload issue.
+
+= 1.1.5.1 =
+* Fix - Padding issue in popover content.
+
+= 1.1.5 =
+* Fix   - Block render issue in widget block editor.
+* Fix   - Block CSS generation issue in customizer.
+* Fix   - Possible PHP errors.
+* Tweak - CSS improvement.
+
+= 1.1.4.2 - 11-07-2022 =
+* Fix - PHP error.
+
+= 1.1.4.1 - 11-07-2022 =
+* Add - Screenshots on .org description.
+
+= 1.1.4 - 11-07-2022 =
+* Enhancement - Optimize dynamic blocks CSS.
+* Enhancement - Inspector control tabs and panels.
+* Fix         - Widget blocks not generating CSS for latest changes.
+* Fix         - Compatibility issue with older version of WordPress.
+* Fix         - Slider block control converting decimal to integer.
+* Fix         - CSS generation for blocks.
+
+== 1.1.3 - 10-21-2022 ==
+* Improvement – CSS refactor.
+
+== 1.1.2 - 10-20-2022 ==
+* Fix     - News ticker block width issue.
+* Fix     - Overlay color issue in section block.
+* Feature - Option to select number of column on Post video block.
+
+== 1.1.1 - 10-10-2022 ==
+* Update - Stable tag.
+
+== 1.1.0 - 10-10-2022 ==
+* Fix - Link hover issues in the featured posts and featured categories blocks.
+* Fix - Category list design issue in editor.
+* Fix – Featured Image size issue on Post List block on editor.
+
+== 1.0.9 - 30-09-2022 ==
+* Improvement – CSS refactor.
+* Tweak       - Post date icon color improvements.
+* Feature     - Option to change the background color of social icons block.
+* Fix         - Link hover issues in the category list and banner posts blocks.
+* Fix         - Spacing issue in grid module block.
+
+== 1.0.8 - 07-09-2022 ==
+* Fix – Compatibility issue with older version of WordPress.
+
+== 1.0.7 - 06-09-2022 ==
+* Fix - PHP error.
+
+== 1.0.6 - 01-09-2022 ==
+* Fix - Post date alignment.
+* Fix - Grid Module block height issue.
+
+== 1.0.5 - 31-08-2022 ==
+* Enhancement - Widget block CSS generation and loading on frontend.
+* Add         - News Ticker block.
+* Add         - Date/Weather block.
+
+== 1.0.4 - 05-07-2022 ==
+Add         - Post Video block.
+Add         - Advertisement block.
+Feature     - Option to change image position on post list block
+Feature     - Option to show/hide featured image on post list block
+Feature     - Option to select number of column on Featured Post block
+Enhancement - Block editor CSS.
+
+= 1.0.3 - 17-06-2022 =
+* Update - Stable tag.
+
+= 1.0.2 - 17-06-2022 =
+* Add - Category List block.
+* Add - Featured Categories block.
+* Add - Social Icons block.
+
+= 1.0.1 - 01-06-2022 =
+* Add - Section block.
+* Fix - CSS ID issue.
+* Fix - Additional CSS Class(es) issue.
+
+= 1.0.0 - 04-04-2022 =
+* Initial release

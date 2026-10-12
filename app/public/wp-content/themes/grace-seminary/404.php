@@ -1,0 +1,1 @@
+<?php get_header(); ?><main><section class="content"><div class="container entry"><h1>Page introuvable</h1><p>La page recherchée n'existe pas ou a été déplacée.</p><a class="btn primary" href="<?php echo esc_url(home_url('/')); ?>">Retour à l'accueil</a></div></section></main><?php get_footer(); ?>

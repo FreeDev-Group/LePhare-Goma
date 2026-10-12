@@ -1,0 +1,364 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "magazine-blocks/section",
+  "title": "Section",
+  "description": "Add Rows and Columns inside rows to create various layouts.",
+  "keywords": [
+    "section",
+    "column",
+    "layout"
+  ],
+  "category": "magazine-blocks",
+  "textdomain": "magazine-blocks",
+  "supports": {
+    "className": false,
+    "customClassName": false,
+    "align": [
+      "center",
+      "wide",
+      "full"
+    ]
+  },
+  "example": {
+    "attributes": {}
+  },
+  "usesContext": [
+    "clientId",
+    "query"
+  ],
+  "attributes": {
+    "clientId": {
+      "type": "string"
+    },
+    "orientation": {
+      "type": "object",
+      "default": {
+        "desktop": "horizontal"
+      }
+    },
+    "justification": {
+      "type": "object",
+      "default": {
+        "desktop": "center"
+      }
+    },
+    "alignment": {
+      "type": "object",
+      "default": {
+        "desktop": "center"
+      }
+    },
+    "hasModal": {
+      "type": "boolean",
+      "default": false
+    },
+    "modalOnly": {
+      "type": "boolean",
+      "default": false
+    },
+    "columns": {
+      "type": "number",
+      "default": ""
+    },
+    "childRow": {
+      "type": "boolean",
+      "default": false
+    },
+    "verticalAlignment": {
+      "type": "object",
+      "default": {
+        "desktop": ""
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} > [class*=\"mzb-container\"] > .mzb-section-inner{ align-items: {{VALUE}}; }"
+        }
+      ]
+    },
+    "container": {
+      "type": "string",
+      "default": "contained"
+    },
+    "inheritFromTheme": {
+      "type": "boolean",
+      "default": false
+    },
+    "width": {
+      "type": "object",
+      "default": {
+        "desktop": {
+          "value": 1170,
+          "unit": "px"
+        }
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "container",
+              "relation": "==",
+              "value": "contained"
+            },
+            {
+              "key": "inheritFromTheme",
+              "relation": "!=",
+              "value": true
+            }
+          ],
+          "selector": "{{WRAPPER}} > .mzb-container { max-width: {{VALUE}}; }"
+        }
+      ]
+    },
+    "columnGap": {
+      "type": "object",
+      "default": {
+        "desktop": {
+          "value": 30,
+          "unit": "px"
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} > [class*=\"mzb-container\"] > .mzb-section-inner { --colSpacing: {{VALUE}}; margin-left: calc(var(--colSpacing) * -1) }"
+        }
+      ]
+    },
+    "rowGap": {
+      "type": "object",
+      "default": {
+        "desktop": {
+          "value": 8,
+          "unit": "px"
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-section-inner { row-gap: {{VALUE}}; }"
+        }
+      ]
+    },
+    "height": {
+      "type": "string",
+      "default": "default"
+    },
+    "minHeight": {
+      "type": "object",
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "height",
+              "relation": "==",
+              "value": "min-height"
+            }
+          ],
+          "selector": "{{WRAPPER}} > [class*=\"mzb-container\"]  > .mzb-section-inner {min-height: {{VALUE}};}"
+        }
+      ]
+    },
+    "background": {
+      "type": "object",
+      "default": {
+        "background": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-section"
+        }
+      ]
+    },
+    "hoverBackground": {
+      "type": "object",
+      "default": {
+        "background": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}.mzb-section:hover"
+        }
+      ]
+    },
+    "border": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}"
+        }
+      ]
+    },
+    "borderHover": {
+      "type": "object",
+      "default": {
+        "border": 1,
+        "radius": {
+          "desktop": {
+            "lock": true
+          }
+        },
+        "size": {
+          "desktop": {
+            "lock": true
+          }
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}:hover"
+        }
+      ]
+    },
+    "topSeparator": {
+      "type": "object",
+      "default": {
+        "topSeparator": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-top-separator svg"
+        }
+      ]
+    },
+    "bottomSeparator": {
+      "type": "object",
+      "default": {
+        "bottomSeparator": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-bottom-separator svg"
+        }
+      ]
+    },
+    "boxShadow": {
+      "type": "object",
+      "default": {
+        "boxShadow": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}"
+        }
+      ]
+    },
+    "boxShadowHover": {
+      "type": "object",
+      "default": {
+        "boxShadow": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}:hover"
+        }
+      ]
+    },
+    "overlay": {
+      "type": "boolean",
+      "default": false
+    },
+    "overlayBackground": {
+      "type": "object",
+      "default": {
+        "background": 1,
+        "color": "rgba(126, 54, 244, 0.06)"
+      },
+      "style": [
+        {
+          "condition": [
+            {
+              "key": "overlay",
+              "relation": "==",
+              "value": true
+            }
+          ],
+          "selector": "{{WRAPPER}} > .mzb-overlay"
+        }
+      ]
+    },
+    "blockMargin": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockPadding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockZIndex": {
+      "type": "number",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+        }
+      ]
+    },
+    "cssID": {
+      "type": "string"
+    },
+    "hideOnDesktop": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "blockCSS": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    }
+  },
+  "style": "magazine-blocks-blocks",
+  "editorScript": "magazine-blocks-blocks",
+  "editorStyle": "magazine-blocks-blocks-editor"
+}

@@ -1,0 +1,582 @@
+/* global everest_forms_ajax_submission_params */
+jQuery( function( $ ) {
+	'use strict';
+
+	var isPaymentDebugEnabled = function() {
+		try {
+			return (
+				window.everest_forms_ajax_submission_params &&
+				'1' === String( window.everest_forms_ajax_submission_params.payment_debug || '' )
+			);
+		} catch ( e ) {
+			return false;
+		}
+	};
+
+	var getSafePaymentDebugErrorMessage = function( error ) {
+		if ( ! error ) {
+			return '';
+		}
+		if ( 'string' === typeof error ) {
+			return error;
+		}
+		if ( error.messages && error.messages.message ) {
+			var messages = error.messages.message;
+			if ( Array.isArray( messages ) && messages.length && messages[ 0 ].text ) {
+				return String( messages[ 0 ].text );
+			}
+		}
+		if ( error.message ) {
+			return String( error.message );
+		}
+		return 'Payment request failed.';
+	};
+
+	var sanitizePaymentDebugPayload = function( payload ) {
+		if ( null === payload || undefined === payload ) {
+			return {};
+		}
+		if ( 'object' !== typeof payload || Array.isArray( payload ) ) {
+			return payload;
+		}
+
+		var safe = {};
+		Object.keys( payload ).forEach( function( key ) {
+			if ( 'error' === key ) {
+				safe.error = getSafePaymentDebugErrorMessage( payload.error );
+				return;
+			}
+			if ( 'response' === key ) {
+				safe.response =
+					'string' === typeof payload.response
+						? payload.response
+						: payload.response
+							? '[redacted]'
+							: undefined;
+				return;
+			}
+			safe[ key ] = payload[ key ];
+		} );
+		return safe;
+	};
+
+	var paymentDebugLog = function( formTuple, stage, payload ) {
+		if ( ! isPaymentDebugEnabled() ) {
+			return;
+		}
+
+		try {
+			// eslint-disable-next-line no-console
+			console.log(
+				'[EVF Payment Debug] ' + String( stage || '' ),
+				sanitizePaymentDebugPayload( payload )
+			);
+		} catch ( e ) {
+			// no-op
+		}
+	};
+
+	/**
+	 * Selected gateway slug from posted radio value (not data-evf-gateway / CSS alone).
+	 *
+	 * @param {jQuery} formTuple Form wrapper.
+	 * @return {string|undefined}
+	 */
+	function getSelectedPaymentGatewayFromForm( formTuple ) {
+		var $checked = formTuple.find( '.evf-payment-gateway-radio:checked' );
+		if ( ! $checked.length ) {
+			return undefined;
+		}
+		var value = $checked.val();
+		return value ? String( value ) : undefined;
+	}
+
+	var evf_ajax_submission_init = function(){
+		var form = $( 'form[data-ajax_submission="1"]' );
+		form.each( function( i, v ) {
+			$( document ).ready( function() {
+				var formTuple = $( v ),
+					btn = formTuple.find( '.evf-submit' ),
+				 	 razorpayForms = formTuple.find( "[data-gateway='razorpay']" );
+
+				btn.on( 'click', async function( e ) {
+					var selectedGatewayFromSelector = getSelectedPaymentGatewayFromForm( formTuple );
+					var paymentMethod = selectedGatewayFromSelector;
+					if(undefined === paymentMethod) {
+						paymentMethod = formTuple.find( ".everest-forms-stripe-gateways-tabs .evf-tab" ).has( 'a.active' ).data( 'gateway' );
+					}
+					if(undefined === paymentMethod) {
+						paymentMethod = formTuple.find( ".everest-forms-gateway[data-gateway='stripe']" ).data( 'gateway' );
+					}
+					paymentDebugLog( formTuple, 'submit_click_start', {
+						formId: formTuple.data( 'formid' ),
+						paymentMethod: paymentMethod
+					} );
+
+					if (formTuple.find( ".everest-forms-gateway[data-gateway='stripe']").hasClass('StripeElement--empty') && formTuple.find( '.evf-field-credit-card' ).is(':visible') ){
+						$(document).ready(function() {
+							$('#card-errors').html('This field is required').show();
+							$('.evf-submit').text('Submit');
+							$('.evf-submit').attr('disabled', false);
+
+						});
+						formTuple.trigger( 'focusout' ).trigger( 'change' ).trigger( 'submit' );
+						return false;
+					}
+
+					var hasPaymentGatewaySelector = formTuple.find( '.evf-payment-gateway-radio' ).length > 0;
+
+					// For square payment credit card validation.
+					var squareSelectedGateway = getSelectedPaymentGatewayFromForm( formTuple );
+					var squareIsSelected = hasPaymentGatewaySelector
+						? 'square' === squareSelectedGateway
+						: 'square' === squareSelectedGateway || ( undefined === squareSelectedGateway && 'none' !== formTuple.find( ".everest-forms-gateway[data-gateway='square']" ).closest( '.evf-field' ).css( 'display' ) );
+					paymentDebugLog( formTuple, 'square_selection_check', {
+						hasPaymentGatewaySelector: hasPaymentGatewaySelector,
+						squareSelectedGateway: squareSelectedGateway,
+						squareIsSelected: squareIsSelected
+					} );
+					if ( squareIsSelected ) {
+						var squareMsgContainer = formTuple.find(".everest-forms-gateway[data-gateway='square']").find('.sq-card-message-error');
+						if ( squareMsgContainer.length > 0 ) {
+							var squareErrorMsg = squareMsgContainer.text();
+							paymentDebugLog( formTuple, 'square_validation_error', {
+								squareErrorMsg: squareErrorMsg
+							} );
+							$( document ).ready( function() {
+								$( '#card-errors' ).html( squareErrorMsg ).show();
+								$( '.evf-submit' ).text( 'Submit' );
+								$( '.evf-submit' ).attr( 'disabled', false);
+							});
+							formTuple.trigger( 'focusout' ).trigger( 'change' ).trigger( 'submit' );
+							return false;
+						}
+					}
+
+					if ( typeof tinyMCE !== 'undefined' ) {
+						tinyMCE.triggerSave();
+					}
+
+					var	recaptchaID = btn.get( 0 ).recaptchaID;
+
+					if (  recaptchaID === 0 ) {
+						grecaptcha.execute( recaptchaID );
+						return false;
+					}
+
+					var selectedPayGateway = getSelectedPaymentGatewayFromForm( formTuple );
+					var hasRazorpayGatewayMarker = formTuple.find( "[data-gateway='razorpay']" ).length > 0;
+					var shouldBypassAjaxForRazorpay = hasRazorpayGatewayMarker && ( 'razorpay' === selectedPayGateway || ! hasPaymentGatewaySelector );
+					paymentDebugLog( formTuple, 'payment_gateway_pre_ajax', {
+						selectedPayGateway: selectedPayGateway,
+						hasRazorpayGatewayMarker: hasRazorpayGatewayMarker,
+						shouldBypassAjaxForRazorpay: shouldBypassAjaxForRazorpay
+					} );
+
+					if ( shouldBypassAjaxForRazorpay ) {
+						return true;
+					}
+
+					var data = formTuple.serializeArray();
+					e.preventDefault();
+					// We let the bubbling events in form play itself out.
+					formTuple.trigger( 'focusout' ).trigger( 'change' ).trigger( 'submit' );
+
+					var errors = formTuple.find( '.evf-error:visible' );
+
+					var authorizeNetHidden = formTuple.find( ".everest-forms-authorize_net[data-gateway='authorize-net']" );
+					var legacyAuthorizeFieldVisible = ! hasPaymentGatewaySelector && formTuple.find( '.evf-field-authorize-net' ).is( ':visible' );
+					var shouldTokenizeAuthorizeNet = authorizeNetHidden.length &&
+						window.EverestFormsAuthorizeNet &&
+						typeof window.EverestFormsAuthorizeNet.getCardData === 'function' &&
+						typeof window.EverestFormsAuthorizeNet.authorizeNetAjaxSubmitHandler === 'function' &&
+						( 'authorize_net' === selectedPayGateway || ( ! hasPaymentGatewaySelector && legacyAuthorizeFieldVisible ) );
+					paymentDebugLog( formTuple, 'authorize_net_check', {
+						authorizeNetHiddenCount: authorizeNetHidden.length,
+						legacyAuthorizeFieldVisible: legacyAuthorizeFieldVisible,
+						shouldTokenizeAuthorizeNet: shouldTokenizeAuthorizeNet
+					} );
+
+					if ( shouldTokenizeAuthorizeNet ) {
+						const cardData = window.EverestFormsAuthorizeNet.getCardData( formTuple );
+						paymentDebugLog( formTuple, 'authorize_net_card_fields_presence', {
+							hasAllFields: ! Object.values( cardData ).some( function( value ) { return ! value; } )
+						} );
+
+						if( ! Object.values(cardData).some(value => !value ) ) {
+
+							// Define the Promise.
+							const authorizeNetAjaxSubmitHandlerPromise = new Promise(function (resolve, reject) {
+								window.EverestFormsAuthorizeNet.authorizeNetAjaxSubmitHandler(v).then(resolve).catch(reject);
+							});
+
+							try {
+								const response = await authorizeNetAjaxSubmitHandlerPromise;
+								paymentDebugLog( formTuple, 'authorize_net_tokenized', {
+									resultCode: response && response.messages ? response.messages.resultCode : ''
+								} );
+
+								if( "Ok" === response.messages.resultCode ) {
+									data.push(
+										{ name: 'everest_forms[authorize_net][opaque_data][descriptor]', value: response.opaqueData.dataDescriptor },
+										{ name: 'everest_forms[authorize_net][opaque_data][value]', value: response.opaqueData.dataValue }
+									);
+									paymentDebugLog( formTuple, 'authorize_net_opaque_data_attached', {} );
+								}
+							} catch (error) {
+								paymentDebugLog( formTuple, 'authorize_net_tokenization_failed', {
+									errorMessage: getSafePaymentDebugErrorMessage( error )
+								} );
+								btn.attr( 'disabled', false ).html( everest_forms_ajax_submission_params.submit );
+								return;
+							}
+
+						}
+
+						if (errors.length < 1) {
+							errors = formTuple.parents('div.everest-forms').find('.everest-forms-notice.everest-forms-notice--error .evf-error');
+						}
+					}
+
+					if ( errors.length > 0 ) {
+						btn.attr( 'disabled', false ).html( everest_forms_ajax_submission_params.submit );
+						$( [document.documentElement, document.body] ).animate({
+							scrollTop: errors.last().offset().top
+						}, 800 );
+						return;
+					}
+
+					// Change the text to user defined property.
+					$( this ).html( formTuple.data( 'process-text' ) );
+
+					// Add action intend for ajax_form_submission endpoint.
+					data.push({
+						name: 'action',
+						value: 'everest_forms_ajax_form_submission'
+					});
+
+					data.push({
+						name: 'security',
+						value: everest_forms_ajax_submission_params.evf_ajax_submission
+					});
+					paymentDebugLog( formTuple, 'ajax_submission_dispatched', {
+						selectedPayGateway: selectedPayGateway,
+						payloadLength: data.length
+					} );
+
+					// Fire the ajax request.
+					$.ajax({
+						url: everest_forms_ajax_submission_params.ajax_url,
+						type: 'POST',
+						data: data
+					})
+					.done( function ( xhr, textStatus, errorThrown ) {
+						var redirect_url = ( xhr.data && xhr.data.redirect_url ) ? xhr.data.redirect_url : '';
+						var selectedGateway = getSelectedPaymentGatewayFromForm( formTuple );
+						var hasPaymentGatewayField = formTuple.find( '.evf-payment-gateway-radio' ).length > 0;
+						paymentDebugLog( formTuple, 'ajax_done', {
+							textStatus: textStatus,
+							success: xhr ? xhr.success : undefined,
+							response: xhr && xhr.data ? xhr.data.response : undefined,
+							selectedGateway: selectedGateway,
+							redirectUrl: redirect_url
+						} );
+						if ( undefined === selectedGateway && ! hasPaymentGatewayField ) {
+							var $squareClosest = formTuple.find( ".everest-forms-gateway[data-gateway='square']" ).closest( '.evf-field' );
+							var $stripeClosest = formTuple.find( ".everest-forms-gateway[data-gateway='stripe']" ).closest( '.evf-field' );
+							if ( $squareClosest.length && 'none' !== $squareClosest.css( 'display' ) ) {
+								selectedGateway = 'square';
+							} else if ( $stripeClosest.length && 'none' !== $stripeClosest.css( 'display' ) ) {
+								selectedGateway = 'stripe';
+							}
+						}
+						if (
+							redirect_url &&
+							'undefined' !== redirect_url &&
+							(
+								'paypal' === selectedGateway ||
+								( 'stripe' !== selectedGateway && 'square' !== selectedGateway )
+							)
+						) {
+							paymentDebugLog( formTuple, 'gateway_redirect_url', {
+								redirectUrl: redirect_url,
+								selectedGateway: selectedGateway,
+							} );
+							formTuple.trigger( 'reset' );
+							var new_tab = xhr.data.enable_redirect_in_new_tab ? xhr.data.enable_redirect_in_new_tab : false;
+
+							if (new_tab) {
+								var newWindow = window.open(redirect_url, '_blank');
+								if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+									window.location.href = redirect_url;
+								}
+							} else {
+								window.location.href = redirect_url;
+								return;
+							}
+						}
+					var paypalRedirect =
+						( xhr && xhr.redirect ) ||
+						( xhr && xhr.data && xhr.data.redirect );
+					var isPayPalRedirect =
+						( xhr && 'paypal' === xhr.payment_method ) ||
+						( xhr && xhr.data && 'paypal' === xhr.data.payment_method ) ||
+						'paypal' === selectedGateway;
+
+					if ( paypalRedirect && isPayPalRedirect ) {
+						paymentDebugLog( formTuple, 'paypal_redirect', {
+							redirectUrl: paypalRedirect,
+							selectedGateway: selectedGateway,
+						} );
+						window.location.href = paypalRedirect;
+						return;
+					}
+
+					if ( 'success' === xhr.data.response || true === xhr.success ) {
+						let pdf_download_message = '';
+						let quiz_reporting = '';
+						let preview_confirmation = '';
+						let message_location = '';
+						let form_state_type = '';
+
+						if(xhr.data.form_id !== undefined && xhr.data.entry_id !== undefined && xhr.data.pdf_download == true){
+								pdf_download_message = '<br><small><a href="/?page=evf-entries-pdf&form_id='+ xhr.data.form_id+'&entry_id='+xhr.data.entry_id+'">' + xhr.data.pdf_download_message + '</a></small>';
+							}
+							if( xhr.data.quiz_result_shown == true){
+								quiz_reporting = xhr.data.quiz_reporting;
+							}
+
+							if( xhr.data.is_preview_confirmation == '1'){
+								preview_confirmation = xhr.data.preview_confirmation;
+							}
+
+							if ( xhr.data.message_display_location !== undefined && xhr.data.message_display_location !== '' ) {
+								message_location = xhr.data.message_display_location;
+							}
+
+							if ( xhr.data.form_state_type !== undefined && xhr.data.form_state_type !== '' ) {
+								form_state_type = xhr.data.form_state_type;
+							}
+
+							var paymentMethod = hasPaymentGatewayField ? selectedGateway : formTuple.find( ".everest-forms-stripe-gateways-tabs .evf-tab" ).has( 'a.active' ).data( 'gateway' );
+
+							if(undefined === paymentMethod && ! hasPaymentGatewayField) {
+								paymentMethod = formTuple.find( ".everest-forms-gateway[data-gateway='ideal']" ).data( 'gateway' );
+								if ('ideal' === paymentMethod ) {
+									paymentMethod = 'ideal';
+								} else {
+									paymentMethod = formTuple.find( ".everest-forms-gateway[data-gateway='stripe']" ).data( 'gateway' );
+								}
+							}
+
+							if( 'stripe' === paymentMethod && 'none' !== formTuple.find( ".everest-forms-gateway[data-gateway='stripe']" ).closest( '.evf-field' ).css( 'display' ) ) {
+								paymentDebugLog( formTuple, 'trigger_stripe_payment_flow', {} );
+								formTuple.trigger( 'everest_forms_frontend_before_ajax_complete_success_message', xhr.data );
+								return;
+							}
+
+							if(undefined === paymentMethod) {
+								paymentMethod = formTuple.find( ".everest-forms-gateway[data-gateway='ideal']" ).data( 'gateway' );
+							}
+
+
+							if( 'ideal' === paymentMethod && 'none' !== formTuple.find( ".everest-forms-gateway[data-gateway='ideal']" ).closest( '.evf-field' ).css( 'display' )  ) {
+								paymentDebugLog( formTuple, 'trigger_ideal_payment_flow', {} );
+								formTuple.trigger( 'evf_process_payment', xhr.data );
+								return;
+							}
+							if( 'square' === selectedGateway ){
+								paymentDebugLog( formTuple, 'trigger_square_payment_flow', {} );
+
+								formTuple.trigger( 'everest_forms_frontend_payment_before_success_message', xhr.data );
+								return;
+							}
+
+							var formContainer = formTuple.closest( '.evf-container' );
+
+							formTuple.trigger( 'reset' );
+							formContainer.find( '.everest-forms-notice' ).remove();
+
+							// If the form state is hidden, scope the hide to this submitted form only. The
+							// container's own background image (a v1 direct background-image, or v2's
+							// ::before layer) isn't a child of the form and can't be hidden by hiding rows,
+							// so it needs its own class-driven CSS rule (everest-forms.scss).
+							if ( 'hide' === form_state_type ) {
+								formContainer.addClass( 'everest-forms-form-hidden' );
+								if ( 'hide' !== message_location ) {
+									formTuple.find( '.evf-frontend-row, .evf-submit-container, .everest-forms-multi-part-indicator' ).hide();
+								}
+							}
+
+							if ( 'hide' === message_location ) {
+								formContainer.html(
+									'<div class="everest-forms-notice everest-forms-notice--success" role="alert">' +
+									xhr.data.message + pdf_download_message +
+									'</div>' + quiz_reporting + preview_confirmation
+								).focus();
+							} else if ( 'top' === message_location) {
+								formContainer.prepend(
+									'<div class="everest-forms-notice everest-forms-notice--success" role="alert">' +
+									xhr.data.message + pdf_download_message +
+									'</div>' + quiz_reporting + preview_confirmation
+								).focus();
+							} else if ( 'bottom' === message_location ) {
+								formContainer.append(
+									preview_confirmation + '<div class="everest-forms-notice everest-forms-notice--success" role="alert">' +
+									xhr.data.message + pdf_download_message +
+									'</div>' + quiz_reporting
+								).focus();
+							}else if ( 'popup' === message_location ) {
+								$('body').css('overflow', 'hidden');
+
+								var popupHTML = `
+									<div class="everest-forms-popup-overlay">
+										<div class="everest-forms-popup">
+											<div class="everest-forms-popup-close">
+												<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+												<path d="M7 6.06668L1.26666 0.333344L0.333328 1.20001L6.06666 6.93334L0.333328 12.6L1.26666 13.5333L7 7.86668L12.6667 13.5333L13.6 12.6L7.93333 6.93334L13.6667 1.33334L12.7333 0.466677L7 6.06668Z" fill="#383838"/>
+												</svg>
+											</div>
+											<img src="${ everest_forms_ajax_submission_params.evf_checked_image_url }" alt="Checked Logo" class="everest-forms-popup-success-logo">
+											<p class="everest-forms-popup-success-text">${ everest_forms_ajax_submission_params.i18n_evf_success_text }</p>
+											<p class="everest-forms-notice everest-forms-notice--success">${ xhr.data.message }</p>
+										</div>
+									</div>
+								`;
+
+								formContainer.append(popupHTML);
+
+								$('.everest-forms-popup-close').on('click', function() {
+									$('.everest-forms-popup-overlay').fadeOut(200, function() {
+										$(this).remove();
+										$('body').css('overflow', '');
+									});
+								});
+
+								formContainer.append(
+									preview_confirmation + quiz_reporting
+								).focus();
+							}
+
+							btn.attr('disabled', false).html(everest_forms_ajax_submission_params.submit);
+							paymentDebugLog( formTuple, 'payment_completed_success_notice', {
+								messageLocation: message_location,
+								formStateType: form_state_type
+							} );
+
+							// Trigger for form submission success.
+							var event = new CustomEvent("everest_forms_ajax_submission_success", {
+								detail: {
+									formId: 'evf-form-' + xhr.data.form_id,
+								}
+							  });
+							document.dispatchEvent(event);
+						} else {
+							var	form_id = formTuple.data( 'formid' );
+							var err     =  JSON.parse( errorThrown.responseText );
+							if( 'undefined' !== typeof err.data[form_id] ) {
+								var error =  err.data[form_id].header;
+							} else{
+								var	error   =  everest_forms_ajax_submission_params.error;
+							}
+							var fields  = err.data.error;
+
+								if ( 'string' === typeof err.data.message ) {
+									error =  err.data.message;
+								}
+
+								formTuple.closest( '.everest-forms' ).find( '.everest-forms-notice' ).remove();
+								formTuple.closest( '.everest-forms' ).prepend( '<div class="everest-forms-notice everest-forms-notice--error" role="alert">'+ error  +'</div>' ).focus();
+
+								// Begin fixing the tamper.
+								$( fields ).each( function( index, fieldTuple ) {
+									var err_msg = Object.values(fieldTuple)[0],
+										fld_id  = Object.keys(fieldTuple)[0],
+										err_field, fid, lbl = true;
+
+									var fld_container_id = 'evf'-+ form_id +'-field_' + fld_id +'-container';
+
+									if($('#'+fld_container_id).hasClass('evf-field-signature')) { //When field type is signature
+										fid       = 'evf-signature-img-input-' + fld_id;
+										err_field = $( '#' + fid );
+									} else if ($('#'+fld_container_id).hasClass('evf-field-likert')) { //When field type is likert
+										fid       = 'everest_forms-' + form_id + '-field_' + fld_id + '_';
+										err_field = $( '[id^="' + fid + '"]' );
+										lbl       = false;
+
+										err_field.each( function( index, element ) {
+											var tbl_header = $( element ).closest( 'tr.evf-' + form_id +'-field_' + fld_id ).find( 'th' ),
+												id         = 'everest_forms[form_fields][' + fld_id + '][' + ( parseInt( tbl_header.closest( 'tr' ).index() ) + 1 ) + ']';
+
+											if ( ! tbl_header.children().is( 'label' ) ) {
+												if( tbl_header.parents( 'span.input-wrapper' ).length ) {
+													tbl_header.parents( 'span.input-wrapper' ).append( '<label id="' + id + '" for="' + id + '" class="evf-error">' + everest_forms_ajax_submission_params.required + '</label>' );
+												} else {
+													tbl_header.append( '<label id="' + id + '" for="' + id + '" class="evf-error">' + everest_forms_ajax_submission_params.required + '</label>' );
+												}
+											} else {
+												tbl_header.children().find( '#' + id ).show();
+											}
+										});
+									} else if ($('#'+fld_container_id).hasClass('evf-field-address')) { //When field type is address
+										fid       = 'evf-' + form_id + '-field_' + fld_id;
+										err_field = $( '[id^="' + fid + '"]' );
+
+										err_field.each( function ( index, element ) {
+											var fieldId =  String( $( element ).attr( 'id' ) );
+
+											if ( fieldId.includes( '-container' ) || fieldId.includes( '-address2' ) ) {
+												err_field.splice( index, 1 );
+											} else  {
+												if ( 'undefined' !== typeof $( element ).val() ) {
+													err_field.splice( index, 1 );
+												};
+											}
+										});
+									} else {
+										fid       = 'evf-' + form_id + '-field_' + fld_id;
+										err_field = $( '#' + fid );
+									}
+
+									err_field.addClass( 'evf-error' );
+									err_field.attr( 'aria-invalid', true );
+									err_field.first().closest( '.evf-field' ).addClass( 'everest-forms-invalid evf-has-error' );
+
+									if ( true === lbl && ! err_field.is( 'label' ) ) {
+										if( err_field.parents( 'span.input-wrapper' ).length ){
+											err_field.parents( 'span.input-wrapper' ).after( '<label id="' + err_field.attr( 'id' ) + '-error" class="evf-error" for="' + err_field.attr( 'id' ) + '">' + err_msg + '</label>' ).show();
+										} else {
+											err_field.after( '<label id="' + err_field.attr( 'id' ) + '-error" class="evf-error" for="' + err_field.attr( 'id' ) + '">' + err_msg + '</label>' ).show();
+										}
+									}
+								});
+
+							btn.attr( 'disabled', false ).html( everest_forms_ajax_submission_params.submit );
+						}
+
+					})
+					.fail( function () {
+						paymentDebugLog( formTuple, 'ajax_failed', {} );
+						btn.attr( 'disabled', false ).html( everest_forms_ajax_submission_params.submit );
+						formTuple.trigger( 'focusout' ).trigger( 'change' );
+						formTuple.closest( '.everest-forms' ).find( '.everest-forms-notice' ).remove();
+						formTuple.closest( '.everest-forms' ).prepend( '<div class="everest-forms-notice everest-forms-notice--error" role="alert">'+ everest_forms_ajax_submission_params.error  +'</div>' ).focus();
+					})
+					.always( function( xhr ) {
+						var redirect_url = ( xhr.data && xhr.data.redirect_url ) ? xhr.data.redirect_url : '';
+						paymentDebugLog( formTuple, 'ajax_always', {
+							redirectUrl: redirect_url
+						} );
+						if ( ! redirect_url && $( '.everest-forms-notice' ).length && xhr.data.submission_message_scroll  === "1" ) {
+							$( [document.documentElement, document.body] ).animate({
+								scrollTop: $( '.everest-forms-notice' ).offset().top
+							}, 800 );
+						}
+					});
+				});
+			});
+		});
+	};
+
+	evf_ajax_submission_init();
+});

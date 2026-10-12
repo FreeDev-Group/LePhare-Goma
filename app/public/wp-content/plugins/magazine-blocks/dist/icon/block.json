@@ -1,0 +1,364 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "magazine-blocks/icon",
+    "title": "Icon",
+    "description": "Add Icons with your customize features.",
+    "keywords": [
+        "icon"
+    ],
+    "category": "magazine-blocks",
+    "textdomain": "magazine-blocks",
+    "supports": {
+        "className": false,
+        "customClassName": false
+    },
+    "example": {
+        "attributes": {}
+    },
+    "attributes": {
+        "clientId": {
+            "type": "string"
+        },
+        "hoverColor": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}}:hover {color: {{VALUE}}; }"
+                }
+            ]
+        },
+        "background": {
+            "type": "object",
+            "default": {
+                "background": 1
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}}"
+                }
+            ]
+        },
+        "hoverBackground": {
+            "type": "object",
+            "default": {
+                "background": 1
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}}:hover"
+                }
+            ]
+        },
+        "alignment": {
+            "type": "object",
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}} {text-align: {{VALUE}}; justify-content: {{VALUE}}; }"
+                }
+            ]
+        },
+        "border": {
+            "type": "object",
+            "default": {
+                "border": 1,
+                "radius": {
+                    "desktop": {
+                        "lock": true
+                    }
+                },
+                "size": {
+                    "desktop": {
+                        "lock": true
+                    }
+                }
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}}"
+                }
+            ]
+        },
+        "hoverBorder": {
+            "type": "object",
+            "default": {
+                "border": 1,
+                "radius": {
+                    "desktop": {
+                        "lock": true
+                    }
+                },
+                "size": {
+                    "desktop": {
+                        "lock": true
+                    }
+                }
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}}:hover"
+                }
+            ]
+        },
+        "boxShadow": {
+            "type": "object",
+            "default": {
+                "boxShadow": 1
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}}"
+                }
+            ]
+        },
+        "boxShadowHover": {
+            "type": "object",
+            "default": {
+                "boxShadow": 1
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}}:hover"
+                }
+            ]
+        },
+        "margin": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}} { margin: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockMargin": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockPadding": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockZIndex": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+                }
+            ]
+        },
+        "cssID": {
+            "type": "string"
+        },
+        "animation": {
+            "type": "string"
+        },
+        "interaction": {
+            "type": "object"
+        },
+        "position": {
+            "type": "object"
+        },
+        "hideOnDesktop": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none !important; } }"
+                }
+            ]
+        },
+        "hideOnTablet": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none !important; } }"
+                }
+            ]
+        },
+        "hideOnMobile": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none !important; } }"
+                }
+            ]
+        },
+        "colReverseOnTablet": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (max-width:62em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+                }
+            ]
+        },
+        "colReverseOnMobile": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (max-width:48em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+                }
+            ]
+        },
+        "blockCSS": {
+            "type": "string"
+        },
+        "className": {
+            "type": "string"
+        },
+        "icon": {
+            "type": "string",
+            "default": "star-regular"
+        },
+        "presets": {
+            "type": "string"
+        },
+        "link": {
+            "type": "object"
+        },
+        "color": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}}.mzb-icon-block .mzb-outside-icon .mzb-icon-wrapper svg {fill: {{VALUE}}; }"
+                }
+            ]
+        },
+        "iconSize": {
+            "type": "number",
+            "default": "30",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-icon-wrapper svg { width: {{VALUE}}px; height: {{VALUE}}px; }"
+                }
+            ]
+        },
+        "iconOpacity": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-icon-wrapper svg { opacity: {{VALUE}}; }"
+                }
+            ]
+        },
+        "iconRotation": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-icon-wrapper svg { transform: rotate({{VALUE}}deg); }"
+                }
+            ]
+        },
+        "padding": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": ".mzb-icon-block{{WRAPPER}} { padding: {{VALUE}}; }"
+                }
+            ]
+        },
+        "shapeColor": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}}.mzb-icon-block .mzb-outside-icon .mzb-icon-wrapper {background-color: {{VALUE}}; }"
+                }
+            ]
+        },
+        "shapeBorderRadius": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}}.mzb-icon-block .mzb-outside-icon .mzb-icon-wrapper { border-radius: {{VALUE}}%; }"
+                }
+            ]
+        },
+        "shapePadding": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}}.mzb-icon-block .mzb-outside-icon .mzb-icon-wrapper { padding: {{VALUE}}; }"
+                }
+            ]
+        },
+        "shapeOutlineWidth": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-icon-wrapper {border-style: solid; border-top-width: {{VALUE}}px; border-right-width: {{VALUE}}px; border-bottom-width: {{VALUE}}px; border-left-width: {{VALUE}}px; }"
+                }
+            ]
+        },
+        "shapeOutlineColor": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} .mzb-icon-wrapper {border-color: {{VALUE}}; }"
+                }
+            ]
+        },
+        "minHeight": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} {min-height: {{VALUE}}px; }"
+                }
+            ]
+        },
+        "contentVerticalAlign": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} {align-items: {{VALUE}}; }"
+                }
+            ]
+        },
+        "contentHorizontalAlign": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} {justify-content: {{VALUE}}; }"
+                }
+            ]
+        }
+    },
+    "style": "magazine-blocks-blocks",
+    "editorScript": "magazine-blocks-blocks",
+    "editorStyle": "magazine-blocks-blocks-editor"
+}

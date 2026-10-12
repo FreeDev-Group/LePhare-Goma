@@ -1,0 +1,568 @@
+<?php
+/**
+ * EVF AI API — HTTP client for the ThemeGrill AI Cloud gateway.
+ *
+ * Gateway URL is read from:
+ *   1. TG_AI_GATEWAY_URL constant (wp-config.php) — local dev override
+ *   2. 'evf_ai_gateway_url' option — settable from admin (future)
+ *   3. Hardcoded production URL as final fallback
+ *
+ * License pattern (follows WPForms): license key is sent inline with every
+ * generate request. The gateway verifies with wpeverest.com and caches for
+ * 1 week. No separate "activate" step needed.
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+class EVF_AI_API {
+
+	const PRODUCTION_URL = 'https://ai.themegrill.com';
+	const PRODUCT        = 'everest-forms';
+	const TIMEOUT        = 90;
+
+	/**
+	 * Daily-usage snapshot { remaining, limit, used } captured from the most recent gateway
+	 * response, or null when the gateway didn't include one. The gateway now returns a `usage`
+	 * object alongside every successful generate/style/update (and inside a daily_limit_reached
+	 * 429's detail) — see themegrill-ai-cloud gateway/main.py::_usage_info(). Callers read it via
+	 * get_last_usage() to surface "X requests left today" without a separate /ai/v1/usage request.
+	 *
+	 * @var array|null
+	 */
+	private static $last_usage = null;
+
+	/**
+	 * Generate a form from a plain-text prompt.
+	 * Sends the EVF Pro license key inline — gateway verifies + caches (1 week).
+	 *
+	 * @param string $prompt
+	 * @return array|WP_Error  Decoded AI response on success.
+	 */
+	public static function generate_form( string $prompt ) {
+		$token = EVF_AI_Registration::get_site_token();
+		if ( ! $token ) {
+			return new WP_Error( 'not_registered', __( 'AI features are not yet active on this site.', 'everest-forms' ) );
+		}
+
+		$logger = evf_get_logger();
+		$logger->info( sprintf( 'AI Form Generation started | prompt: %s', $prompt ), array( 'source' => 'evf-ai' ) );
+
+		// Send license key if EVF Pro is active — gateway verifies inline (WPForms pattern).
+		// If no license key, gateway treats site as free tier.
+		$license_key = self::get_license_key();
+
+		$response = self::request(
+			'POST',
+			'/ai/v1/generate',
+			array(
+				'prompt'                => $prompt,
+				'license_key'           => $license_key,
+				'available_fields'      => implode( ',', evf()->form_fields->get_form_field_types() ),
+				'client_supports_style' => self::client_supports_style(),
+			),
+			$token
+		);
+
+		if ( is_wp_error( $response ) ) {
+			$logger->error( sprintf( 'AI Form Generation failed | %s: %s', $response->get_error_code(), $response->get_error_message() ), array( 'source' => 'evf-ai' ) );
+			return $response;
+		}
+
+		if ( empty( $response['success'] ) || empty( $response['form'] ) ) {
+			$logger->error( 'AI Form Generation bad_response | missing success or form key', array( 'source' => 'evf-ai' ) );
+			return new WP_Error( 'bad_response', __( 'Unexpected response from AI service.', 'everest-forms' ) );
+		}
+
+		$logger->info(
+			sprintf( 'AI Form Generation succeeded | form_type: %s, fields: %d', $response['form']['form_type'] ?? 'standard', count( $response['form']['fields'] ?? array() ) ),
+			array( 'source' => 'evf-ai' )
+		);
+
+		return $response['form'];
+	}
+
+	/**
+	 * Whether this site can use the gateway's create-time style capability.
+	 *
+	 * @return bool
+	 */
+	private static function client_supports_style(): bool {
+		// Temporarily disabled for this release — the AI Form Builder chat (generate/update)
+		// should only build/edit fields for now, not also silently restyle the form. Re-enable
+		// by restoring the Engine::enabled() check below in a future release. This does NOT
+		// affect the Style Customizer's own separate "Style with AI" feature
+		// ({@see EVF_AI_API::style_form()}), which never reads this flag.
+		return false;
+	}
+
+	/**
+	 * Generate or refine a Style Customizer v2 look from a plain-text prompt.
+	 *
+	 * Shares the site token / license / daily quota with form generation — only the
+	 * gateway's `task=style` routing differs (a separate system prompt + validator,
+	 * see themegrill-ai-cloud gateway/products/everest_forms_style.py). Returns the
+	 * raw style intent `{ tokens, palette, summary }`; the CALLER is responsible for
+	 * running it through `Sanitizer::sanitize_record()` before it ever touches a
+	 * stored record — this class only talks to the gateway.
+	 *
+	 * @param string $prompt            The style request ("sleek dark, rounded inputs").
+	 * @param array  $current_record    Current v2 record (tokens/palette) — sent as context
+	 *                                  for a refine ("make the buttons bigger"); empty for
+	 *                                  a fresh request.
+	 * @param string $refine_prompt     Follow-up instruction; empty = fresh/regenerate.
+	 * @param array  $history           Conversation turns so far, oldest first: [{role, text}].
+	 *                                  Lets a refine call see the actual dialogue instead of just
+	 *                                  the original prompt + a token dump.
+	 * @param array  $last_changed_keys Schema key(s) the AI's own previous turn changed — an
+	 *                                  explicit anchor so "increase it to 200px" continues that
+	 *                                  same property instead of the gateway re-guessing from state.
+	 * @param array  $context           Extra site context: { field_labels, available_fonts }.
+	 * @return array|WP_Error  { tokens, palette, summary } on success.
+	 */
+	public static function style_form( string $prompt, array $current_record = array(), string $refine_prompt = '', array $history = array(), array $last_changed_keys = array(), array $context = array() ) {
+		$token = EVF_AI_Registration::get_site_token();
+		if ( ! $token ) {
+			return new WP_Error( 'not_registered', __( 'AI features are not yet active on this site.', 'everest-forms' ) );
+		}
+
+		$logger    = evf_get_logger();
+		$is_refine = '' !== $refine_prompt || ! empty( $current_record );
+		$logger->info(
+			sprintf( 'AI Style %s started | prompt: %s', $is_refine ? 'refine' : 'generate', $is_refine ? $refine_prompt : $prompt ),
+			array( 'source' => 'evf-ai' )
+		);
+
+		// Refine/regenerate an existing draft (task=style, same shape as update_form()) vs a
+		// fresh request (task=style, same shape as generate_form()) — resolved once so the
+		// retry-after-re-register below just replays the identical call.
+		$path = $is_refine ? '/ai/v1/update' : '/ai/v1/generate';
+		$body = $is_refine
+			? array(
+				'prompt'             => $prompt,
+				'refine_prompt'      => $refine_prompt,
+				'license_key'        => self::get_license_key(),
+				'current_form'       => $current_record, // field name is generic on the gateway side.
+				'task'               => 'style',
+				// Forward-compatible additions (see themegrill-ai-cloud gateway/products/
+				// everest_forms_style.py for the matching support) — history + last_changed_keys
+				// anchor a refine to what the previous turn actually did instead of the gateway
+				// re-guessing from a bare token dump; field_labels/available_fonts tell it what's
+				// genuinely settable (a specific field name, a real Google Font) versus not
+				// (e.g. a background image, which this site's media library it has no access to).
+				'history'            => $history,
+				'last_changed_keys'  => $last_changed_keys,
+				'field_labels'       => $context['field_labels'] ?? array(),
+				'available_fonts'    => $context['available_fonts'] ?? array(),
+			)
+			: array(
+				'prompt'          => $prompt,
+				'license_key'     => self::get_license_key(),
+				'task'            => 'style',
+				'field_labels'    => $context['field_labels'] ?? array(),
+				'available_fonts' => $context['available_fonts'] ?? array(),
+			);
+
+		$response = self::request( 'POST', $path, $body, $token );
+
+		// Auto-heal stale token — same pattern as generate_form/update_form.
+		if ( is_wp_error( $response ) && 'api_error' === $response->get_error_code()
+			&& false !== strpos( $response->get_error_message(), 'Invalid token' ) ) {
+
+			$logger->warning( 'AI Style stale token — re-registering and retrying', array( 'source' => 'evf-ai' ) );
+			EVF_AI_Registration::clear_credentials();
+			EVF_AI_Registration::register();
+			$token    = EVF_AI_Registration::get_site_token();
+			$response = self::request( 'POST', $path, $body, $token );
+		}
+
+		if ( is_wp_error( $response ) ) {
+			$logger->error( sprintf( 'AI Style failed | %s: %s', $response->get_error_code(), $response->get_error_message() ), array( 'source' => 'evf-ai' ) );
+			return $response;
+		}
+
+		if ( empty( $response['success'] ) || empty( $response['style'] ) ) {
+			$logger->error( 'AI Style bad_response | missing success or style key', array( 'source' => 'evf-ai' ) );
+			return new WP_Error( 'bad_response', __( 'Unexpected response from AI service.', 'everest-forms' ) );
+		}
+
+		$logger->info( 'AI Style succeeded', array( 'source' => 'evf-ai' ) );
+
+		return $response['style'];
+	}
+
+	/**
+	 * Regenerate / refine an existing AI form from a follow-up prompt.
+	 *
+	 * NOTE: the gateway does not implement /ai/v1/update yet — this wires the call
+	 * so it works the moment the Python endpoint ships. Until then it returns the
+	 * gateway's error (surfaced to the user).
+	 *
+	 * @param string $prompt  Refinement / follow-up prompt (or the original to regenerate).
+	 * @param int    $form_id The draft form being refined.
+	 * @return array|WP_Error  Decoded AI form schema on success.
+	 */
+	public static function update_form( string $prompt, int $form_id = 0, string $refine_prompt = '' ) {
+		$token = EVF_AI_Registration::get_site_token();
+		if ( ! $token ) {
+			return new WP_Error( 'not_registered', __( 'AI features are not yet active on this site.', 'everest-forms' ) );
+		}
+
+		$logger = evf_get_logger();
+		$logger->info(
+			sprintf( 'AI Form Update started | form_id: %d, prompt: %s, refine_prompt: %s', $form_id, $prompt, $refine_prompt ),
+			array( 'source' => 'evf-ai' )
+		);
+
+		$body = array(
+			'prompt'                => $prompt,
+			'refine_prompt'         => $refine_prompt,
+			'form_id'               => $form_id,
+			'license_key'           => self::get_license_key(),
+			'current_form'          => self::get_current_form_context( $form_id ),
+			'client_supports_style' => self::client_supports_style(),
+		);
+
+		$response = self::request( 'POST', '/ai/v1/update', $body, $token );
+
+		// Auto-heal stale token — same pattern as generate_form
+		if ( is_wp_error( $response ) && 'api_error' === $response->get_error_code()
+			&& false !== strpos( $response->get_error_message(), 'Invalid token' ) ) {
+
+			$logger->warning( 'AI Form Update stale token — re-registering and retrying', array( 'source' => 'evf-ai' ) );
+			EVF_AI_Registration::clear_credentials();
+			EVF_AI_Registration::register();
+			$token    = EVF_AI_Registration::get_site_token();
+			$response = self::request( 'POST', '/ai/v1/update', $body, $token );
+		}
+
+		if ( is_wp_error( $response ) ) {
+			$logger->error( sprintf( 'AI Form Update failed | %s: %s', $response->get_error_code(), $response->get_error_message() ), array( 'source' => 'evf-ai' ) );
+			return $response;
+		}
+
+		if ( empty( $response['success'] ) || empty( $response['form'] ) ) {
+			$logger->error( 'AI Form Update bad_response | missing success or form key', array( 'source' => 'evf-ai' ) );
+			return new WP_Error( 'bad_response', __( 'Unexpected response from AI service.', 'everest-forms' ) );
+		}
+
+		$logger->info(
+			sprintf( 'AI Form Update succeeded | form_id: %d, form_type: %s, fields: %d', $form_id, $response['form']['form_type'] ?? 'standard', count( $response['form']['fields'] ?? array() ) ),
+			array( 'source' => 'evf-ai' )
+		);
+
+		return $response['form'];
+	}
+
+	/**
+	 * Extract a lightweight form context for the AI.
+	 * Includes type, label, and any non-default field settings so that subsequent
+	 * AI requests preserve changes made by earlier ones (e.g. label_hide, required).
+	 *
+	 * @param int $form_id
+	 * @return array  { form_title, fields: [ { type, label, ...settings } ] }
+	 */
+	private static function get_current_form_context( int $form_id ): array {
+		if ( ! $form_id ) {
+			return [];
+		}
+
+		$post = get_post( $form_id );
+		if ( ! $post || 'everest_form' !== $post->post_type ) {
+			return [];
+		}
+
+		$data    = evf_decode( $post->post_content );
+		$summary = [];
+
+		foreach ( ( $data['form_fields'] ?? [] ) as $field ) {
+			$type = $field['type'] ?? '';
+			if ( in_array( $type, [ 'hidden', 'html', 'divider' ], true ) ) {
+				continue;
+			}
+
+			$entry = [
+				'type'  => $type,
+				'label' => $field['label'] ?? '',
+			];
+
+			// Include non-default field settings so the AI can preserve them on
+			// subsequent requests without the user having to repeat their instructions.
+			if ( ! empty( $field['label_hide'] ) && '1' === $field['label_hide'] ) {
+				$entry['label_hide'] = true;
+			}
+			if ( ! empty( $field['required'] ) && '1' === $field['required'] ) {
+				$entry['required'] = true;
+			}
+			if ( ! empty( $field['description'] ) ) {
+				$entry['description'] = $field['description'];
+			}
+			if ( ! empty( $field['placeholder'] ) ) {
+				$entry['placeholder'] = $field['placeholder'];
+			}
+			if ( ! empty( $field['sublabel_hide'] ) && '1' === $field['sublabel_hide'] ) {
+				$entry['sublabel_hide'] = true;
+			}
+			if ( ! empty( $field['css'] ) ) {
+				$entry['css'] = $field['css'];
+			}
+
+			$summary[] = $entry;
+		}
+
+		// Detect form type so the gateway can preserve it during refine/regenerate
+		$form_type = 'standard';
+		if ( ! empty( $data['settings']['enable_multi_part'] ) && '1' === $data['settings']['enable_multi_part'] ) {
+			$form_type = 'multipart';
+		} elseif ( ! empty( $data['settings']['enable_conversational_forms'] ) && '1' === $data['settings']['enable_conversational_forms'] ) {
+			$form_type = 'conversational';
+		}
+
+		// Include multipart step titles so AI can preserve/extend them
+		$multipart_steps = [];
+		if ( 'multipart' === $form_type ) {
+			foreach ( ( $data['multi_part'] ?? [] ) as $part ) {
+				$multipart_steps[] = [
+					'title'       => $part['name'] ?? '',
+					'field_count' => count( $part['fields'] ?? [] ),
+				];
+			}
+		}
+
+		$email_conns = $data['settings']['email'] ?? [];
+		$conn1       = $email_conns['connection_1'] ?? [];
+
+		$context = [
+			'form_title'              => $post->post_title,
+			'form_type'               => $form_type,
+			'multipart_steps'         => $multipart_steps,
+			'fields'                  => $summary,
+			// Settings context so the gateway preserves them on refine
+			'redirect_to'             => $data['settings']['redirect_to'] ?? 'same',
+			'redirect_custom_page_id' => absint( $data['settings']['custom_page'] ?? 0 ),
+			'redirect_external_url'   => $data['settings']['external_url'] ?? '',
+			'notification'            => [
+				'from_name' => $conn1['evf_from_name'] ?? '',
+				'reply_to'  => $conn1['evf_reply_to'] ?? 'auto',
+				'message'   => $conn1['evf_email_message'] ?? '{all_fields}',
+				'subject'   => $conn1['evf_email_subject'] ?? '',
+			],
+			'user_confirmation'       => ! empty( $email_conns['connection_2'] ) ? [
+				'from_name' => $email_conns['connection_2']['evf_from_name'] ?? '',
+				'reply_to'  => $email_conns['connection_2']['evf_reply_to'] ?? 'auto',
+			] : [],
+		];
+
+		// Current Style Customizer v2 record, if any — lets a plain-form refine that implies
+		// a look/colour change (e.g. "make it feel more playful") adjust the existing style
+		// instead of the gateway guessing blind. Same gate maybe_apply_ai_style() uses to
+		// write this option, kept in sync deliberately.
+		if ( class_exists( '\EverestForms\Addons\StyleCustomizer\V2\Engine' )
+			&& \EverestForms\Addons\StyleCustomizer\V2\Engine::enabled() ) {
+			$styles = get_option( 'everest_forms_styles', array() );
+			if ( ! empty( $styles[ $form_id ] ) ) {
+				$context['style'] = $styles[ $form_id ];
+			}
+		}
+
+		return $context;
+	}
+
+	/**
+	 * Register this site with the ThemeGrill AI Cloud gateway (free tier).
+	 * Called once on plugin activation — silent, no admin action required.
+	 *
+	 * @param string $verify_token One-time ownership token; gateway calls back to confirm.
+	 * @return array|WP_Error  { site_token, tier, product }
+	 */
+	public static function register_site( string $verify_token = '' ) {
+		$payload = array(
+			'domain'      => self::get_domain(),
+			'admin_email' => get_bloginfo( 'admin_email' ),
+			'wp_version'  => get_bloginfo( 'version' ),
+			'product'     => self::PRODUCT,
+		);
+
+		if ( $verify_token ) {
+			$payload['verify_token'] = $verify_token;
+		}
+
+		return self::request( 'POST', '/ai/v1/register', $payload );
+	}
+
+	/**
+	 * Get current usage stats for display in the builder UI.
+	 *
+	 * @return array|WP_Error
+	 */
+	public static function get_usage() {
+		$token = EVF_AI_Registration::get_site_token();
+		if ( ! $token ) {
+			return new WP_Error( 'not_registered', '' );
+		}
+		// Without this, the gateway had no way to tell Pro was removed/deactivated since it
+		// last saw a generate/update call — it just kept reporting whatever tier it last wrote
+		// to its own database, so a usage check could show a stale 300/day Pro limit indefinitely.
+		return self::request( 'GET', '/ai/v1/usage', array(), $token, self::get_license_key() );
+	}
+
+	/**
+	 * Daily-usage snapshot { remaining, limit, used } from the last gateway call this request,
+	 * or null when none was returned. Set inside request() from the gateway's `usage` object.
+	 *
+	 * @return array|null
+	 */
+	public static function get_last_usage() {
+		return self::$last_usage;
+	}
+
+	/**
+	 * Map the gateway's usage object ({ daily_count, daily_limit, daily_remaining }) to the
+	 * compact { remaining, limit, used } shape the front-end reads. Public so the get_usage
+	 * AJAX handler can normalize the /ai/v1/usage endpoint response the same way.
+	 *
+	 * @param array $usage Raw gateway usage object.
+	 * @return array
+	 */
+	public static function normalize_usage( array $usage ): array {
+		return array(
+			'remaining' => isset( $usage['daily_remaining'] ) ? max( 0, (int) $usage['daily_remaining'] ) : null,
+			'limit'     => isset( $usage['daily_limit'] ) ? (int) $usage['daily_limit'] : null,
+			'used'      => isset( $usage['daily_count'] ) ? (int) $usage['daily_count'] : null,
+		);
+	}
+
+	// ── Core HTTP request ─────────────────────────────────────────────────────
+
+	private static function request( string $method, string $path, array $body = array(), string $token = '', ?string $license_key = null ) {
+		$url     = rtrim( self::gateway_url(), '/' ) . $path;
+		$headers = array( 'Content-Type' => 'application/json' );
+
+		if ( $token ) {
+			$headers['X-TG-Token'] = $token;
+		}
+		// Header, not a query param or body field: a GET query string is far more likely than a
+		// POST body to end up in access logs / proxy logs / request-tracing tools, and this is a
+		// real credential (an EVF Pro license key) — same treatment as $token above.
+		// Must distinguish "not passed" (null, callers that don't take a license key at all) from
+		// "passed but empty" (get_usage() always passes get_license_key(), which is '' once Pro is
+		// removed) — the gateway needs the empty header to know it should re-check and downgrade.
+		if ( null !== $license_key ) {
+			$headers['X-License-Key'] = $license_key;
+		}
+
+		$args = array(
+			'method'  => strtoupper( $method ),
+			'headers' => $headers,
+			'timeout' => self::TIMEOUT,
+		);
+
+		if ( ! empty( $body ) && 'GET' !== strtoupper( $method ) ) {
+			$args['body'] = wp_json_encode( $body );
+		}
+
+		// Log outgoing request (license_key redacted).
+		$log_body = $body;
+		if ( isset( $log_body['license_key'] ) ) {
+			$log_body['license_key'] = $log_body['license_key'] ? '[redacted]' : '';
+		}
+		$logger = evf_get_logger();
+		$logger->debug(
+			sprintf( "AI Request: %s %s\n%s", strtoupper( $method ), $path, wp_json_encode( $log_body, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+			array( 'source' => 'evf-ai' )
+		);
+
+		$wp_response = wp_remote_request( $url, $args );
+
+		if ( is_wp_error( $wp_response ) ) {
+			$logger->error(
+				sprintf( 'AI Request failed: %s', $wp_response->get_error_message() ),
+				array( 'source' => 'evf-ai' )
+			);
+			return new WP_Error(
+				'request_failed',
+				sprintf( __( 'Could not reach AI service: %s', 'everest-forms' ), $wp_response->get_error_message() )
+			);
+		}
+
+		$status = wp_remote_retrieve_response_code( $wp_response );
+		$body   = json_decode( wp_remote_retrieve_body( $wp_response ), true );
+
+		// Log the raw response.
+		$logger->debug(
+			sprintf( "AI Response: HTTP %d\n%s", $status, wp_json_encode( $body, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+			array( 'source' => 'evf-ai' )
+		);
+
+		// Capture the daily-usage snapshot the gateway now returns — top-level `usage` on a
+		// successful generate/style/update, or nested under `detail.usage` on a 429. Callers
+		// echo it to the UI via get_last_usage() so the panels can show "X requests left today".
+		if ( is_array( $body ) ) {
+			if ( isset( $body['usage'] ) && is_array( $body['usage'] ) ) {
+				self::$last_usage = self::normalize_usage( $body['usage'] );
+			} elseif ( isset( $body['detail']['usage'] ) && is_array( $body['detail']['usage'] ) ) {
+				self::$last_usage = self::normalize_usage( $body['detail']['usage'] );
+			}
+		}
+
+		if ( 429 === $status ) {
+			$detail = is_array( $body ) && isset( $body['detail'] ) && is_array( $body['detail'] ) ? $body['detail'] : array();
+			$msg    = isset( $detail['message'] ) ? $detail['message'] : __( 'Request limit reached. Please try again later.', 'everest-forms' );
+			$code   = isset( $detail['error'] ) ? $detail['error'] : 'rate_limited';
+			// "tier" (only present on a "daily_limit_reached" 429) lets the caller tell a Free
+			// user (show an upgrade CTA) apart from a Pro user who hit their own, much higher
+			// cap (don't show one — they're already Pro).
+			return new WP_Error( $code, $msg, array( 'tier' => isset( $detail['tier'] ) ? $detail['tier'] : '' ) );
+		}
+
+		if ( $status < 200 || $status >= 300 ) {
+			$detail = is_array( $body ) ? ( $body['detail'] ?? $body['message'] ?? '' ) : '';
+			// FastAPI 400s send detail as an object: {"error": "...", "message": "..."}.
+			$msg  = is_array( $detail ) ? ( $detail['message'] ?? $detail['error'] ?? '' ) : $detail;
+			$code = ( is_array( $detail ) && ! empty( $detail['error'] ) ) ? $detail['error'] : 'api_error';
+			return new WP_Error(
+				$code,
+				$msg ?: sprintf( __( 'AI service returned an error (%d).', 'everest-forms' ), $status )
+			);
+		}
+
+		return $body;
+	}
+
+	// ── Helpers ───────────────────────────────────────────────────────────────
+
+	public static function gateway_url(): string {
+		if ( defined( 'TG_AI_GATEWAY_URL' ) ) {
+			return TG_AI_GATEWAY_URL;
+		}
+		return get_option( 'evf_ai_gateway_url', self::PRODUCTION_URL );
+	}
+
+	/**
+	 * Get EVF Pro license key if the license is active — empty string otherwise.
+	 * Gateway treats an empty key as free tier.
+	 *
+	 * Deliberately does NOT use evf_get_license_plan(): during AJAX/REST/Cron (which is
+	 * every caller here — get_usage()/generate/update all run inside AJAX handlers) that
+	 * function skips its own is_plugin_active() check and returns a cached
+	 * 'evf_saved_license_plan' option instead, which stays truthy forever once set — even
+	 * after Pro is deactivated or deleted. Checking is_plugin_active() directly here (same
+	 * approach as EVF_AI_Ajax::has_active_license()) is what actually detects that.
+	 */
+	private static function get_license_key(): string {
+		$license_key = get_option( 'everest-forms-pro_license_key', '' );
+		if ( ! $license_key ) {
+			return '';
+		}
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		if ( ! is_plugin_active( 'everest-forms-pro/everest-forms-pro.php' ) ) {
+			return '';
+		}
+		return (string) $license_key;
+	}
+
+	private static function get_domain(): string {
+		return preg_replace( '(^https?://)', '', rtrim( home_url(), '/' ) );
+	}
+}

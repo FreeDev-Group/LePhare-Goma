@@ -1,0 +1,199 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "magazine-blocks/paragraph",
+    "title": "Paragraph",
+    "description": "Customize typography and style paragraphs with multiple setting options.",
+    "keywords": [
+        "paragraph",
+        "text"
+    ],
+    "category": "magazine-blocks",
+    "textdomain": "magazine-blocks",
+    "supports": {
+        "className": false,
+        "customClassName": false
+    },
+    "example": {
+        "attributes": {}
+    },
+    "attributes": {
+        "clientId": {
+            "type": "string"
+        },
+        "expiryDate": {
+            "type": "string"
+        },
+        "text": {
+            "type": "string"
+        },
+        "alignment": {
+            "type": "object",
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}} {text-align: {{VALUE}}; }"
+                }
+            ]
+        },
+        "typography": {
+            "type": "object",
+            "default": {
+                "typography": 1
+            },
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}}"
+                }
+            ]
+        },
+        "color": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}} {color: {{VALUE}}; }"
+                }
+            ]
+        },
+        "hoverColor": {
+            "type": "string",
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}}:hover {color: {{VALUE}}; }"
+                }
+            ]
+        },
+        "background": {
+            "type": "object",
+            "default": {
+                "background": 1
+            },
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}}"
+                }
+            ]
+        },
+        "hoverBackground": {
+            "type": "object",
+            "default": {
+                "background": 1
+            },
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}}:hover"
+                }
+            ]
+        },
+        "margin": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}} { margin: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockMargin": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": ".mzb-paragraph{{WRAPPER}} { margin: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockPadding": {
+            "type": "object",
+            "default": {
+                "dimension": 1,
+                "desktop": {
+                    "lock": true
+                }
+            },
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+                }
+            ]
+        },
+        "blockZIndex": {
+            "type": "number",
+            "style": [
+                {
+                    "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+                }
+            ]
+        },
+        "cssID": {
+            "type": "string"
+        },
+        "animation": {
+            "type": "string"
+        },
+        "interaction": {
+            "type": "object"
+        },
+        "position": {
+            "type": "object"
+        },
+        "hideOnDesktop": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none; } }"
+                }
+            ]
+        },
+        "hideOnTablet": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none; } }"
+                }
+            ]
+        },
+        "hideOnMobile": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none; } }"
+                }
+            ]
+        },
+        "colReverseOnTablet": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (max-width:62em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+                }
+            ]
+        },
+        "colReverseOnMobile": {
+            "type": "boolean",
+            "style": [
+                {
+                    "selector": "@media (max-width:48em) { {{WRAPPER}} > .mzb-container > .mzb-section-inner { flex-direction:column-reverse; } }"
+                }
+            ]
+        },
+        "blockCSS": {
+            "type": "string"
+        },
+        "className": {
+            "type": "string"
+        }
+    },
+    "style": "magazine-blocks-blocks",
+    "editorScript": "magazine-blocks-blocks",
+    "editorStyle": "magazine-blocks-blocks-editor"
+}

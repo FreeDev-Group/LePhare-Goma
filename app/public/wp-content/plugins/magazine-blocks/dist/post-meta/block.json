@@ -1,0 +1,294 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "magazine-blocks/post-meta",
+  "title": "Post Meta",
+  "description": "Post Meta",
+  "keywords": [
+    "post",
+    "post meta"
+  ],
+  "category": "magazine-blocks-utility-blocks",
+  "textdomain": "magazine-blocks",
+  "supports": {
+    "className": false,
+    "customClassName": false
+  },
+  "example": {
+    "attributes": {}
+  },
+  "attributes": {
+    "clientId": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "enableSubHeading": {
+      "type": "boolean",
+      "default": true
+    },
+    "separatorType": {
+      "type": "string",
+      "default": "dash"
+    },
+    "enableAuthorIcon": {
+      "type": "boolean",
+      "default": true
+    },
+    "enableDateIcon": {
+      "type": "boolean",
+      "default": true
+    },
+    "enableCommentIcon": {
+      "type": "boolean",
+      "default": true
+    },
+    "enableAuthor": {
+      "type": "boolean",
+      "default": true
+    },
+    "enableDate": {
+      "type": "boolean",
+      "default": true
+    },
+    "enableComment": {
+      "type": "boolean",
+      "default": true
+    },
+    "label": {
+      "type": "string",
+      "default": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    "alignment": {
+      "type": "object",
+      "default": {
+        "desktop": {
+          "value": "center",
+          "label": "center"
+        },
+        "tablet": {
+          "value": "center",
+          "label": "center"
+        },
+        "mobile": {
+          "value": "center",
+          "label": "center"
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content {justify-content: {{VALUE}}; }"
+        }
+      ]
+    },
+    "margin": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { margin: {{VALUE}}; }"
+        }
+      ]
+    },
+    "separatorColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-separator {color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "authorIconColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-author svg {fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "dateIconColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-date svg {fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "commentIconColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-comment svg {fill: {{VALUE}}; }"
+        }
+      ]
+    },
+    "commonColor": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content {color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "background": {
+      "type": "string",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} {background-color: {{VALUE}}; }"
+        }
+      ]
+    },
+    "typography": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}}"
+        }
+      ]
+    },
+    "dateIcon": {
+      "type": "string",
+      "default": ""
+    },
+    "commentIcon": {
+      "type": "string",
+      "default": ""
+    },
+    "authorTypography": {
+      "type": "object",
+      "default": {
+        "typography": 1
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-author"
+        }
+      ]
+    },
+    "separatorSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-separator {font-size: {{VALUE}}; }"
+        }
+      ]
+    },
+    "authorIconSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-author svg {width: {{VALUE}}; height:auto; }"
+        }
+      ]
+    },
+    "dateIconSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-date svg {width: {{VALUE}}; height:auto; }"
+        }
+      ]
+    },
+    "commentIconSize": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content .mzb-post-meta-comment svg {width: {{VALUE}}; height:auto; }"
+        }
+      ]
+    },
+    "blockHTML": {
+      "type": "string",
+      "default": "div"
+    },
+    "blockMargin": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content { margin: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockPadding": {
+      "type": "object",
+      "default": {
+        "dimension": 1,
+        "desktop": {
+          "lock": true
+        }
+      },
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { padding: {{VALUE}}; }"
+        }
+      ]
+    },
+    "gap": {
+      "type": "object",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} .mzb-post-meta-content {gap: {{VALUE}}; }"
+        }
+      ]
+    },
+    "blockZIndex": {
+      "type": "number",
+      "style": [
+        {
+          "selector": "{{WRAPPER}} { z-index: {{VALUE}}; }"
+        }
+      ]
+    },
+    "cssID": {
+      "type": "string"
+    },
+    "hideOnDesktop": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnTablet": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (min-width:48em) and (max-width:62em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "hideOnMobile": {
+      "type": "boolean",
+      "style": [
+        {
+          "selector": "@media (max-width:48em) { {{WRAPPER}} { display: none; } }"
+        }
+      ]
+    },
+    "blockCSS": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    }
+  },
+  "style": "magazine-blocks-blocks",
+  "editorScript": "magazine-blocks-blocks",
+  "editorStyle": "magazine-blocks-blocks-editor"
+}

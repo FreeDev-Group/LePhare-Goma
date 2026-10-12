@@ -1,0 +1,348 @@
+== Changelog ==
+= 2.1.3 - 21-08-2026 =
+* Fix - SSRF and arbitrary option update via demo_config (schema validation, safe remote requests, option key restrictions).
+* Fix - Companion Elementor plugin issue for Elementor Pro demos.
+* Fix - Remap Everest Forms shortcodes after import so Contact forms render.
+* Fix - User-friendly import errors, progress bar over 100%, and HTML in plugin feature descriptions.
+* Fix - User Registration & Membership pages and options configured after import.
+* Fix - Prevent a fatal error when another active plugin uses a newer psr/log version than Demo Importer.
+* Fix - WooCommerce product categories import issue.
+* Tweak - Run post-import hooks only when the demo requires them.
+
+= 2.1.2 - 31-07-2026 =
+* Feature - Automatically set up a curated AllFeedback NPS survey after importing a demo (where AllFeedback is active).
+* Fix - Formbricks JavaScript Errors in Browser Console.
+* Fix - ColorMag category colors not applying correctly after import due to unmapped category IDs.
+* Fix - Menu items, post parent/author, and attachment URLs left unresolved when content import ran across multiple batches.
+* Fix - CSS custom property values (e.g. var(--...)) corrupted in imported pages containing Everest Forms blocks.
+
+= 2.1.1 - 09-07-2026 =
+* Dev - Updated PHP compatibility to support PHP v7.4 as per WordPress standards.
+* Fix - Images not loading properly in the import area.
+
+= 2.1.0 - 30-06-2026 =
+* Enhance - Batch media import to prevent server timeouts,
+* Dev - Added data validation to prevent PHP warnings during content import.
+* Dev - Improved widget import to handle missing plugin data.
+* Fix - Demo thumbnails not displaying correctly in Zakra theme.
+* Fix - Zakra Pro Dynamic CSS not generating during demo import.
+* Fix - ColorMag Pro Gossip Demo Import Fails with HTTP 524 Timeout Error.
+* Fix - Added proper array validation checks in WXRImporter and ImportHooks.
+* Fix - Elementor CSS files return 404 after import due to unresolved asset URLs.
+* Fix - Duplicate Menu Items(Demo Importer & Starter Templates) Under Appearance.
+* Fix - PHP Warnings Generated When Importing Demo Content Due to Invalid XML Parsing.
+* Fix - Demo Importer connectivity issue due to client's site url being blocked by server.
+
+= 2.0.0.7 - 30-03-2026 =
+* Fix - REST API permission-related vulnerability.
+
+= 2.0.0.6 - 13-11-2025 =
+* Fix - Elementor color and typography settings not applying correctly.
+* Fix - Site content file opening issue during import.
+* Fix - Minor bug fixes.
+
+= 2.0.0.5 - 26-09-2025 =
+* Tweak   - Minor fix.
+
+= 2.0.0.4 - 26-09-2025 =
+* Fix   - Issue with customized color palette import.
+* Fix   - Issue with Everest form block import.
+* Fix 	- Minor bug fixes.
+
+= 2.0.0.3 - 23-09-2025 =
+* Tweak   - Minor fixes.
+
+= 2.0.0.2 - 23-09-2025 =
+* Tweak   - Update WordPress tested upto version to 6.8.
+
+= 2.0.0.1 - 23-09-2025 =
+* Tweak - Minor fixes
+
+= 2.0.0 - 23-09-2025 =
+* Enhance - Complete design revamp of importer interface with modern amd intuitive layout.
+* Enhance - Enhanced import flow with step-by-step guidance and visual feedback.
+* Feature - New import progress tracking with import updates and completion indicators.
+
+= 1.9.14 - 01-08-2025 =
+* Fix   - PHP 8.0+ compatibility issue with deprecated libxml_disable_entity_loader() function
+
+= 1.9.13 - 30-06-2025 =
+* Fix   - Spacious widget import issue
+
+= 1.9.12 - 13-05-2025 =
+* Fix   - Colormag Footer builder menu 1 component import issue
+
+= 1.9.11 - 13-05-2025 =
+* Tweak   - Update WordPress tested upto version to 6.8.
+
+= 1.9.10 - 13-05-2025 =
+* Fix - Compatibility with magazine blocks.
+
+= 1.9.9 - 21-11-2024 =
+* Fix - Footer widget menu import issue.
+
+= 1.9.8 - 16-10-2024 =
+* Tweak - Update readme file.
+
+= 1.9.7 - 29-05-2024 =
+* Tweak - Remove compulsory companion elementor in Zakra premium demo.
+
+= 1.9.6 - 16-05-2024 =
+* Fix - Elementor kit import issue.
+
+= 1.9.5 - 19-03-2024 =
+* Tweak - Minor fixes.
+
+= 1.9.4.4 - 15-01-2023 =
+* Support - Support for theme dashboard enhancement.
+
+= 1.9.4.3 - 04-12-2023 =
+* Fix - Ornate Decor slug.
+
+= 1.9.4.2 - 04-12-2023 =
+* Fix - Ornate Decor config name.
+
+= 1.9.4.1 - 03-12-2023 =
+* Support – Support for Ornate Decor.
+* Tweak   - Update WordPress tested upto version to 6.4.
+
+= 1.9.4 - 23-08-2023 =
+* Fix – Import fail message issue.
+
+= 1.9.3 - 18-08-2023 =
+* Support – Support for YITH Wishlist default settings when importing demo.
+* Tweak   - Replace deprecated function get_page_by_title with WP_Query.
+
+= 1.9.2.2 - 16-08-2023 =
+* Support – Support for Kirana.
+* Tweak   - Update WordPress tested upto version to 6.3.
+
+= 1.9.2.1 - 03-04-2023 =
+* Fix – Support for Blissful.
+
+= 1.9.2 - 03-04-2023 =
+* Support – Support for Blissful.
+
+= 1.9.1 - 15-02-2023 =
+* Update - Stable tag.
+
+= 1.9.0 - 15-02-2023 =
+* Tweak – Update review notice message.
+* Tweak - Updated WordPress tested upto version to 6.1.
+* Tweak – Update popup information message.
+
+= 1.8.9 - 14-12-2022 =
+* Support – Support for Vastra.
+
+= 1.8.8.2 - 07-11-2022 =
+* Fix – Support for Gizmo.
+
+= 1.8.8.1 - 07-11-2022 =
+* Update – Stable tag.
+
+= 1.8.8 - 07-11-2022 =
+* Support – Support for Gizmo.
+
+= 1.8.7 - 10-10-2022 =
+* Update – Stable tag.
+
+= 1.8.6 - 10-10-2022 =
+* Remove  - Support for eStory Pro.
+
+= 1.8.5 - 19-09-2022 =
+* Fix - Compatibility with Masteriyo Pro.
+
+= 1.8.4 - 31-08-2022 =
+* Support - MagazineX theme.
+
+= 1.8.3 - 14-07-2022 =
+* Support - Libreria theme.
+
+= 1.8.2 - 01-07-2022 =
+* Support - eStory theme.
+
+= 1.8.1 - 01-07-2022 =
+- Fix    - Masteriyo page duplication.
+- Update – Header field Tested up to.
+
+= 1.8.0 - 08-03-2022 =
+* Support - Skincare theme.
+* Remove  - Support for Luza theme.
+
+= 1.7.9 - 16-02-2022 =
+* Tweak - Update static demo content url.
+
+= 1.7.8 - 10-02-2022 =
+* Support - Luza theme.
+
+= 1.7.7 - 12-01-2022 =
+* Support - BlockArt Blocks plugin.
+* Support - Online Education theme.
+* Fix     - PHP warning while importing widget.
+
+= 1.7.6.1 - 31-12-2021 =
+* Tweak - Update stable tag.
+
+= 1.7.6 - 30-12-2021 =
+* Tweak - Update resources URL.
+
+= 1.7.5 - 25-10-2021 =
+* Tweak - Use of escaping and sanitization functions.
+
+= 1.7.4 - 19-10-2021 =
+* Enhancement - Compatibility with latest Masteriyo LMS plugin.
+
+= 1.7.3 - 08-10-2021 =
+* Tweak - Support eLearning theme.
+* Tweak - Disable Masteriyo setup wizard.
+* Tweak - Setup Masteriyo pages properly after demo import.
+
+= 1.7.2 - 25-06-2021 =
+* Fix - Value (Legacy) of Parallax Type option from SiteOrigin plugin changing after demo import.
+
+= 1.7.1 - 18-01-2021 =
+* Remove - Admin notice for `Plugin Review`.
+
+= 1.7.0 - 11-01-2021 =
+* Tweak - Set FontAwesome 4 Shim feature to be enabled automatically on successful theme demo import.
+
+= 1.6.9 - 7-01-2021 =
+* Tweak - Require `Companion Addons for Elementor` plugin to import certain demos according to the demo config set
+
+= 1.6.8 - 23-11-2020 =
+* Fix - WooCommerce default pages not set properly after the theme demo import
+* Fix - Elementor default kit introduced from version 3.0.0 not applied after the theme demo import
+
+= 1.6.7 - 15-09-2020 =
+* Tweak - Utilize `wp.i18n` for translation of strings for `wp.updates.l10n` deprecated since WordPress 5.5
+
+= 1.6.6 - 06-08-2020 =
+* Introduce - Demo Importer Status page
+* Tweak     - Added compatibility with WordPress v5.5
+* Remove    - `Reset wizard` feature to reset the site to fresh WordPress install.
+
+= 1.6.5 - 23-07-2020 =
+* Fix - Demo not importing completely in certain conditions.
+
+= 1.6.4 - 04-06-2020 =
+* Fix       - `WooCommerce Setup Wizard` disabled when the plugin is active.
+* Fix       - `Live Preview` button link on successful demo import message in WordPress multisite install.
+* Tweak     - Add admin notice for `Plugin Review`.
+* Tweak     - Add admin notice for `Plugin Deactivate` if demo is already imported in their site.
+* Tweak     - Add refresh demo lists feature.
+* Tweak     - Add feature to restrict demo import process for specific demos to fix unwanted issues for unsupported demos.
+* Deprecate - `Upgrade to Pro` admin notice.
+
+= 1.6.3 - 18-02-2020 =
+* Enhancement - Secure reset button with nonce check.
+
+= 1.6.2 - 15-02-2020 =
+* Fix - Unauthenticated user vulnerability. Thanks webarxsecurity team
+
+= 1.6.1 - 12-11-2019 =
+* Tweak - Add admin notice for `Upgrade To Pro`.
+
+= 1.6.0 - 10-09-2019 =
+* Tweak - Support for Zakra Premium version demo import.
+
+= 1.5.9 - 22-07-2019 =
+* Tweak - Display all available theme demos on main demo import page.
+
+= 1.5.8 - 20-06-2019 =
+* Tweak - Update demo import message.
+
+= 1.5.7 - 06-03-2019 =
+* Fix - Demo preview overlay not importing specific demo.
+
+= 1.5.6 - 15-02-2019 =
+* Fetaure - Install plugins and import demo on a single click.
+* Tweak - Remove the more details on demo preview hover.
+* Dev - Improve Coding standard with husky compatibility.
+
+= 1.5.5 - 05-11-2018 =
+* Feature - Add support for elementor schemes.
+
+= 1.5.4 - 02-11-2018 =
+* Change Modular to Zakra
+
+= 1.5.3 - 30-10-2018 =
+* Support - Modular theme.
+
+= 1.5.2 - 25-09-2018 =
+* Fix - Custom CSS migration on demo import.
+* Fix - Live Preview button when demo is successfully imported in demo preview page.
+
+= 1.5.1 - 24-08-2018 =
+* Support - Cenote Pro theme.
+
+= 1.5.0 - 21-08-2018 =
+* Feature - Fetches the demo config from GitHub repo.
+* Feature - Category and pagebuilder routes for views.
+* Fetaure - Install and activate plugins on a single click.
+* Fix - Slashes to be stripped from imported comments.
+* Fix - Importing export files with multiline term meta data.
+* Fix - Deprecation notices including `wp_get_http()` and `screen_icon()`.
+* Tweak - Demo preview is supported via iframe.
+* Tweak - Different device preview is possible for a demo.
+* Tweak - Only store single demo package files in upload directory.
+* Dev - Improve PHP7 compatibility.
+* Deprecated - Upload process for the demo packages.
+* Deprecated - Filter hooks `themegrill_demo_importer_config` and `themegrill_demo_importer_packages`.
+
+= 1.4.3 - 23-04-2018 =
+* Support - Cenote theme.
+
+= 1.4.2 - 25-12-2017 =
+* Fix - Disable WooCommerce setup wizard for demo import.
+* Fix - Styling issue caused by missing `theme-id-container` container.
+
+= 1.4.1 - 08-12-2017 =
+* Feature - Compatiable with Elementor page builder.
+* Fix - Styling issue caused by missing `theme-id-container` container.
+
+= 1.4.0 - 20-07-2017 =
+* Feature - Plugin installer and activator mechinism.
+* Fix - Call to undefined function `preg_filter()`.
+* Dev - Improved file structure.
+* Dev - Introduced `tg_demo_installer_enabled()`.
+* Dev - Introduced `tg_demo_installer_preview()`.
+* Dev - Introduced `tg_demo_preview_screenshot_url()`.
+
+= 1.3.4 - 03-07-2017 =
+* Feature - Support RTL for Importer.
+* Feature - Reset wizard for clean up.
+* Fixed - Undefined queue job update action.
+* Fixed - Use of `wp-heading-inline` core class.
+* Tweak - Use of defined constant for demo packs.
+* Tweak - Uninstall data with a defined constant.
+* Tweak - Fallback screenshot for flash demo preview.
+
+= 1.3.3 =
+* Tweak - Support demo import for suffice theme.
+
+= 1.3.2 =
+* Tweak - Load screenshots for pro theme demos.
+
+= 1.3.1 =
+* Tweak - Load screenshot from theme instead of plugin for themes with single demo.
+
+= 1.3.0 =
+* Tweak - Support data update for nested siteorigin layoutbuilder.
+* Fix - Import button not working on firefox.
+
+= 1.2.0 =
+* Tweak - Load scripts perfecly on demo importer appearance page.
+* Tweak - Set transient for redirecting to demo importer page after install or update.
+* Tweak - Introduced filter hook `themegrill_demo_importer_installer` to control demo view.
+
+= 1.1.0 =
+* Feature - Backbone views interface for demos and previews
+* Feature - Added download button for the preview not installed
+* Feature - Robust quick search view to change in demo interface
+* Feature - Detailed information in popup to showcase plugins, events, etc
+* Refactor - Replace old way to import demo with new `wp.updates` methods
+* Fix - Menu classes to hide admin menu if no JS using css class `hide-if-no-js`
+* Fix - Remove the old demo pack if found and to update the new demo packs
+
+= 1.0.0 =
+* Initial Public Release
