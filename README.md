@@ -29,7 +29,7 @@ The team collaborates remotely, with each developer responsible for assigned tas
 | Development Model | Remote team collaboration                          |
 | Version Control   | Git and GitHub                                     |
 | Task Management   | GitHub Issues                                      |
-| Project Mentor    | Gothier                                            |
+| Project Mentor    | Gauthier                                            |
 
 ## 2. Team & Responsibilities
 
