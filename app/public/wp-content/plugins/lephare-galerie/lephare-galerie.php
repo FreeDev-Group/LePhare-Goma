@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LePhare – Galerie
  * Description:       Galerie média (#08) : page /galerie/ (widget Elementor « Galerie » ou shortcode [lephare_galerie]), albums classés par catégorie et visionneuse plein écran maison. Un album = un Article de la catégorie « Galerie » (doc #13 d'Aaron : pas de type de contenu personnalisé).
- * Version:           1.1.1
+ * Version:           1.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            FREEDEV – LePhare/Goma
@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const LEPHARE_GAL_VERSION = '1.1.1';
+const LEPHARE_GAL_VERSION = '1.2.0';
 
 /* =========================================================================
  * 1. Catégories et albums
@@ -225,6 +225,9 @@ function lephare_gal_picto( $nom ) {
 		'lecture'    => '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/>',
 		'pause'      => '<path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor" stroke="none"/>',
 		'plein'      => '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+		'bas'        => '<path d="M6 9l6 6 6-6"/>',
+		'coche'      => '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+		'filtre'     => '<path d="M4 6h16M7 12h10M10 18h4"/>',
 	);
 	return '<svg class="lpg-picto lpg-picto--' . esc_attr( $nom ) . '" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . ( $t[ $nom ] ?? '' ) . '</svg>';
 }
@@ -319,9 +322,25 @@ function lephare_gal_schema_page() {
 			'champs' => array(
 				'categories'   => array( 'categories', 'Catégories affichées, dans cet ordre (vide = toutes les sous-catégories de « Galerie »)', '', true ),
 				'par_page'     => array( 'nombre', 'Albums par page (un multiple de 3 remplit les rangées)', 12 ),
+				'liste_surtitre' => array( 'texte', 'Petite étiquette au-dessus du titre de la liste (vide = masquée)', 'Albums photo', true ),
 				'titre_liste'  => array( 'texte', 'Titre de la liste', 'Tous les albums' ),
 				'filtres'      => array( 'oui', 'Onglets de catégories', true ),
 				'txt_tout'     => array( 'texte', 'Onglet « Tout »', 'Tout', false, array( 'filtres' => 'yes' ) ),
+				'filtres_menu' => array(
+					'choix',
+					'Regrouper les onglets dans un menu déroulant',
+					'tablette',
+					false,
+					array( 'filtres' => 'yes' ),
+					array(
+						'tablette' => 'Sur mobile et tablette (moins de 1024 px)',
+						'mobile'   => 'Sur mobile seulement (moins de 768 px)',
+						'toujours' => 'Toujours',
+						'jamais'   => 'Jamais (onglets qui défilent)',
+					),
+				),
+				'txt_menu'     => array( 'texte', 'Petite étiquette du menu déroulant', 'Catégorie', false, array( 'filtres' => 'yes' ) ),
+				'txt_filtres_nom' => array( 'texte', 'Nom des onglets (lu par les lecteurs d’écran)', 'Catégories de la galerie', false, array( 'filtres' => 'yes' ) ),
 				'mot_album'    => array( 'texte', 'Mot « album » (singulier)', 'album' ),
 				'mot_albums'   => array( 'texte', 'Mot « albums » (pluriel)', 'albums' ),
 				'mot_photo'    => array( 'texte', 'Mot « photo » (singulier)', 'photo' ),
@@ -335,6 +354,11 @@ function lephare_gal_schema_page() {
 				'txt_vide'     => array( 'texte', 'Aucun album publié', 'Aucun album n’est encore publié.' ),
 				'txt_cat_vide' => array( 'texte', 'Catégorie sans album', 'Aucun album dans cette catégorie pour le moment.' ),
 				'txt_page_vide' => array( 'texte', 'Page de la liste au-delà de la dernière', 'Cette page ne contient aucun album.' ),
+				'txt_reperes'  => array( 'texte', 'Nom des repères du bandeau (lu par les lecteurs d’écran)', 'La galerie en bref' ),
+				'txt_pagination' => array( 'texte', 'Nom de la pagination (lu par les lecteurs d’écran)', 'Pagination des albums' ),
+				'txt_prec'     => array( 'texte', 'Lien « Précédent » de la pagination', 'Précédent' ),
+				'txt_suiv'     => array( 'texte', 'Lien « Suivant » de la pagination', 'Suivant' ),
+				'txt_page'     => array( 'texte', 'Mot « Page » (lu par les lecteurs d’écran)', 'Page' ),
 			),
 		),
 		'effets'   => array(
@@ -362,6 +386,7 @@ function lephare_gal_schema_album() {
 				'alb_autres_titre' => array( 'texte', 'Titre de la section « Autres albums »', 'Autres albums' ),
 				'alb_autres_nb'  => array( 'nombre', 'Nombre d’albums suggérés (1 à 6)', 3 ),
 				'alb_diapo'      => array( 'texte', 'Bouton du diaporama dans le bandeau (vide = masqué)', 'Lancer le diaporama', true ),
+				'alb_txt_categorie' => array( 'texte', 'Mot lu avant la catégorie (lecteurs d’écran)', 'Catégorie :' ),
 			),
 		),
 		'visionneuse' => array(
@@ -671,7 +696,8 @@ function lephare_gal_tuiles( $cats, $par, $o, $page, $actif ) {
 		$info = $par[ $slug ] ?? array( 0, 0, array() );
 		$out .= '<li class="lpg-tuile' . ( $slug === $actif ? ' lpg-tuile--active' : '' ) . '"><span class="lpg-tuile__eventail" aria-hidden="true">';
 		foreach ( array_slice( $info[2], 0, 3 ) as $id ) {
-			$out .= wp_get_attachment_image( $id, 'thumbnail', false, array( 'alt' => '', 'loading' => 'lazy', 'decoding' => 'async' ) );
+			// Petites images en haut de page : chargées tout de suite (sinon l'éventail reste blanc un instant).
+			$out .= wp_get_attachment_image( $id, 'thumbnail', false, array( 'alt' => '', 'loading' => 'eager', 'decoding' => 'async' ) );
 		}
 		$out .= '</span><span class="lpg-tuile__texte"><a class="lpg-tuile__lien scroll-ignore" href="' . esc_url( add_query_arg( 'lpg_cat', $slug, $page ) . '#lpg-albums' ) . '"' . ( $slug === $actif ? ' aria-current="page"' : '' ) . '>' . esc_html( $t->name ) . '</a>';
 		$out .= '<span class="lpg-tuile__nb">' . esc_html( lephare_gal_nb( $info[0], $o['mot_album'], $o['mot_albums'] ) . ' · ' . lephare_gal_nb( $info[1], $o['mot_photo'], $o['mot_photos'] ) ) . '</span></span>';
@@ -790,7 +816,7 @@ function lephare_gal_rendu( $brut = array() ) {
 	}
 	$reperes = '';
 	if ( $o['hero_reperes'] && $tous ) {
-		$reperes = '<ul class="lpg-reperes" role="list" aria-label="La galerie en bref"><li><strong>' . count( $tous ) . '</strong> ' . esc_html( count( $tous ) > 1 ? $o['mot_albums'] : $o['mot_album'] ) . '</li><li><strong>' . (int) $nb_photos . '</strong> ' . esc_html( $nb_photos > 1 ? $o['mot_photos'] : $o['mot_photo'] ) . '</li></ul>';
+		$reperes = '<ul class="lpg-reperes" role="list" aria-label="' . esc_attr( $o['txt_reperes'] ) . '"><li><strong>' . count( $tous ) . '</strong> ' . esc_html( count( $tous ) > 1 ? $o['mot_albums'] : $o['mot_album'] ) . '</li><li><strong>' . (int) $nb_photos . '</strong> ' . esc_html( $nb_photos > 1 ? $o['mot_photos'] : $o['mot_photo'] ) . '</li></ul>';
 	}
 
 	$html  = '<div class="lpg' . ( $o['animations'] ? '' : ' lpg--calme' ) . '">';
@@ -802,25 +828,49 @@ function lephare_gal_rendu( $brut = array() ) {
 		$html .= lephare_gal_une( $une, $o, $r );
 	}
 
-	$titre = '' !== $f_cat ? $toutes[ $f_cat ]->name : $o['titre_liste'];
-	$n     = (int) $q->found_posts;
-	$html .= '<section class="lpg-albums" id="lpg-albums" aria-labelledby="lpg-albums-titre"><div class="lpg-cadre">';
-	$html .= '<div class="lpg-tete"><h2 class="lpg-tete__titre" id="lpg-albums-titre">' . esc_html( $titre ) . '</h2>';
-	$html .= '<p class="lpg-resultats" role="status" aria-live="polite">' . esc_html( lephare_gal_nb( $n, $o['mot_album'], $o['mot_albums'] ) ) . '</p></div>';
+	$titre  = '' !== $f_cat ? $toutes[ $f_cat ]->name : $o['titre_liste'];
+	$n      = (int) $q->found_posts;
+	$n_phot = '' !== $f_cat ? (int) ( $par_cat[ $f_cat ][1] ?? 0 ) : (int) $nb_photos;
+	$html  .= '<section class="lpg-albums" id="lpg-albums" aria-labelledby="lpg-albums-titre"><div class="lpg-cadre">';
+	$html  .= '<div class="lpg-tete">';
+	if ( '' !== $o['liste_surtitre'] ) {
+		$html .= '<p class="lpg-tete__surtitre">' . esc_html( $o['liste_surtitre'] ) . '</p>';
+	}
+	$html .= '<h2 class="lpg-tete__titre" id="lpg-albums-titre">' . esc_html( $titre ) . '</h2>';
+	$html .= '<p class="lpg-resultats" role="status" aria-live="polite">' . esc_html( lephare_gal_nb( $n, $o['mot_album'], $o['mot_albums'] ) );
+	if ( $n && $n_phot ) {
+		$html .= '<span class="lpg-resultats__point" aria-hidden="true">·</span>' . esc_html( lephare_gal_nb( $n_phot, $o['mot_photo'], $o['mot_photos'] ) );
+	}
+	$html .= '</p></div>';
 
 	// Onglets de catégories : liens simples (clavier, adresse partageable), catégories vides masquées.
+	// Sur petit écran (réglable), le script les regroupe dans un menu déroulant ; sans script, les onglets défilent.
 	if ( $o['filtres'] && count( $cats ) > 1 ) {
-		$html .= '<nav class="lpg-filtres" aria-label="Catégories de la galerie"><ul role="list">';
+		$mode  = in_array( $o['filtres_menu'], array( 'tablette', 'mobile', 'toujours', 'jamais' ), true ) ? $o['filtres_menu'] : 'tablette';
 		$items = array( '' => array( $o['txt_tout'], count( $tous ) ) );
 		foreach ( $cats as $slug => $t ) {
 			$items[ $slug ] = array( $t->name, $par_cat[ $slug ][0] ?? 0 );
 		}
+		$courant = $items[ $f_cat ] ?? $items[''];
+		$mots    = static fn( $k ) => ' (' . lephare_gal_nb( $k, $o['mot_album'], $o['mot_albums'] ) . ')';
+		$html   .= '<nav class="lpg-filtres" aria-label="' . esc_attr( $o['txt_filtres_nom'] ) . '" data-lpg-filtres="' . esc_attr( $mode ) . '">';
+		$html   .= '<button type="button" class="lpg-filtres__bouton" aria-expanded="false" aria-controls="lpg-filtres-liste" hidden>';
+		$html   .= '<span class="lpg-filtres__icone">' . lephare_gal_picto( 'filtre' ) . '</span>';
+		$html   .= '<span class="lpg-filtres__texte"><span class="lpg-filtres__etiquette">' . esc_html( $o['txt_menu'] ) . '<span class="screen-reader-text"> : </span></span><span class="lpg-filtres__valeur">' . esc_html( $courant[0] ) . '</span></span>';
+		$html   .= '<span class="lpg-filtre__nb" aria-hidden="true">' . (int) $courant[1] . '</span><span class="screen-reader-text">' . esc_html( $mots( (int) $courant[1] ) ) . '</span>';
+		$html   .= '<span class="lpg-filtres__chevron">' . lephare_gal_picto( 'bas' ) . '</span></button>';
+		$html   .= '<ul class="lpg-filtres__liste" id="lpg-filtres-liste" role="list">';
 		foreach ( $items as $slug => $it ) {
 			$actif = $slug === $f_cat;
 			$url   = ( $slug ? add_query_arg( 'lpg_cat', $slug, $page ) : $page ) . '#lpg-albums';
-			$html .= '<li><a class="lpg-filtre scroll-ignore' . ( $actif ? ' lpg-filtre--actif' : '' ) . '" href="' . esc_url( $url ) . '"' . ( $actif ? ' aria-current="page"' : '' ) . '>' . esc_html( $it[0] ) . '<span class="lpg-filtre__nb"><span class="screen-reader-text"> (</span>' . (int) $it[1] . '<span class="screen-reader-text"> ' . esc_html( $it[1] > 1 ? $o['mot_albums'] : $o['mot_album'] ) . ')</span></span></a></li>';
+			$html .= '<li><a class="lpg-filtre scroll-ignore' . ( $actif ? ' lpg-filtre--actif' : '' ) . '" href="' . esc_url( $url ) . '"' . ( $actif ? ' aria-current="page"' : '' ) . '>';
+			$html .= '<span class="lpg-filtre__nom">' . esc_html( $it[0] ) . '</span>';
+			$html .= '<span class="lpg-filtre__nb" aria-hidden="true">' . (int) $it[1] . '</span><span class="screen-reader-text">' . esc_html( $mots( (int) $it[1] ) ) . '</span>';
+			$html .= lephare_gal_picto( 'coche' ) . '</a></li>';
 		}
 		$html .= '</ul></nav>';
+		// Choix immédiat du menu (avant l'affichage) pour éviter que les onglets « sautent » au chargement.
+		$html .= '<script>(function(n){if(!n||!window.matchMedia)return;var m=n.getAttribute("data-lpg-filtres"),q={tablette:"(max-width: 1023.98px)",mobile:"(max-width: 767.98px)",toujours:"all",jamais:"not all"}[m];n.classList.add("lpg-filtres--js");if(window.matchMedia(q).matches){n.classList.add("lpg-filtres--menu");n.querySelector(".lpg-filtres__bouton").hidden=false;}}(document.currentScript&&document.currentScript.previousElementSibling));</script>';
 	}
 
 	if ( ! $albums ) {
@@ -838,7 +888,7 @@ function lephare_gal_rendu( $brut = array() ) {
 			$html .= lephare_gal_carte( $d, $o );
 		}
 		$html .= '</ul>';
-		$html .= lephare_gal_pagination( (int) $q->max_num_pages, $f_page, $f_cat, $page );
+		$html .= lephare_gal_pagination( (int) $q->max_num_pages, $f_page, $f_cat, $page, $o );
 	}
 	$html .= '</div></section>';
 	if ( $une ) {
@@ -856,9 +906,10 @@ function lephare_gal_rendu( $brut = array() ) {
  * @param int    $c    Page courante.
  * @param string $cat  Catégorie filtrée.
  * @param string $page Adresse de la page.
+ * @param array  $o    Réglages (textes).
  * @return string
  */
-function lephare_gal_pagination( $n, $c, $cat, $page ) {
+function lephare_gal_pagination( $n, $c, $cat, $page, $o ) {
 	if ( $n < 2 ) {
 		return '';
 	}
@@ -866,17 +917,18 @@ function lephare_gal_pagination( $n, $c, $cat, $page ) {
 		$args = array_filter( array( 'lpg_cat' => $cat, 'lpg_page' => $i > 1 ? $i : '' ) );
 		return add_query_arg( $args, $page ) . '#lpg-albums';
 	};
-	$out = '<nav class="lpg-pagination" aria-label="Pagination des albums"><ul role="list">';
+	$mot = '<span class="screen-reader-text">' . esc_html( $o['txt_page'] ) . ' </span>';
+	$out = '<nav class="lpg-pagination" aria-label="' . esc_attr( $o['txt_pagination'] ) . '"><ul role="list">';
 	if ( $c > 1 ) {
-		$out .= '<li><a class="scroll-ignore" href="' . esc_url( $url( $c - 1 ) ) . '" rel="prev">Précédent</a></li>';
+		$out .= '<li><a class="scroll-ignore" href="' . esc_url( $url( $c - 1 ) ) . '" rel="prev">' . esc_html( $o['txt_prec'] ) . '</a></li>';
 	}
 	for ( $i = 1; $i <= $n; $i++ ) {
 		$out .= $i === $c
-			? '<li><span aria-current="page"><span class="screen-reader-text">Page </span>' . $i . '</span></li>'
-			: '<li><a class="scroll-ignore" href="' . esc_url( $url( $i ) ) . '"><span class="screen-reader-text">Page </span>' . $i . '</a></li>';
+			? '<li><span aria-current="page">' . $mot . $i . '</span></li>'
+			: '<li><a class="scroll-ignore" href="' . esc_url( $url( $i ) ) . '">' . $mot . $i . '</a></li>';
 	}
 	if ( $c < $n ) {
-		$out .= '<li><a class="scroll-ignore" href="' . esc_url( $url( $c + 1 ) ) . '" rel="next">Suivant</a></li>';
+		$out .= '<li><a class="scroll-ignore" href="' . esc_url( $url( $c + 1 ) ) . '" rel="next">' . esc_html( $o['txt_suiv'] ) . '</a></li>';
 	}
 	return $out . '</ul></nav>';
 }
@@ -975,7 +1027,7 @@ function lephare_gal_album() {
 
 		// Bandeau : retour, catégorie, titre, description (extrait), date, nombre de photos et « Lancer le diaporama ».
 		$retour = '<a class="lpg-retour" href="' . esc_url( $liste ) . '">' . lephare_gal_picto( 'retour' ) . esc_html( $r['alb_retour'] ) . '</a>';
-		$cat    = $d['cat_slug'] ? '<p class="lpg-surtitre"><a href="' . esc_url( add_query_arg( 'lpg_cat', $d['cat_slug'], $liste ) . '#lpg-albums' ) . '"><span class="screen-reader-text">Catégorie : </span>' . esc_html( $d['categorie'] ) . '</a></p>' : '';
+		$cat    = $d['cat_slug'] ? '<p class="lpg-surtitre"><a href="' . esc_url( add_query_arg( 'lpg_cat', $d['cat_slug'], $liste ) . '#lpg-albums' ) . '"><span class="screen-reader-text">' . esc_html( $r['alb_txt_categorie'] ) . ' </span>' . esc_html( $d['categorie'] ) . '</a></p>' : '';
 		$infos  = '<div class="lpg-hero__bas"><ul class="lpg-infos" role="list"><li>' . lephare_gal_picto( 'calendrier' ) . '<time datetime="' . esc_attr( $d['date_iso'] ) . '">' . esc_html( $d['date_txt'] ) . '</time></li><li>' . lephare_gal_picto( 'photos' ) . esc_html( lephare_gal_nb( $d['nb'], $po['mot_photo'], $po['mot_photos'] ) ) . '</li></ul>';
 		if ( $d['nb'] > 1 && '' !== $r['alb_diapo'] ) {
 			$infos .= '<button type="button" class="lpg-bouton-diapo lpg-bouton-diapo--clair" data-lpg-diaporama>' . lephare_gal_picto( 'lecture' ) . esc_html( $r['alb_diapo'] ) . '</button>';

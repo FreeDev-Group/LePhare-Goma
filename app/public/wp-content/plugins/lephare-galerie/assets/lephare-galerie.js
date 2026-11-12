@@ -6,6 +6,7 @@
  *    bande de vignettes, diaporama (bouton ou barre d'espace, barre de progression), plein écran,
  *    fenêtre modale (aria-modal, reste de la page inerte, focus piégé, focus rendu à la fermeture).
  * 2. Cartes d'album : aperçu des photos au survol ou au focus clavier.
+ * 3. Bandeau en fondu. 4. Menu déroulant des catégories (petit écran). 5. Arrivée directe sur la liste après un filtre.
  * Sans JavaScript, chaque vignette ouvre simplement l'image en grand.
  */
 ( function () {
@@ -372,10 +373,151 @@
 		}, 6000 );
 	}
 
+	/* ---------------------------------------------------------------------
+	 * 4. Onglets des catégories regroupés dans un menu déroulant (petit écran, réglable)
+	 *    Bouton aria-expanded, Échap ou clic ailleurs ferme, flèches ↑ ↓ / Début / Fin dans la liste,
+	 *    focus rendu au bouton. Sans script : onglets qui défilent horizontalement.
+	 * ------------------------------------------------------------------ */
+	function filtres() {
+		var nav = document.querySelector( '[data-lpg-filtres]' );
+		if ( ! nav || nav.getAttribute( 'data-lpg-pret' ) || ! window.matchMedia ) {
+			return;
+		}
+		nav.setAttribute( 'data-lpg-pret', '1' );
+		var bouton = nav.querySelector( '.lpg-filtres__bouton' );
+		var liste = nav.querySelector( '.lpg-filtres__liste' );
+		var requetes = { tablette: '(max-width: 1023.98px)', mobile: '(max-width: 767.98px)', toujours: 'all', jamais: 'not all' };
+		var mq = window.matchMedia( requetes[ nav.getAttribute( 'data-lpg-filtres' ) ] || requetes.tablette );
+		var liens = function () {
+			return Array.prototype.slice.call( liste.querySelectorAll( 'a' ) );
+		};
+
+		function ouvrir( oui, focusSur ) {
+			nav.classList.toggle( 'lpg-filtres--ouvert', oui );
+			bouton.setAttribute( 'aria-expanded', oui ? 'true' : 'false' );
+			if ( oui && focusSur ) {
+				var l = liens();
+				var actif = liste.querySelector( '[aria-current]' );
+				( 'dernier' === focusSur ? l[ l.length - 1 ] : ( 'premier' === focusSur ? l[ 0 ] : actif || l[ 0 ] ) ).focus();
+			}
+		}
+
+		function appliquer() {
+			var menu = mq.matches;
+			nav.classList.add( 'lpg-filtres--js' );
+			nav.classList.toggle( 'lpg-filtres--menu', menu );
+			bouton.hidden = ! menu;
+			if ( ! menu ) {
+				ouvrir( false );
+			}
+		}
+
+		bouton.addEventListener( 'click', function () {
+			ouvrir( 'true' !== bouton.getAttribute( 'aria-expanded' ), false );
+		} );
+		bouton.addEventListener( 'keydown', function ( e ) {
+			if ( 'ArrowDown' === e.key || 'ArrowUp' === e.key ) {
+				e.preventDefault();
+				ouvrir( true, 'ArrowUp' === e.key ? 'dernier' : 'actif' );
+			}
+		} );
+		nav.addEventListener( 'keydown', function ( e ) {
+			if ( ! nav.classList.contains( 'lpg-filtres--ouvert' ) ) {
+				return;
+			}
+			if ( 'Escape' === e.key ) {
+				e.preventDefault();
+				ouvrir( false );
+				bouton.focus();
+				return;
+			}
+			var l = liens();
+			var i = l.indexOf( document.activeElement );
+			if ( i < 0 || e.target === bouton ) {
+				return;
+			}
+			var cible = { ArrowDown: l[ ( i + 1 ) % l.length ], ArrowUp: l[ ( i - 1 + l.length ) % l.length ], Home: l[ 0 ], End: l[ l.length - 1 ] }[ e.key ];
+			if ( cible ) {
+				e.preventDefault();
+				cible.focus();
+			}
+		} );
+		// Clic ou focus en dehors du menu : il se referme.
+		document.addEventListener( 'click', function ( e ) {
+			if ( ! nav.contains( e.target ) ) {
+				ouvrir( false );
+			}
+		} );
+		nav.addEventListener( 'focusout', function ( e ) {
+			if ( e.relatedTarget && ! nav.contains( e.relatedTarget ) ) {
+				ouvrir( false );
+			}
+		} );
+		if ( mq.addEventListener ) {
+			mq.addEventListener( 'change', appliquer );
+		} else if ( mq.addListener ) {
+			mq.addListener( appliquer );
+		}
+		appliquer();
+
+		// Barre d'onglets qui défile : l'onglet actif reste visible.
+		var actif = liste.querySelector( '[aria-current]' );
+		if ( actif && ! mq.matches && liste.scrollWidth > liste.clientWidth ) {
+			liste.scrollLeft = actif.offsetLeft - ( liste.clientWidth - actif.offsetWidth ) / 2;
+		}
+	}
+
+	/* ---------------------------------------------------------------------
+	 * 5. Après un filtre ou un changement de page (adresse « #lpg-albums ») : arriver directement sur la liste
+	 * ------------------------------------------------------------------ */
+	function arriveeListe() {
+		var section = document.getElementById( 'lpg-albums' );
+		if ( ! section || '#lpg-albums' !== window.location.hash ) {
+			return;
+		}
+		// Le thème active un défilement « doux » qui s'interrompt au chargement : saut immédiat, puis réglage rendu.
+		var aller = function () {
+			var racine = document.documentElement;
+			var avant = racine.style.scrollBehavior;
+			racine.style.scrollBehavior = 'auto';
+			window.scrollTo( 0, Math.max( 0, section.getBoundingClientRect().top + window.pageYOffset ) );
+			racine.style.scrollBehavior = avant;
+		};
+		aller();
+		// La page peut encore bouger (polices, images) : on réaligne pendant 2,5 s au plus,
+		// et on s'arrête dès que le visiteur fait défiler lui-même.
+		var fini = false;
+		var stop = function () {
+			fini = true;
+		};
+		[ 'wheel', 'touchstart', 'keydown', 'mousedown' ].forEach( function ( t ) {
+			window.addEventListener( t, stop, { once: true, passive: true } );
+		} );
+		var realigner = function () {
+			if ( ! fini && Math.abs( section.getBoundingClientRect().top ) > 2 ) {
+				aller();
+			}
+		};
+		if ( window.ResizeObserver ) {
+			var ro = new window.ResizeObserver( realigner );
+			ro.observe( document.body );
+			window.setTimeout( function () {
+				ro.disconnect();
+				stop();
+			}, 2500 );
+		}
+		if ( document.fonts && document.fonts.ready ) {
+			document.fonts.ready.then( realigner );
+		}
+		window.addEventListener( 'load', realigner, { once: true } );
+	}
+
 	function demarrer() {
 		visionneuse();
 		apercus();
 		bandeau();
+		filtres();
+		arriveeListe();
 	}
 
 	if ( 'loading' === document.readyState ) {

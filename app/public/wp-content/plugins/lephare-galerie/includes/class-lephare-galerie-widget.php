@@ -84,6 +84,9 @@ class LePhare_Galerie_Widget extends Widget_Base {
 					case 'categories':
 						$ctrl = array( 'type' => Controls_Manager::SELECT2, 'multiple' => true, 'options' => $categories );
 						break;
+					case 'choix':
+						$ctrl = array( 'type' => Controls_Manager::SELECT, 'options' => $c[5] ?? array(), 'default' => $defaut );
+						break;
 					case 'zone':
 						$ctrl = array( 'type' => Controls_Manager::TEXTAREA, 'default' => $defaut, 'rows' => 3 );
 						break;
@@ -117,10 +120,35 @@ class LePhare_Galerie_Widget extends Widget_Base {
 		$this->add_control( 'c_bandeau', array( 'label' => 'Fond du bandeau', 'type' => Controls_Manager::COLOR, 'selectors' => array( $racine . ' .lpg-hero' => 'background-color: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 
+		$this->start_controls_section( 'style_filtres', array( 'label' => 'Onglets et menu des catégories', 'tab' => Controls_Manager::TAB_STYLE ) );
+		foreach ( array(
+			'f_fond'       => array( 'Fond de la barre et du menu', '--lpg-f-fond' ),
+			'f_texte'      => array( 'Texte des onglets', '--lpg-f-texte' ),
+			'f_actif'      => array( 'Fond de l’onglet actif', '--lpg-f-actif' ),
+			'f_actif_txt'  => array( 'Texte de l’onglet actif', '--lpg-f-actif-texte' ),
+			'f_pastille'   => array( 'Pastille du nombre (onglet actif)', '--lpg-f-pastille' ),
+			'f_etiquette'  => array( 'Petite étiquette du menu (« Catégorie »)', '--lpg-f-etiquette' ),
+		) as $id => $c ) {
+			$this->add_control( $id, array( 'label' => $c[0], 'type' => Controls_Manager::COLOR, 'selectors' => array( $racine => $c[1] . ': {{VALUE}};' ) ) );
+		}
+		$this->add_group_control( Group_Control_Typography::get_type(), array( 'name' => 'typo_filtres', 'label' => 'Typographie des onglets', 'selector' => $racine . ' a.lpg-filtre, ' . $racine . ' .lpg-filtres__valeur' ) );
+		$this->add_control(
+			'f_rayon',
+			array(
+				'label'      => 'Arrondi de la barre et du menu',
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'px' ),
+				'range'      => array( 'px' => array( 'min' => 0, 'max' => 28, 'step' => 1 ) ),
+				'selectors'  => array( $racine => '--lpg-f-rayon: {{SIZE}}{{UNIT}};' ),
+			)
+		);
+		$this->end_controls_section();
+
 		$this->start_controls_section( 'style_typo', array( 'label' => 'Typographie', 'tab' => Controls_Manager::TAB_STYLE ) );
 		foreach ( array(
 			'typo_h1'     => array( 'Titre de la page (H1)', $racine . ' .lpg-hero h1.lpg-hero__titre' ),
 			'typo_intro'  => array( 'Introduction', $racine . ' .lpg-hero p.lpg-hero__intro' ),
+			'typo_surtitre' => array( 'Petite étiquette de la liste', $racine . ' p.lpg-tete__surtitre' ),
 			'typo_titre'  => array( 'Titre de la liste', $racine . ' h2.lpg-tete__titre' ),
 			'typo_cartes' => array( 'Titres des albums', $racine . ' .lpg-carte__titre' ),
 		) as $id => $t ) {
