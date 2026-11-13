@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LePhare – Actualités
  * Description:       Rubrique Actualités, sobre et typographique : page /actualites/ (widget Elementor « Actualités » ou shortcode [lephare_actualites]) et gabarit de lecture des articles (hors catégorie Prédications).
- * Version:           3.7.0
+ * Version:           3.7.1
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            FREEDEV – LePhare/Goma
@@ -18,14 +18,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const LEPHARE_ACTU_VERSION = '3.7.0';
+const LEPHARE_ACTU_VERSION = '3.7.1';
 
 /* =========================================================================
  * 1. Outils
  * ====================================================================== */
 
 /**
- * IDs de la catégorie « Prédications » (sermons) et de ses sous-catégories : toujours exclus.
+ * IDs des catégories qui ne sont jamais des actualités : « Prédications » (sermons) et ses sous-catégories,
+ * plus celles ajoutées par d'autres extensions via le filtre « lephare_actu_categories_exclues »
+ * (par exemple la catégorie « Galerie » de l'extension lephare-galerie, #08).
  *
  * @return int[]
  */
@@ -38,6 +40,7 @@ function lephare_actu_ids_sermons() {
 			$enfants = get_term_children( $cat->term_id, 'category' );
 			$ids     = array_merge( array( (int) $cat->term_id ), is_wp_error( $enfants ) ? array() : array_map( 'intval', $enfants ) );
 		}
+		$ids = array_values( array_unique( array_map( 'intval', (array) apply_filters( 'lephare_actu_categories_exclues', $ids ) ) ) );
 	}
 	return $ids;
 }

@@ -1,0 +1,1887 @@
+/*
+ * LePhare – Galerie – v1.2.0 (issue #08)
+ *
+ * Même langage que la page Actualités : bandeau bleu marine sur une vraie photo, étiquettes en pastille,
+ * cartes blanches, fond de section clair. Sobre : aucun élément décoratif.
+ * Seules animations : léger zoom des photos au survol, fondu de la visionneuse (coupés si « réduire les animations »).
+ * Contrastes (AA) : bleu marine 17,2:1 · gris texte 10,1:1 · gris méta 4,8:1 · vert sur pastille 6,9:1 · blanc sur bandeau ≥ 12:1.
+ */
+
+/* -------------------------------------------------------------------------
+ * 1. Jetons et remises à zéro (le thème ajoute marges et puces au contenu)
+ * ---------------------------------------------------------------------- */
+.lpg,
+.lpg-zone,
+.lpg-visionneuse {
+	--lpg-encre: var(--global-palette3, #071b38);
+	--lpg-texte: var(--global-palette5, #374352);
+	--lpg-meta: var(--global-palette6, #697380);
+	--lpg-vert: var(--global-palette11, #13612e);
+	--lpg-vert-doux: #e8f2eb;
+	--lpg-sauge: #7fb894;
+	--lpg-sauge-pale: #a9d2b8;
+	--lpg-filet: var(--global-palette7, #dadde4);
+	--lpg-doux: #f5f6f8;
+	--lpg-fond-section: #eef2f6;
+	--lpg-rayon: 16px;
+	--lpg-gouttiere: 24px;
+	--lpg-police: var(--global-body-font-family, "Jost"), "Jost", sans-serif;
+	--lpg-transition: 0.2s ease;
+	--lpg-f-fond: #fff;
+	--lpg-f-texte: var(--lpg-texte);
+	--lpg-f-actif: var(--lpg-encre);
+	--lpg-f-actif-texte: #fff;
+	--lpg-f-pastille: var(--lpg-sauge-pale);
+	--lpg-f-etiquette: var(--lpg-vert);
+	--lpg-f-rayon: 16px;
+	font-family: var(--lpg-police);
+}
+
+.lpg {
+	display: flow-root;
+	color: var(--lpg-encre);
+	background: #fff;
+}
+
+.lpg :is(h1, h2, h3, p, ul, ol, li, figure),
+.single-content .lpg :is(h1, h2, h3, p, ul, ol, li, figure) {
+	margin: 0;
+	font-family: var(--lpg-police);
+}
+
+.lpg :is(ul, ol),
+.single-content .lpg :is(ul, ol) {
+	padding: 0;
+	list-style: none;
+}
+
+.lpg a {
+	color: var(--lpg-encre);
+	text-underline-offset: 4px;
+}
+
+.lpg :is(a, button):focus-visible {
+	outline: 2px solid var(--lpg-encre);
+	outline-offset: 3px;
+}
+
+.lpg-cadre {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: calc(1200px + 2 * var(--lpg-gouttiere));
+	margin-right: auto;
+	margin-left: auto;
+	padding-right: var(--lpg-gouttiere);
+	padding-left: var(--lpg-gouttiere);
+}
+
+.lpg-picto {
+	flex: 0 0 auto;
+}
+
+/* Page d'un album : la zone de contenu de Kadence devient pleine largeur */
+.content-area.lpg-zone {
+	margin: 0;
+	padding: 0;
+	background: #fff;
+}
+
+.lpg-zone .site-main {
+	max-width: none;
+	margin: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Bandeau (page Galerie et page d'un album)
+ * ---------------------------------------------------------------------- */
+.lpg .lpg-hero {
+	position: relative;
+	overflow: hidden;
+	padding: 80px 0 88px;
+	color: #fff;
+	background-color: var(--lpg-encre);
+}
+
+.lpg .lpg-hero--album {
+	padding: 48px 0 72px;
+}
+
+.lpg .lpg-hero__photo {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+}
+
+.lpg .lpg-hero__photo img,
+.single-content .lpg .lpg-hero__photo img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: center 40%;
+}
+
+/* Voile bleu marine : dense côté texte (lisibilité du texte blanc), plus léger à droite */
+.lpg .lpg-hero__photo::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(90deg, rgba(7, 27, 56, 0.95) 0%, rgba(7, 27, 56, 0.86) 50%, rgba(7, 27, 56, 0.6) 100%);
+}
+
+.lpg .lpg-hero__inner {
+	position: relative;
+	z-index: 1;
+}
+
+.lpg .lpg-hero__inner > * {
+	max-width: 760px;
+}
+
+.lpg a.lpg-retour {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	margin-bottom: 16px;
+	font-size: 15px;
+	font-weight: 500;
+	color: rgba(255, 255, 255, 0.86);
+	text-decoration: none;
+}
+
+.lpg a.lpg-retour:hover {
+	color: #fff;
+	text-decoration: underline;
+}
+
+.lpg .lpg-hero a:focus-visible {
+	outline-color: #fff;
+}
+
+.lpg .lpg-hero p.lpg-surtitre {
+	display: block;
+	margin-bottom: 16px;
+}
+
+.lpg .lpg-hero .lpg-surtitre,
+.lpg .lpg-hero .lpg-surtitre a {
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	color: var(--lpg-sauge-pale);          /* sur bleu marine : 10:1 */
+	text-decoration: none;
+}
+
+.lpg .lpg-hero p.lpg-surtitre:not(:has(a)),
+.lpg .lpg-hero .lpg-surtitre a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 12px 4px 10px;
+	background: rgba(127, 184, 148, 0.16);
+	border-radius: 999px;
+}
+
+.lpg .lpg-hero p.lpg-surtitre:not(:has(a))::before,
+.lpg .lpg-hero .lpg-surtitre a::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	background: var(--lpg-sauge);
+	border-radius: 50%;
+}
+
+.lpg .lpg-hero h1.lpg-hero__titre {
+	font-size: 56px;
+	font-weight: 600;
+	line-height: 64px;
+	letter-spacing: -0.02em;
+	color: #fff;
+}
+
+.lpg .lpg-hero--album h1.lpg-hero__titre {
+	font-size: 46px;
+	line-height: 54px;
+}
+
+.lpg .lpg-hero p.lpg-hero__intro {
+	max-width: 640px;
+	margin-top: 16px;
+	font-size: 19px;
+	line-height: 30px;
+	color: rgba(255, 255, 255, 0.86);
+}
+
+.lpg .lpg-hero :is(ul.lpg-reperes, ul.lpg-infos) {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 0;
+	margin-top: 28px;
+	font-size: 14px;
+	line-height: 24px;
+	color: rgba(255, 255, 255, 0.82);
+}
+
+.lpg .lpg-hero :is(.lpg-reperes, .lpg-infos) li {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.lpg .lpg-hero :is(.lpg-reperes, .lpg-infos) li + li {
+	margin-left: 20px;
+	padding-left: 20px;
+	border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.lpg .lpg-hero .lpg-reperes strong {
+	font-size: 18px;
+	font-weight: 600;
+	color: #fff;
+}
+
+.lpg .lpg-hero .lpg-infos .lpg-picto {
+	width: 16px;
+	height: 16px;
+	color: var(--lpg-sauge-pale);
+}
+
+/* -------------------------------------------------------------------------
+ * 3. Albums : en-tête, onglets de catégories, grille de cartes
+ * ---------------------------------------------------------------------- */
+.lpg .lpg-albums,
+.lpg.lpg-autres {
+	padding: 72px 0 96px;
+	background: var(--lpg-fond-section);
+	scroll-margin-top: 16px;
+}
+
+/* En-tête de la liste : petite étiquette, titre, résultats (« 5 albums · 29 photos ») */
+.lpg .lpg-tete {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	margin-bottom: 28px;
+}
+
+.lpg p.lpg-tete__surtitre {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--lpg-vert);
+}
+
+.lpg p.lpg-tete__surtitre::before {
+	content: "";
+	width: 28px;
+	height: 2px;
+	background: var(--lpg-sauge);
+	border-radius: 2px;
+}
+
+.lpg h2.lpg-tete__titre {
+	font-size: 32px;
+	font-weight: 600;
+	line-height: 40px;
+	letter-spacing: -0.01em;
+	color: var(--lpg-encre);
+}
+
+.lpg.lpg-autres h2.lpg-tete__titre {
+	margin-bottom: 32px;
+}
+
+.lpg p.lpg-resultats {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 15px;
+	line-height: 24px;
+	color: var(--lpg-texte);
+}
+
+.lpg .lpg-resultats__point {
+	color: var(--lpg-sauge);
+	font-weight: 700;
+}
+
+/* Onglets de catégories : barre « segmentée » (ordinateur) ou menu déroulant (mobile, réglable) */
+.lpg .lpg-filtres {
+	position: relative;
+	margin-bottom: 36px;
+}
+
+.lpg ul.lpg-filtres__liste {
+	display: flex;
+	gap: 4px;
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	padding: 6px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	background: var(--lpg-f-fond);
+	border: 1px solid var(--lpg-filet);
+	border-radius: var(--lpg-f-rayon);
+	box-shadow: 0 1px 2px rgba(7, 27, 56, 0.04), 0 14px 32px -22px rgba(7, 27, 56, 0.35);
+}
+
+.lpg .lpg-filtres__liste::-webkit-scrollbar {
+	display: none;
+}
+
+.lpg .lpg-filtres__liste > li {
+	flex: 0 0 auto;
+}
+
+.lpg a.lpg-filtre {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 44px;
+	padding: 0 14px 0 18px;
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 20px;
+	white-space: nowrap;
+	color: var(--lpg-f-texte);
+	text-decoration: none;
+	background: transparent;
+	border-radius: calc(var(--lpg-f-rayon) - 5px);
+	transition: color var(--lpg-transition), background-color var(--lpg-transition), box-shadow var(--lpg-transition);
+}
+
+.lpg a.lpg-filtre:hover {
+	color: var(--lpg-encre);
+	background: var(--lpg-doux);
+}
+
+/* Contour de focus à l'extérieur de l'onglet (visible aussi sur l'onglet actif bleu marine) */
+.lpg a.lpg-filtre:focus-visible {
+	outline: 2px solid var(--lpg-encre);
+	outline-offset: 2px;
+}
+
+.lpg .lpg-filtre__nb {
+	min-width: 26px;
+	padding: 1px 8px;
+	box-sizing: border-box;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 20px;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+	color: var(--lpg-texte);
+	background: var(--lpg-doux);
+	border-radius: 999px;
+}
+
+.lpg a.lpg-filtre .lpg-picto--coche {
+	display: none;
+}
+
+.lpg a.lpg-filtre--actif,
+.lpg a.lpg-filtre--actif:hover {
+	font-weight: 600;
+	color: var(--lpg-f-actif-texte);
+	background: var(--lpg-f-actif);
+	box-shadow: 0 8px 18px -10px rgba(7, 27, 56, 0.7);
+}
+
+.lpg a.lpg-filtre--actif .lpg-filtre__nb {
+	color: var(--lpg-encre);
+	background: var(--lpg-f-pastille);
+}
+
+/* Bouton du menu (affiché par le script seulement) */
+.lpg button.lpg-filtres__bouton {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	min-height: 64px;
+	margin: 0;
+	padding: 10px 12px 10px 12px;
+	box-sizing: border-box;
+	font-family: inherit;
+	text-align: left;
+	color: var(--lpg-encre);
+	cursor: pointer;
+	background: var(--lpg-f-fond);
+	border: 1px solid var(--lpg-filet);
+	border-radius: var(--lpg-f-rayon);
+	box-shadow: 0 1px 2px rgba(7, 27, 56, 0.04), 0 14px 32px -22px rgba(7, 27, 56, 0.35);
+	transition: border-color var(--lpg-transition), box-shadow var(--lpg-transition);
+}
+
+.lpg button.lpg-filtres__bouton[hidden] {
+	display: none;
+}
+
+.lpg button.lpg-filtres__bouton:hover,
+.lpg .lpg-filtres--ouvert button.lpg-filtres__bouton {
+	border-color: #b9c1cd;
+}
+
+.lpg .lpg-filtres__icone {
+	display: grid;
+	flex: 0 0 auto;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	color: var(--lpg-vert);
+	background: var(--lpg-vert-doux);
+	border-radius: calc(var(--lpg-f-rayon) - 6px);
+}
+
+.lpg .lpg-filtres__texte {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.lpg .lpg-filtres__etiquette {
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 16px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--lpg-f-etiquette);
+}
+
+.lpg .lpg-filtres__valeur {
+	overflow: hidden;
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 24px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.lpg .lpg-filtres__chevron {
+	display: grid;
+	flex: 0 0 auto;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	color: var(--lpg-encre);
+	background: var(--lpg-doux);
+	border-radius: 999px;
+	transition: transform var(--lpg-transition);
+}
+
+.lpg .lpg-filtres--ouvert .lpg-filtres__chevron {
+	transform: rotate(180deg);
+}
+
+/* Mode menu : la liste devient un panneau sous le bouton (largeur limitée sur tablette) */
+.lpg .lpg-filtres--menu {
+	max-width: 440px;
+}
+
+.lpg .lpg-filtres--menu .lpg-filtres__liste {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	left: 0;
+	z-index: 30;
+	display: none;
+	flex-direction: column;
+	gap: 2px;
+	width: auto;
+	max-height: min(420px, 62vh);
+	padding: 8px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	box-shadow: 0 2px 4px rgba(7, 27, 56, 0.06), 0 28px 56px -18px rgba(7, 27, 56, 0.45);
+}
+
+.lpg .lpg-filtres--menu.lpg-filtres--ouvert .lpg-filtres__liste {
+	display: flex;
+	animation: lpg-menu 0.18s ease-out;
+}
+
+.lpg .lpg-filtres--menu a.lpg-filtre {
+	min-height: 48px;
+	padding: 0 12px 0 14px;
+	font-size: 16px;
+}
+
+.lpg .lpg-filtres--menu .lpg-filtre__nom {
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.lpg .lpg-filtres--menu a.lpg-filtre .lpg-picto--coche {
+	display: block;
+	flex: 0 0 auto;
+	visibility: hidden;
+	width: 18px;
+	height: 18px;
+	color: var(--lpg-vert);
+}
+
+.lpg .lpg-filtres--menu a.lpg-filtre--actif,
+.lpg .lpg-filtres--menu a.lpg-filtre--actif:hover {
+	color: var(--lpg-encre);
+	background: var(--lpg-vert-doux);
+	box-shadow: none;
+}
+
+.lpg .lpg-filtres--menu a.lpg-filtre--actif .lpg-filtre__nb {
+	color: #fff;
+	background: var(--lpg-vert);
+}
+
+.lpg .lpg-filtres--menu a.lpg-filtre--actif .lpg-picto--coche {
+	visibility: visible;
+}
+
+@keyframes lpg-menu {
+	from {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpg .lpg-filtres--menu.lpg-filtres--ouvert .lpg-filtres__liste {
+		animation: none;
+	}
+
+	.lpg .lpg-filtres__chevron {
+		transition: none;
+	}
+}
+
+.lpg--calme .lpg-filtres--menu.lpg-filtres--ouvert .lpg-filtres__liste {
+	animation: none;
+}
+
+.lpg .lpg-grille {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 32px;
+}
+
+.lpg .lpg-grille > li {
+	display: flex;
+	margin: 0;
+}
+
+.lpg .lpg-carte__inner {
+	position: relative;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	overflow: hidden;
+	background: #fff;
+	border-radius: var(--lpg-rayon);
+	box-shadow: 0 18px 40px -22px rgba(7, 27, 56, 0.35);
+	transition: box-shadow var(--lpg-transition), transform var(--lpg-transition);
+}
+
+.lpg .lpg-carte__inner:hover {
+	box-shadow: 0 24px 48px -22px rgba(7, 27, 56, 0.45);
+	transform: translateY(-2px);
+}
+
+.lpg .lpg-carte__inner:has(.lpg-lien-etendu:focus-visible) {
+	outline: 2px solid var(--lpg-encre);
+	outline-offset: 4px;
+}
+
+.lpg .lpg-carte__media {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	overflow: hidden;
+	background: var(--lpg-doux);
+}
+
+.lpg .lpg-carte__media img,
+.single-content .lpg .lpg-carte__media img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.4s ease;
+}
+
+.lpg .lpg-carte__inner:hover .lpg-carte__media img {
+	transform: scale(1.03);
+}
+
+.lpg .lpg-carte__nb {
+	position: absolute;
+	bottom: 12px;
+	left: 12px;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px 4px 8px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	color: #fff;
+	background: rgba(7, 27, 56, 0.82);
+	border-radius: 999px;
+}
+
+.lpg .lpg-carte__nb .lpg-picto {
+	width: 16px;
+	height: 16px;
+}
+
+.lpg .lpg-carte__corps {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	padding: 20px 22px 22px;
+}
+
+.lpg p.lpg-carte__cat {
+	align-self: flex-start;
+	padding: 2px 10px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	color: var(--lpg-vert);
+	background: var(--lpg-vert-doux);
+	border-radius: 999px;
+}
+
+.lpg .lpg-carte__titre {
+	display: -webkit-box;
+	margin: 12px 0 10px;
+	overflow: hidden;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 28px;
+	color: var(--lpg-encre);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+.lpg a.lpg-lien-etendu {
+	color: inherit;
+	text-decoration: none;
+}
+
+.lpg a.lpg-lien-etendu::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+}
+
+.lpg a.lpg-lien-etendu:focus-visible {
+	outline: none;
+}
+
+.lpg .lpg-carte__inner:hover .lpg-lien-etendu {
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 5px;
+}
+
+.lpg p.lpg-carte__date {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: auto;
+	font-size: 14px;
+	line-height: 22px;
+	color: var(--lpg-meta);
+}
+
+.lpg .lpg-carte__date .lpg-picto {
+	width: 16px;
+	height: 16px;
+}
+
+/* Pagination et état vide */
+.lpg .lpg-pagination {
+	margin-top: 48px;
+}
+
+.lpg .lpg-pagination ul {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.lpg .lpg-pagination :is(a, span[aria-current]) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0 14px;
+	box-sizing: border-box;
+	font-size: 15px;
+	font-weight: 500;
+	color: var(--lpg-encre);
+	text-decoration: none;
+	background: #fff;
+	border: 1px solid var(--lpg-filet);
+	border-radius: 999px;
+}
+
+.lpg .lpg-pagination span[aria-current] {
+	font-weight: 600;
+	color: #fff;
+	background: var(--lpg-encre);
+	border-color: var(--lpg-encre);
+}
+
+.lpg .lpg-vide {
+	padding: 48px 24px;
+	text-align: center;
+	background: #fff;
+	border: 1px solid var(--lpg-filet);
+	border-radius: var(--lpg-rayon);
+}
+
+.lpg .lpg-vide p {
+	font-size: 18px;
+	line-height: 28px;
+	color: var(--lpg-texte);
+}
+
+.lpg .lpg-vide p + p {
+	margin-top: 8px;
+}
+
+.lpg .lpg-vide a {
+	font-weight: 600;
+	color: var(--lpg-vert);
+	text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------------
+ * 4. Page d'un album : texte éventuel et grille régulière de photos (sans vide)
+ * ---------------------------------------------------------------------- */
+.lpg .lpg-texte {
+	max-width: 760px;
+	padding-top: 48px;
+	font-size: 18px;
+	line-height: 1.7;
+	color: var(--lpg-encre);
+}
+
+.lpg .lpg-texte > * + * {
+	margin-top: 16px;
+}
+
+.lpg .lpg-photos {
+	padding: 48px 0 96px;
+}
+
+/* Grille sans vide : hauteur de rangée fixe (format 4/3 d'une colonne) ; la dernière rangée s'élargit. */
+.lpg .lpg-mur-cadre {
+	container-type: inline-size;
+}
+
+.lpg .lpg-mur {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-auto-rows: calc((100cqw - 36px) / 4 * 0.75);
+	gap: 12px;
+}
+
+.lpg .lpg-mur > li {
+	grid-column: span var(--lpg-s4, 1);
+	margin: 0;
+}
+
+.lpg a.lpg-vignette {
+	position: relative;
+	display: block;
+	height: 100%;
+	overflow: hidden;
+	background: var(--lpg-doux);
+	border-radius: 12px;
+	cursor: zoom-in;
+}
+
+.lpg a.lpg-vignette img,
+.single-content .lpg a.lpg-vignette img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.4s ease;
+}
+
+.lpg a.lpg-vignette:hover img {
+	transform: scale(1.03);
+}
+
+.lpg a.lpg-vignette:focus-visible {
+	outline: 3px solid var(--lpg-encre);
+	outline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------
+ * 5. Visionneuse plein écran
+ * ---------------------------------------------------------------------- */
+html.lpg-bloque,
+html.lpg-bloque body {
+	overflow: hidden;
+}
+
+.lpg-visionneuse {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	padding: 72px 96px 40px;
+	color: #fff;
+	background: rgba(4, 12, 26, 0.985);
+}
+
+.lpg-visionneuse[hidden] {
+	display: none !important;
+}
+
+.lpg-visionneuse .screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.lpg-visionneuse .lpg-vis__compteur {
+	position: absolute;
+	top: 24px;
+	left: 28px;
+	margin: 0;
+	font-family: var(--lpg-police);
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 24px;
+	letter-spacing: 0.04em;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.lpg-visionneuse .lpg-vis__scene {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	touch-action: pan-y;
+}
+
+.lpg-visionneuse img.lpg-vis__img {
+	display: block;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	max-height: calc(100% - 56px);
+	object-fit: contain;
+	border-radius: 8px;
+	user-select: none;
+	-webkit-user-drag: none;
+	transition: opacity 0.25s ease;
+}
+
+.lpg-visionneuse img.lpg-vis__img.lpg-charge {
+	opacity: 0;
+}
+
+.lpg-visionneuse .lpg-vis__legende {
+	max-width: 760px;
+	min-height: 24px;
+	margin-top: 16px;
+	font-family: var(--lpg-police);
+	font-size: 15px;
+	line-height: 24px;
+	text-align: center;
+	color: rgba(255, 255, 255, 0.88);
+}
+
+.lpg-visionneuse button.lpg-vis__btn {
+	position: absolute;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 52px;
+	height: 52px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	color: #fff;
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.28);
+	border-radius: 50%;
+	box-shadow: none;
+	cursor: pointer;
+	transition: background-color var(--lpg-transition);
+}
+
+.lpg-visionneuse button.lpg-vis__btn:hover,
+.lpg-visionneuse button.lpg-vis__btn:focus {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.22);
+}
+
+.lpg-visionneuse button.lpg-vis__btn:focus-visible {
+	outline: 3px solid var(--lpg-sauge-pale);
+	outline-offset: 3px;
+}
+
+.lpg-visionneuse .lpg-vis__fermer {
+	top: 14px;
+	right: 18px;
+}
+
+.lpg-visionneuse .lpg-vis__prec {
+	top: 50%;
+	left: 22px;
+	transform: translateY(-50%);
+}
+
+.lpg-visionneuse .lpg-vis__suiv {
+	top: 50%;
+	right: 22px;
+	transform: translateY(-50%);
+}
+
+.lpg-visionneuse .lpg-picto {
+	width: 24px;
+	height: 24px;
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Tablette et mobile
+ * ---------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+	.lpg .lpg-grille {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	.lpg .lpg-mur {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-auto-rows: calc((100cqw - 24px) / 3 * 0.75);
+	}
+
+	.lpg .lpg-mur > li {
+		grid-column: span var(--lpg-s3, 1);
+	}
+}
+
+@media (max-width: 767px) {
+	.lpg,
+	.lpg-zone,
+	.lpg-visionneuse {
+		--lpg-gouttiere: 16px;
+	}
+
+	.lpg .lpg-hero {
+		padding: 48px 0 56px;
+	}
+
+	.lpg .lpg-hero--album {
+		padding: 32px 0 48px;
+	}
+
+	.lpg .lpg-hero h1.lpg-hero__titre,
+	.lpg .lpg-hero--album h1.lpg-hero__titre {
+		font-size: 36px;
+		line-height: 44px;
+	}
+
+	.lpg .lpg-hero p.lpg-hero__intro {
+		font-size: 17px;
+		line-height: 28px;
+	}
+
+	.lpg .lpg-hero :is(.lpg-reperes, .lpg-infos) li + li {
+		margin-left: 14px;
+		padding-left: 14px;
+	}
+
+	.lpg .lpg-hero__photo::after {
+		background: linear-gradient(180deg, rgba(7, 27, 56, 0.88) 0%, rgba(7, 27, 56, 0.94) 100%);
+	}
+
+	.lpg .lpg-albums,
+	.lpg.lpg-autres {
+		padding: 48px 0 64px;
+	}
+
+	.lpg h2.lpg-tete__titre {
+		font-size: 26px;
+		line-height: 34px;
+	}
+
+	.lpg .lpg-grille {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.lpg .lpg-photos {
+		padding: 32px 0 64px;
+	}
+
+	.lpg .lpg-mur {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-auto-rows: calc((100cqw - 8px) / 2 * 0.75);
+		gap: 8px;
+	}
+
+	.lpg .lpg-mur > li {
+		grid-column: span var(--lpg-s2, 1);
+	}
+
+	.lpg a.lpg-vignette {
+		border-radius: 8px;
+	}
+
+	.lpg-visionneuse {
+		padding: 64px 12px 96px;
+	}
+
+	.lpg-visionneuse .lpg-vis__compteur {
+		top: 22px;
+		left: 18px;
+	}
+
+	.lpg-visionneuse .lpg-vis__prec,
+	.lpg-visionneuse .lpg-vis__suiv {
+		top: auto;
+		bottom: 24px;
+		transform: none;
+	}
+
+	.lpg-visionneuse .lpg-vis__prec {
+		left: calc(50% - 68px);
+	}
+
+	.lpg-visionneuse .lpg-vis__suiv {
+		right: calc(50% - 68px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpg *,
+	.lpg-visionneuse * {
+		transition: none !important;
+	}
+
+	.lpg .lpg-carte__inner:hover,
+	.lpg .lpg-carte__inner:hover .lpg-carte__media img,
+	.lpg a.lpg-vignette:hover img {
+		transform: none;
+	}
+}
+
+/* =========================================================================
+ * 7. v1.1 – éléments qui donnent envie d'explorer (toujours avec de vraies photos)
+ *    Bandeau en fondu, tuiles de catégories en éventail, dernier album en mosaïque,
+ *    cartes en « pile d'album » avec aperçu, visionneuse avec vignettes, diaporama et plein écran.
+ * ====================================================================== */
+
+/* Bandeau : les couvertures des derniers albums se succèdent en fondu lent */
+.lpg .lpg-hero__photo--diapo img {
+	transition: opacity 1.6s ease, transform 9s linear;
+}
+
+.lpg .lpg-hero__photo--diapo img:not(:first-child) {
+	opacity: 0;
+}
+
+.lpg .lpg-hero__photo--diapo.lpg-js img {
+	opacity: 0;
+}
+
+.lpg .lpg-hero__photo--diapo.lpg-js img.lpg-visible {
+	opacity: 1;
+	transform: scale(1.06);
+}
+
+.lpg .lpg-hero__photo--diapo::after {
+	z-index: 1;
+}
+
+/* Bandeau suivi des tuiles : place pour le chevauchement */
+.lpg .lpg-hero--tuiles {
+	padding-bottom: 136px;
+}
+
+/* Tuiles des catégories (éventail de 3 photos) */
+.lpg .lpg-tuiles {
+	position: relative;
+	z-index: 2;
+	margin-top: -72px;
+	margin-bottom: 8px;
+}
+
+.lpg .lpg-tuiles ul {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+}
+
+.lpg .lpg-tuile {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	min-height: 96px;
+	padding: 16px 16px 16px 20px;
+	background: #fff;
+	border: 1px solid var(--lpg-filet);
+	border-radius: var(--lpg-rayon);
+	box-shadow: 0 18px 40px -22px rgba(7, 27, 56, 0.4);
+	transition: box-shadow var(--lpg-transition), transform var(--lpg-transition), border-color var(--lpg-transition);
+}
+
+.lpg .lpg-tuile:hover {
+	box-shadow: 0 24px 48px -22px rgba(7, 27, 56, 0.5);
+	transform: translateY(-3px);
+}
+
+.lpg .lpg-tuile--active {
+	border-color: var(--lpg-encre);
+	box-shadow: 0 0 0 1px var(--lpg-encre), 0 18px 40px -22px rgba(7, 27, 56, 0.4);
+}
+
+.lpg .lpg-tuile:has(a:focus-visible) {
+	outline: 2px solid var(--lpg-encre);
+	outline-offset: 4px;
+}
+
+.lpg .lpg-tuile__eventail {
+	position: relative;
+	flex: 0 0 64px;
+	width: 64px;
+	height: 56px;
+}
+
+.lpg .lpg-tuile__eventail img,
+.single-content .lpg .lpg-tuile__eventail img {
+	position: absolute;
+	top: 4px;
+	left: 8px;
+	width: 48px;
+	height: 48px;
+	max-width: none;
+	object-fit: cover;
+	border: 2px solid #fff;
+	border-radius: 10px;
+	box-shadow: 0 6px 14px -6px rgba(7, 27, 56, 0.55);
+	transition: transform 0.35s ease;
+}
+
+.lpg .lpg-tuile__eventail img:nth-child(1) {
+	transform: rotate(-12deg) translateX(-6px);
+}
+
+.lpg .lpg-tuile__eventail img:nth-child(2) {
+	transform: rotate(10deg) translateX(6px);
+}
+
+.lpg .lpg-tuile__eventail img:nth-child(3) {
+	z-index: 1;
+	transform: rotate(0deg);
+}
+
+.lpg .lpg-tuile:hover .lpg-tuile__eventail img:nth-child(1) {
+	transform: rotate(-20deg) translateX(-12px);
+}
+
+.lpg .lpg-tuile:hover .lpg-tuile__eventail img:nth-child(2) {
+	transform: rotate(18deg) translateX(12px);
+}
+
+.lpg .lpg-tuile__texte {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.lpg a.lpg-tuile__lien {
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 24px;
+	color: var(--lpg-encre);
+	text-decoration: none;
+}
+
+.lpg a.lpg-tuile__lien::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	border-radius: var(--lpg-rayon);
+}
+
+.lpg a.lpg-tuile__lien:focus-visible {
+	outline: none;
+}
+
+.lpg .lpg-tuile__nb {
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--lpg-texte);
+}
+
+.lpg .lpg-tuile__fleche {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	margin-left: auto;
+	color: var(--lpg-encre);
+	background: var(--lpg-doux);
+	border-radius: 50%;
+	transition: background-color var(--lpg-transition);
+}
+
+.lpg .lpg-tuile:hover .lpg-tuile__fleche {
+	background: var(--lpg-sauge);
+}
+
+.lpg .lpg-tuile__fleche .lpg-picto {
+	width: 16px;
+	height: 16px;
+}
+
+/* Dernier album : mosaïque + texte */
+.lpg .lpg-une {
+	padding-top: 64px;
+	padding-bottom: 72px;
+}
+
+.lpg .lpg-une__grille {
+	display: grid;
+	grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	gap: 48px;
+	align-items: center;
+}
+
+.lpg .lpg-une__mosaique {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-template-rows: repeat(2, 200px);
+	gap: 10px;
+}
+
+.lpg .lpg-une__mosaique > a:first-child {
+	grid-row: span 2;
+	grid-column: span 2;
+}
+
+.lpg .lpg-une__mosaique--1 {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.lpg .lpg-une__mosaique--2 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lpg .lpg-une__mosaique--2 > a:nth-child(2) {
+	grid-row: span 2;
+}
+
+.lpg .lpg-une__mosaique--3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lpg .lpg-une__mosaique--4 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lpg .lpg-une__mosaique--4 > a:first-child {
+	grid-column: span 1;
+}
+
+.lpg .lpg-une__mosaique--4 > a:nth-child(4) {
+	grid-column: span 2;
+}
+
+.lpg a.lpg-une__tuile {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	background: var(--lpg-doux);
+	border-radius: 14px;
+	cursor: zoom-in;
+}
+
+.lpg a.lpg-une__tuile img,
+.single-content .lpg a.lpg-une__tuile img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.lpg a.lpg-une__tuile:hover img {
+	transform: scale(1.05);
+}
+
+.lpg a.lpg-une__tuile:focus-visible {
+	outline: 3px solid var(--lpg-encre);
+	outline-offset: 3px;
+}
+
+.lpg .lpg-une__plus {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+	font-weight: 600;
+	color: #fff;
+	background: rgba(7, 27, 56, 0.62);
+}
+
+.lpg p.lpg-une__surtitre {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 14px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--lpg-encre);
+}
+
+.lpg p.lpg-une__surtitre::before {
+	content: "";
+	width: 24px;
+	height: 2px;
+	background: var(--lpg-sauge);
+	border-radius: 1px;
+}
+
+.lpg .lpg-une__texte .lpg-carte__cat {
+	display: inline-block;
+}
+
+.lpg h2.lpg-une__titre {
+	margin-top: 14px;
+	font-size: 34px;
+	font-weight: 600;
+	line-height: 42px;
+	letter-spacing: -0.015em;
+}
+
+.lpg h2.lpg-une__titre a {
+	color: var(--lpg-encre);
+	text-decoration: underline;
+	text-decoration-color: transparent;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 8px;
+	transition: text-decoration-color var(--lpg-transition);
+}
+
+.lpg h2.lpg-une__titre a:hover {
+	text-decoration-color: var(--lpg-sauge);
+}
+
+.lpg ul.lpg-une__infos {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 20px;
+	margin-top: 14px;
+	font-size: 14px;
+	line-height: 22px;
+	color: var(--lpg-texte);
+}
+
+.lpg .lpg-une__infos li {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.lpg .lpg-une__infos .lpg-picto {
+	width: 16px;
+	height: 16px;
+}
+
+.lpg p.lpg-une__extrait {
+	margin-top: 16px;
+	font-size: 17px;
+	line-height: 28px;
+	color: var(--lpg-texte);
+}
+
+.lpg .lpg-une__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 28px;
+}
+
+.lpg a.lpg-bouton,
+.lpg button.lpg-bouton-diapo {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 48px;
+	margin: 0;
+	padding: 0 22px;
+	font-family: var(--lpg-police);
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 22px;
+	text-decoration: none;
+	text-transform: none;
+	letter-spacing: 0;
+	border-radius: 999px;
+	box-shadow: none;
+	cursor: pointer;
+	transition: background-color var(--lpg-transition), color var(--lpg-transition), border-color var(--lpg-transition);
+}
+
+.lpg a.lpg-bouton {
+	color: #fff;
+	background: #1d7a45;                 /* blanc dessus : 5,4:1 */
+	border: 0;
+}
+
+.lpg a.lpg-bouton:hover,
+.lpg a.lpg-bouton:focus {
+	color: #fff;
+	background: var(--lpg-vert);
+}
+
+.lpg button.lpg-bouton-diapo {
+	color: var(--lpg-encre);
+	background: #fff;
+	border: 1.5px solid var(--lpg-encre);
+}
+
+.lpg button.lpg-bouton-diapo:hover,
+.lpg button.lpg-bouton-diapo:focus {
+	color: #fff;
+	background: var(--lpg-encre);
+}
+
+.lpg button.lpg-bouton-diapo--clair {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.08);
+	border-color: rgba(255, 255, 255, 0.7);
+}
+
+.lpg button.lpg-bouton-diapo--clair:hover,
+.lpg button.lpg-bouton-diapo--clair:focus {
+	color: var(--lpg-encre);
+	background: #fff;
+}
+
+.lpg .lpg-hero button.lpg-bouton-diapo:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 3px;
+}
+
+.lpg :is(a.lpg-bouton, button.lpg-bouton-diapo) .lpg-picto {
+	width: 18px;
+	height: 18px;
+}
+
+/* Bandeau d'un album : infos + bouton diaporama sur une ligne */
+.lpg .lpg-hero__bas {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 16px 28px;
+	margin-top: 28px;
+}
+
+.lpg .lpg-hero .lpg-hero__bas ul.lpg-infos {
+	margin-top: 0;
+}
+
+/* Cartes : « pile d'album » (deux feuilles derrière la carte) et aperçu au survol */
+.lpg .lpg-grille > li.lpg-carte {
+	position: relative;
+	isolation: isolate;
+}
+
+/* Deux feuilles posées SOUS la carte, centrées et alignées (marges égales à gauche et à droite),
+   qui dépassent seulement en bas : rien ne dépasse au-dessus de la carte. */
+.lpg .lpg-carte--pile::before,
+.lpg .lpg-carte--pile::after {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	background: #fff;
+	border: 1px solid var(--lpg-filet);
+	border-radius: var(--lpg-rayon);
+	box-shadow: 0 6px 14px -10px rgba(7, 27, 56, 0.35);
+	transition: transform 0.3s ease;
+}
+
+.lpg .lpg-carte--pile::before {
+	top: 16px;
+	right: 10px;
+	bottom: -7px;
+	left: 10px;
+}
+
+.lpg .lpg-carte--pile::after {
+	top: 32px;
+	right: 22px;
+	bottom: -14px;
+	left: 22px;
+}
+
+.lpg .lpg-carte--pile:hover::before {
+	transform: translateY(2px);
+}
+
+.lpg .lpg-carte--pile:hover::after {
+	transform: translateY(4px);
+}
+
+.lpg .lpg-carte__media img.lpg-carte__apercu {
+	opacity: 0;
+	transition: opacity 0.5s ease, transform 0.4s ease;
+}
+
+.lpg .lpg-carte__media img.lpg-carte__apercu.lpg-visible {
+	opacity: 1;
+}
+
+.lpg .lpg-carte__points {
+	position: absolute;
+	right: 12px;
+	bottom: 18px;
+	z-index: 1;
+	display: flex;
+	gap: 5px;
+	opacity: 0;
+	transition: opacity var(--lpg-transition);
+}
+
+.lpg .lpg-carte__inner:hover .lpg-carte__points,
+.lpg .lpg-carte__inner:focus-within .lpg-carte__points {
+	opacity: 1;
+}
+
+.lpg .lpg-carte__points i {
+	width: 7px;
+	height: 7px;
+	background: rgba(255, 255, 255, 0.55);
+	border-radius: 50%;
+	box-shadow: 0 0 0 1px rgba(7, 27, 56, 0.3);
+}
+
+.lpg .lpg-carte__points i.lpg-actif {
+	background: #fff;
+}
+
+/* Visionneuse : barre du haut (compteur + outils), progression du diaporama, bande de vignettes */
+.lpg-visionneuse .lpg-vis__haut {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 18px 0 28px;
+}
+
+.lpg-visionneuse .lpg-vis__haut .lpg-vis__compteur {
+	position: static;
+}
+
+.lpg-visionneuse .lpg-vis__outils {
+	display: flex;
+	gap: 10px;
+}
+
+.lpg-visionneuse .lpg-vis__outils button.lpg-vis__btn {
+	position: static;
+	transform: none;
+}
+
+.lpg-visionneuse .lpg-vis__lecture .lpg-picto--pause,
+.lpg-visionneuse.lpg-vis--lecture .lpg-vis__lecture .lpg-picto--lecture {
+	display: none;
+}
+
+.lpg-visionneuse.lpg-vis--lecture .lpg-vis__lecture .lpg-picto--pause {
+	display: block;
+}
+
+.lpg-visionneuse.lpg-vis--lecture .lpg-vis__lecture {
+	background: rgba(127, 184, 148, 0.3);
+	border-color: var(--lpg-sauge);
+}
+
+.lpg-visionneuse .lpg-vis__progression {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 3;
+	height: 3px;
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.lpg-visionneuse .lpg-vis__progression span {
+	display: block;
+	height: 100%;
+	background: var(--lpg-sauge);
+	transform: scaleX(0);
+	transform-origin: 0 50%;
+}
+
+.lpg-visionneuse:has(.lpg-vis__bande) {
+	padding-bottom: 108px;
+}
+
+.lpg-visionneuse .lpg-vis__bande {
+	position: absolute;
+	right: 24px;
+	bottom: 18px;
+	left: 24px;
+	display: flex;
+	justify-content: safe center;
+	gap: 8px;
+	overflow-x: auto;
+	padding: 4px;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.lpg-visionneuse button.lpg-vis__vignette {
+	position: relative;
+	flex: 0 0 auto;
+	width: 64px;
+	height: 48px;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.08);
+	border: 2px solid transparent;
+	border-radius: 8px;
+	box-shadow: none;
+	opacity: 0.55;
+	cursor: pointer;
+	transition: opacity var(--lpg-transition), border-color var(--lpg-transition);
+}
+
+.lpg-visionneuse button.lpg-vis__vignette:hover {
+	opacity: 0.9;
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.lpg-visionneuse button.lpg-vis__vignette[aria-current="true"] {
+	opacity: 1;
+	border-color: var(--lpg-sauge);
+}
+
+.lpg-visionneuse button.lpg-vis__vignette:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
+.lpg-visionneuse .lpg-vis__vignette img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.lpg-visionneuse:fullscreen {
+	padding-top: 72px;
+}
+
+@media (max-width: 1100px) {
+	.lpg .lpg-une__grille {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 32px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lpg .lpg-hero--tuiles {
+		padding-bottom: 96px;
+	}
+
+	.lpg .lpg-tuiles {
+		margin-top: -56px;
+	}
+
+	.lpg .lpg-tuiles ul {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+	}
+
+	.lpg .lpg-tuile {
+		min-height: 80px;
+		padding: 12px 14px;
+	}
+
+	.lpg .lpg-une {
+		padding-top: 48px;
+		padding-bottom: 48px;
+	}
+
+	.lpg .lpg-une__mosaique {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-rows: 180px repeat(2, 110px);
+		gap: 6px;
+	}
+
+	.lpg .lpg-une__mosaique > a:first-child {
+		grid-row: span 1;
+		grid-column: span 2;
+	}
+
+	.lpg .lpg-une__mosaique--2,
+	.lpg .lpg-une__mosaique--3,
+	.lpg .lpg-une__mosaique--4 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.lpg .lpg-une__mosaique--2 > a:nth-child(2) {
+		grid-row: span 1;
+		grid-column: span 2;
+	}
+
+	.lpg .lpg-une__mosaique--4 > a:nth-child(4) {
+		grid-column: span 2;
+	}
+
+	.lpg h2.lpg-une__titre {
+		font-size: 26px;
+		line-height: 34px;
+	}
+
+	.lpg .lpg-une__actions > * {
+		flex: 1 1 100%;
+		justify-content: center;
+	}
+
+	.lpg-visionneuse:has(.lpg-vis__bande) {
+		padding-bottom: 150px;
+	}
+
+	.lpg-visionneuse .lpg-vis__haut {
+		padding: 10px 10px 0 16px;
+	}
+
+	.lpg-visionneuse .lpg-vis__outils {
+		gap: 6px;
+	}
+
+	.lpg-visionneuse .lpg-vis__outils button.lpg-vis__btn {
+		width: 44px;
+		height: 44px;
+	}
+
+	.lpg-visionneuse:has(.lpg-vis__bande) .lpg-vis__prec,
+	.lpg-visionneuse:has(.lpg-vis__bande) .lpg-vis__suiv {
+		bottom: 82px;
+	}
+
+	.lpg-visionneuse .lpg-vis__bande {
+		right: 10px;
+		bottom: 14px;
+		left: 10px;
+	}
+
+	.lpg-visionneuse button.lpg-vis__vignette {
+		width: 52px;
+		height: 40px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpg .lpg-hero__photo--diapo.lpg-js img.lpg-visible {
+		transform: none;
+	}
+
+	.lpg .lpg-tuile:hover,
+	.lpg .lpg-tuile:hover .lpg-tuile__eventail img,
+	.lpg .lpg-carte--pile:hover::before,
+	.lpg .lpg-carte--pile:hover::after,
+	.lpg a.lpg-une__tuile:hover img {
+		transform: none;
+	}
+}
+
+/* Tuiles : présentation verticale à partir de la tablette (éventail, nom, nombres), jamais de mot coupé */
+@media (min-width: 768px) {
+	.lpg .lpg-tuile {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+		min-height: 0;
+		padding: 18px 18px 18px 20px;
+	}
+
+	.lpg .lpg-tuile__fleche {
+		position: absolute;
+		top: 18px;
+		right: 16px;
+	}
+
+	.lpg .lpg-tuile__texte {
+		padding-right: 0;
+	}
+}
+
+.lpg a.lpg-tuile__lien,
+.lpg .lpg-tuile__nb {
+	overflow-wrap: normal;
+	word-break: normal;
+	hyphens: none;
+}
+
+/* Animations désactivées dans les réglages du widget */
+.lpg.lpg--calme *,
+.lpg.lpg--calme *::before,
+.lpg.lpg--calme *::after {
+	transition: none !important;
+}
