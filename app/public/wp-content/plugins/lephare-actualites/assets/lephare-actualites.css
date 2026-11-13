@@ -1,5 +1,5 @@
 /*
- * LePhare – Actualités – v3.7.0 (issue #07 ; page Actualités : refonte éditoriale, style inspiré du modèle « Cosion »)
+ * LePhare – Actualités – v3.8.0 (issue #07 ; page Actualités : refonte éditoriale, style inspiré du modèle « Cosion »)
  *
  * Retenue, espace, typographie, photos. Jost uniquement (police du site).
  * Page Actualités : en-tête, « À la une » éditorial, zone de filtres dans le flux (jamais collante), cartes alignées.
@@ -3297,4 +3297,65 @@
 /* Colonne d'outils entièrement désactivée : le texte reste aligné à gauche, sur 680 px */
 .lpa-art .lpa-art-corps--seul {
 	grid-template-columns: minmax(0, 680px);
+}
+
+/* ---------- v3.8.0 : articles mis en page en colonnes (Kadence, colonnes WordPress, Elementor) ----------
+ * Le texte prend toute la largeur de la grille (1080 px) pour que ses colonnes gardent leur largeur d'origine ;
+ * les outils de lecture (sommaire, partage) passent sous le texte, côte à côte. */
+.lpa-art .lpa-art-corps--large {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.lpa-art .lpa-art-corps--large .lpa-lecture {
+	grid-row: 1;
+	grid-column: 1;
+	max-width: none;
+}
+
+.lpa-art .lpa-art-corps--large .lpa-art-outils {
+	position: static;
+	grid-row: 2;
+	grid-column: 1;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: stretch;
+}
+
+.lpa-art .lpa-art-corps--large .lpa-art-outils > .lpa-art-bloc {
+	flex: 1 1 280px;
+}
+
+/* L'anneau « % lu » suit une colonne collante : inutile sous le texte. */
+.lpa-art .lpa-art-corps--large .lpa-art-avancement {
+	display: none;
+}
+
+/* ---------- v3.8.0 : commentaires (gabarit du thème) ---------- */
+.lpa-art .lpa-art-commentaires {
+	margin-top: 64px;
+	padding-top: 40px;
+	border-top: 1px solid var(--lpa-filet);
+}
+
+.lpa-art .lpa-art-commentaires .comments-area {
+	margin: 0;
+	padding: 0;
+	box-shadow: none;
+	background: transparent;
+}
+
+@media (max-width: 1100px) {
+	.lpa-art .lpa-art-corps--large .lpa-lecture {
+		grid-row: 1;
+		max-width: none;
+	}
+
+	.lpa-art .lpa-art-corps--large .lpa-art-outils {
+		grid-row: 2;
+	}
+
+	.lpa-art .lpa-art-commentaires {
+		margin-top: 48px;
+		padding-top: 32px;
+	}
 }

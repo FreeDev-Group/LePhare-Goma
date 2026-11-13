@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LePhare – Actualités
  * Description:       Rubrique Actualités, sobre et typographique : page /actualites/ (widget Elementor « Actualités » ou shortcode [lephare_actualites]) et gabarit de lecture des articles (hors catégorie Prédications).
- * Version:           3.7.1
+ * Version:           3.8.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            FREEDEV – LePhare/Goma
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const LEPHARE_ACTU_VERSION = '3.7.1';
+const LEPHARE_ACTU_VERSION = '3.8.0';
 
 /* =========================================================================
  * 1. Outils
@@ -57,6 +57,64 @@ function lephare_actu_est_actualite( $post_id ) {
 	}
 	$sermons = lephare_actu_ids_sermons();
 	return ! $sermons || ! has_category( $sermons, $post_id );
+}
+
+/**
+ * L'article est-il mis en page en colonnes (Kadence « Row Layout », colonnes WordPress, contenu Elementor) ?
+ * Un tel contenu a besoin de toute la largeur : dans la colonne de lecture de 680 px, ses colonnes deviennent
+ * trop étroites (problème constaté le 13/11/2026 sur les articles existants du site officiel).
+ *
+ * @param int $post_id Article.
+ * @return bool
+ */
+function lephare_actu_en_colonnes( $post_id ) {
+	if ( 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true ) ) {
+		return true;
+	}
+	$contenu = (string) get_post_field( 'post_content', $post_id );
+	foreach ( array( 'kadence/rowlayout', 'kadence/column', 'core/columns' ) as $bloc ) {
+		if ( has_block( $bloc, $contenu ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Cet article utilise-t-il la mise en page de lecture du plugin (réglage « Articles concernés ») ?
+ *
+ * @param int $post_id Article.
+ * @return bool
+ */
+function lephare_actu_gabarit_actif( $post_id ) {
+	if ( ! lephare_actu_est_actualite( $post_id ) ) {
+		return false;
+	}
+	$portee = lephare_actu_reglages_article()['art_portee'];
+	if ( 'aucun' === $portee ) {
+		return false;
+	}
+	return 'simples' !== $portee || ! lephare_actu_en_colonnes( $post_id );
+}
+
+/**
+ * Retire du rendu (pas de la base) les citations vides : sans texte, elles n'affichaient qu'un guillemet décoratif.
+ *
+ * @param string $html Contenu filtré.
+ * @return string
+ */
+function lephare_actu_sans_citation_vide( $html ) {
+	return (string) preg_replace_callback(
+		'#<blockquote\b[^>]*>(.*?)</blockquote>#is',
+		static function ( $m ) {
+			if ( false !== stripos( $m[1], '<img' ) || false !== stripos( $m[1], '<iframe' ) ) {
+				return $m[0];
+			}
+			$texte = preg_replace( '/[\s\x{00A0}\x{200B}]+/u', '', html_entity_decode( wp_strip_all_tags( $m[1] ), ENT_QUOTES, 'UTF-8' ) );
+			return '' === $texte ? '' : $m[0];
+		},
+		$html
+	);
 }
 
 /**
@@ -271,7 +329,8 @@ add_action(
 		}
 		$id      = get_queried_object_id();
 		$contenu = (string) get_post_field( 'post_content', $id ) . (string) get_post_meta( $id, '_elementor_data', true );
-		if ( lephare_actu_est_actualite( $id ) || false !== strpos( $contenu, 'lephare_actualites' ) || false !== strpos( $contenu, 'lephare-actualites' ) ) {
+		// Styles chargés seulement si la page d'article du plugin est utilisée (pas pour un article laissé au thème).
+		if ( lephare_actu_gabarit_actif( $id ) || false !== strpos( $contenu, 'lephare_actualites' ) || false !== strpos( $contenu, 'lephare-actualites' ) ) {
 			wp_enqueue_style( 'lephare-actualites' );
 			wp_enqueue_script( 'lephare-actualites' );
 		}
@@ -400,6 +459,9 @@ function lephare_actu_nettoyer( $brut, $schema ) {
 					break;
 				case 'couleur':
 					$o[ $cle ] = sanitize_hex_color( (string) $v ) ? sanitize_hex_color( (string) $v ) : $defaut;
+					break;
+				case 'choix':
+					$o[ $cle ] = isset( $c[5][ (string) $v ] ) ? (string) $v : $defaut;
 					break;
 				default:
 					$v         = 'zone' === $type ? sanitize_textarea_field( (string) $v ) : sanitize_text_field( is_array( $v ) ? implode( ',', $v ) : (string) $v );
@@ -864,7 +926,7 @@ function lephare_actu_vide( $message, $reset ) {
 add_action(
 	'wp',
 	static function () {
-		if ( is_admin() || ! is_singular( 'post' ) || ! lephare_actu_est_actualite( get_queried_object_id() ) ) {
+		if ( is_admin() || ! is_singular( 'post' ) || ! lephare_actu_gabarit_actif( get_queried_object_id() ) ) {
 			return;
 		}
 		if ( has_action( 'kadence_single', 'Kadence\single_markup' ) ) {
@@ -900,6 +962,23 @@ add_action(
  */
 function lephare_actu_schema_article() {
 	return array(
+		'portee'  => array(
+			'label'  => 'Articles concernés',
+			'champs' => array(
+				'art_portee' => array(
+					'choix',
+					'Articles qui utilisent cette mise en page de lecture',
+					'tous',
+					false,
+					null,
+					array(
+						'tous'    => 'Tous les articles (hors Prédications) – les articles en colonnes passent en pleine largeur',
+						'simples' => 'Seulement les articles sans mise en page en colonnes (les autres gardent la page du thème)',
+						'aucun'   => 'Aucun (tous les articles gardent la page du thème)',
+					),
+				),
+			),
+		),
 		'bandeau' => array(
 			'label'  => 'Bandeau',
 			'champs' => array(
@@ -932,6 +1011,7 @@ function lephare_actu_schema_article() {
 			'champs' => array(
 				'art_etiquettes'     => array( 'oui', 'Étiquettes en pastilles', true ),
 				'art_voisins'        => array( 'oui', 'Article précédent / suivant', true ),
+				'art_commentaires'   => array( 'oui', 'Commentaires sous l’article (formulaire et réponses, si les commentaires sont ouverts)', true ),
 				'art_prec'           => array( 'texte', 'Libellé « Article précédent »', 'Article précédent' ),
 				'art_suiv'           => array( 'texte', 'Libellé « Article suivant »', 'Article suivant' ),
 				'art_aussi'          => array( 'oui', 'Section « À lire aussi »', true ),
@@ -1045,6 +1125,13 @@ function lephare_actu_ecran_article() {
 					break;
 				case 'couleur':
 					echo '<input type="color" id="' . esc_attr( $id ) . '" name="' . esc_attr( $nom ) . '" value="' . esc_attr( $o[ $cle ] ) . '"> <code>' . esc_html( $champ[2] ) . '</code> par défaut';
+					break;
+				case 'choix':
+					echo '<fieldset id="' . esc_attr( $id ) . '">';
+					foreach ( $champ[5] as $valeur => $libelle ) {
+						echo '<label style="display:block;margin:0 0 6px"><input type="radio" name="' . esc_attr( $nom ) . '" value="' . esc_attr( $valeur ) . '"' . checked( $o[ $cle ], $valeur, false ) . '> ' . esc_html( $libelle ) . '</label>';
+					}
+					echo '</fieldset>';
 					break;
 				default:
 					echo '<input type="text" class="regular-text" id="' . esc_attr( $id ) . '" name="' . esc_attr( $nom ) . '" value="' . esc_attr( $o[ $cle ] ) . '">';
@@ -1181,7 +1268,9 @@ function lephare_actu_article() {
 		$liste = get_page_by_path( 'actualites' );
 		$liste = $liste ? get_permalink( $liste ) : home_url( '/' );
 
-		list( $contenu, $titres ) = lephare_actu_titres( apply_filters( 'the_content', get_the_content() ) );
+		list( $contenu, $titres ) = lephare_actu_titres( lephare_actu_sans_citation_vide( apply_filters( 'the_content', get_the_content() ) ) );
+		// Contenu en colonnes : pleine largeur (1080 px), outils de lecture placés sous le texte.
+		$large = lephare_actu_en_colonnes( $post->ID );
 
 		$r = lephare_actu_reglages_article();
 		lephare_actu_opt( $r );
@@ -1228,7 +1317,7 @@ function lephare_actu_article() {
 		}
 
 		// 3. Texte (680 px) + colonne d'outils collante sur ordinateur : progression, sommaire actif, partage.
-		echo '<div class="lpa-art-cadre lpa-art-corps' . ( $d['image'] ? '' : ' lpa-art-corps--sans-image' ) . ( $outils ? '' : ' lpa-art-corps--seul' ) . '">';
+		echo '<div class="lpa-art-cadre lpa-art-corps' . ( $d['image'] ? '' : ' lpa-art-corps--sans-image' ) . ( $outils ? '' : ' lpa-art-corps--seul' ) . ( $large ? ' lpa-art-corps--large' : '' ) . '">';
 		if ( $outils ) {
 			echo '<aside class="lpa-art-outils" aria-label="Outils de lecture">';
 		}
@@ -1271,6 +1360,13 @@ function lephare_actu_article() {
 			echo $prec ? lephare_actu_voisin( $prec, 'prev' ) : '';
 			echo $suiv ? lephare_actu_voisin( $suiv, 'next' ) : '';
 			echo '</ul></nav>';
+		}
+
+		// Commentaires : gabarit du thème (formulaire et réponses), comme sur la page d'article d'origine.
+		if ( $r['art_commentaires'] && ( comments_open() || get_comments_number() ) ) {
+			echo '<div class="lpa-art-cadre lpa-art-commentaires">';
+			comments_template();
+			echo '</div>';
 		}
 		echo '</article>';
 
