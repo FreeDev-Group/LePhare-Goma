@@ -1,0 +1,3300 @@
+/*
+ * LePhare – Actualités – v3.7.0 (issue #07 ; page Actualités : refonte éditoriale, style inspiré du modèle « Cosion »)
+ *
+ * Retenue, espace, typographie, photos. Jost uniquement (police du site).
+ * Page Actualités : en-tête, « À la une » éditorial, zone de filtres dans le flux (jamais collante), cartes alignées.
+ * Palette : bleu marine (texte, onglet actif), vert (catégories, boutons), vert doux « sauge » pour les accents (pas d'orange sur cette page).
+ * Bordures fines, ombres et arrondis légers ; transitions courtes, coupées si « réduire les animations ».
+ * Page d'un article : gabarit de lecture sobre (Jost, colonne de 680 px).
+ *
+ * Contrastes (AA) : bleu nuit 17,2:1 · gris texte 10,1:1 (9:1 sur fond clair) · gris méta 4,8:1 · vert 7,6:1 (6,9:1 sur pastille).
+ */
+
+/* -------------------------------------------------------------------------
+ * 1. Jetons et remises à zéro (le thème ajoute marges et puces au contenu)
+ * ---------------------------------------------------------------------- */
+.lpa,
+.lpa-article-zone {
+	--lpa-encre: var(--global-palette3, #071b38);
+	--lpa-texte: var(--global-palette5, #374352);
+	--lpa-meta: var(--global-palette6, #697380);
+	--lpa-vert: var(--global-palette11, #13612e);
+	--lpa-filet: var(--global-palette7, #dadde4);
+	--lpa-fond-image: var(--global-palette8, #edeff3);
+	--lpa-blanc: #fff;
+	--lpa-police: var(--global-body-font-family, "Jost"), "Jost", sans-serif;
+	--lpa-section: 96px;
+	--lpa-gouttiere: 24px;
+	font-family: var(--lpa-police);
+	color: var(--lpa-encre);
+	background: var(--lpa-blanc);
+}
+
+.lpa {
+	display: flow-root; /* les marges des sections restent dans le bloc blanc */
+}
+
+.lpa :is(h1, h2, h3, h4, p, ul, ol, li, figure),
+.single-content .lpa :is(h1, h2, h3, h4, p, ul, ol, li, figure),
+.lpa-article-zone :is(header, nav, section) :is(h1, h2, h3, p, ul, ol, li) {
+	margin: 0;
+	font-family: var(--lpa-police);
+}
+
+.lpa :is(ul, ol),
+.single-content .lpa :is(ul, ol),
+.lpa-article-zone :is(header, nav, section) :is(ul, ol) {
+	padding: 0;
+	list-style: none;
+}
+
+.lpa a,
+.lpa-article-zone a {
+	color: var(--lpa-encre);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 4px;
+}
+
+/* Focus clavier toujours visible */
+.lpa :is(a, button, input):focus-visible,
+.lpa-article-zone :is(a, button):focus-visible {
+	outline: 2px solid var(--lpa-encre);
+	outline-offset: 4px;
+	border-radius: 2px;
+}
+
+/* Cadre : 1200 px de contenu + gouttières */
+.lpa-cadre {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: calc(1200px + 2 * var(--lpa-gouttiere));
+	margin: 0 auto;
+	padding: 0 var(--lpa-gouttiere);
+}
+
+/* Ligne « Catégorie · date · temps de lecture » (14 px) */
+.lpa .lpa-meta,
+.lpa-article-zone .lpa-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-meta);
+}
+
+.lpa-meta > * + *::before {
+	content: "·";
+	margin: 0 8px;
+}
+
+.lpa-meta__cat {
+	font-weight: 600;
+	color: var(--lpa-vert);
+}
+
+/* Lien étendu : un seul lien par carte, toute la carte est cliquable */
+.lpa a.lpa-lien-etendu,
+.lpa-article-zone a.lpa-lien-etendu {
+	color: inherit;
+	text-decoration: none;
+}
+
+.lpa-lien-etendu::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+.lpa .lpa-lien-etendu:focus-visible,
+.lpa-article-zone .lpa-lien-etendu:focus-visible {
+	outline: none;
+}
+
+:is(.lpa-une__article, .lpa-carte__inner):has(.lpa-lien-etendu:focus-visible) {
+	outline: 2px solid var(--lpa-encre);
+	outline-offset: 8px;
+	border-radius: 12px;
+}
+
+/* Images : remplissent leur cadre (le thème impose height:auto, d'où le placement absolu) */
+.lpa-une__media,
+.lpa-carte__media {
+	position: relative;
+	overflow: hidden;
+	background: var(--lpa-fond-image);
+	border-radius: 12px;
+}
+
+.lpa-une__media {
+	aspect-ratio: 16 / 9;
+}
+
+.lpa-carte__media {
+	aspect-ratio: 3 / 2;
+}
+
+.lpa-une__media img,
+.lpa-carte__media img,
+.single-content .lpa :is(.lpa-une__media, .lpa-carte__media) img,
+.lpa-article-zone .lpa-carte__media img {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.4s ease;
+}
+
+.lpa-image-vide {
+	position: absolute;
+	inset: 0;
+}
+
+/* Survol : léger zoom de l'image + titre souligné. Rien d'autre. */
+:is(.lpa-une__article, .lpa-carte__inner):hover img {
+	transform: scale(1.03);
+}
+
+.lpa :is(.lpa-une__article, .lpa-carte__inner):hover .lpa-lien-etendu,
+.lpa-article-zone .lpa-carte__inner:hover .lpa-lien-etendu {
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 6px;
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Page Actualités (v3.1, refonte éditoriale) : jetons propres à la liste
+ *    Bleu marine (texte, onglet actif), vert (catégories), vert doux « sauge » (accents décoratifs).
+ * ---------------------------------------------------------------------- */
+.lpa {
+	--lpa-sauge: #7fb894;                                     /* vert doux (sauge) : accents ; bleu marine dessus 7,5:1, sur bleu marine 7,5:1 */
+	--lpa-sauge-pale: #a9d2b8;                                /* sauge clair, sur fond bleu marine */
+	--lpa-doux: #f5f6f8;                                     /* nuance très claire de palette8 */
+	--lpa-vert-doux: #e8f2eb;                                /* fond des pastilles de catégorie : vert dessus 6,9:1 */
+	--lpa-rayon: 16px;
+	--lpa-ombre: 0 1px 2px rgba(7, 27, 56, 0.04);
+	--lpa-ombre-survol: 0 18px 40px -18px rgba(7, 27, 56, 0.28);
+	--lpa-transition: 0.2s ease;
+}
+
+/* En-tête : fil d'Ariane + titre à gauche ; introduction + repères à droite (empilés sur tablette et mobile) */
+.lpa .lpa-ariane {
+	grid-column: 1 / -1;
+}
+
+.lpa nav.lpa-ariane ol {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 0;
+	margin: 0 0 8px;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-texte);
+}
+
+.lpa .lpa-ariane li + li::before {
+	content: "/";
+	margin: 0 12px;
+	color: var(--lpa-meta);
+}
+
+.lpa .lpa-ariane a {
+	color: var(--lpa-texte);
+	text-decoration: none;
+	transition: color var(--lpa-transition);
+}
+
+.lpa .lpa-ariane a:hover {
+	color: var(--lpa-encre);
+	text-decoration: underline;
+}
+
+.lpa .lpa-ariane [aria-current="page"] {
+	font-weight: 500;
+	color: var(--lpa-encre);
+}
+
+.lpa h1.lpa-entete__titre {
+	font-size: 56px;
+	font-weight: 600;
+	line-height: 64px;
+	letter-spacing: -0.02em;
+	color: var(--lpa-encre);
+}
+
+.lpa p.lpa-entete__intro {
+	max-width: 520px;
+	font-size: 19px;
+	line-height: 30px;
+	color: var(--lpa-texte);
+}
+
+/* Repères réels : nombre d'articles, de catégories, date de la dernière publication */
+.lpa ul.lpa-reperes {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 0;
+	margin-top: 24px;
+	padding-top: 20px;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-texte);
+	border-top: 1px solid var(--lpa-filet);
+}
+
+.lpa .lpa-reperes li {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+.lpa .lpa-reperes li + li {
+	margin-left: 20px;
+	padding-left: 20px;
+	border-left: 1px solid var(--lpa-filet);
+}
+
+.lpa .lpa-reperes strong {
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--lpa-encre);
+}
+
+.lpa .lpa-reperes time {
+	font-weight: 500;
+	color: var(--lpa-encre);
+}
+
+/* -------------------------------------------------------------------------
+ * 3. À la une : bloc éditorial (photo réelle | texte), bouton vert « Lire l'article »
+ * ---------------------------------------------------------------------- */
+.lpa {
+	--lpa-vert-bouton: #1d7a45;     /* vert adouci : texte blanc 5,4:1 (AA) */
+	--lpa-vert-bouton-survol: var(--global-palette11, #13612e);
+}
+
+.lpa-une {
+	padding-bottom: 72px;
+}
+
+.lpa .lpa-une__article {
+	position: relative;
+	display: grid;
+	grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	overflow: hidden;
+	background: var(--lpa-doux);
+	border: 1px solid var(--lpa-filet);
+	border-radius: 24px;
+	box-shadow: var(--lpa-ombre);
+	transition: box-shadow var(--lpa-transition), border-color var(--lpa-transition);
+}
+
+.lpa .lpa-une__article:hover {
+	border-color: #c9ced8;
+	box-shadow: var(--lpa-ombre-survol);
+}
+
+.lpa .lpa-une__media {
+	min-height: 480px;
+	aspect-ratio: auto;
+	border-radius: 0;
+}
+
+/* Badge « À la une » posé sur la photo (décoratif : le titre de section existe pour les lecteurs d'écran) */
+.lpa .lpa-une__texte {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	max-width: none;
+	margin: 0;
+	padding: 56px 48px;
+}
+
+/* Catégorie (pastille verte), date et temps de lecture avec pictogrammes */
+.lpa .lpa-une__infos {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 20px;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-texte);
+}
+
+.lpa .lpa-une__infos li {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.lpa .lpa-une__infos .lpa-picto {
+	width: 16px;
+	height: 16px;
+	color: var(--lpa-texte);
+}
+
+.lpa p.lpa-une__cat {
+	align-self: flex-start;
+	margin-bottom: 14px;
+}
+
+.lpa p.lpa-une__cat,
+.lpa p.lpa-carte__cat {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 10px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	color: var(--lpa-vert);
+	background: var(--lpa-vert-doux);
+	border-radius: 999px;
+}
+
+.lpa .lpa-une .lpa-une__texte h3.lpa-une__titre { /* plus fort que la règle Kadence des widgets Elementor */
+	margin-top: 20px;
+	font-size: 34px;
+	font-weight: 600;
+	line-height: 42px;
+	letter-spacing: -0.015em;
+	color: var(--lpa-encre);
+	text-decoration: underline;
+	text-decoration-color: transparent;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 8px;
+	transition: text-decoration-color var(--lpa-transition);
+}
+
+.lpa .lpa-une__article:hover h3.lpa-une__titre {
+	text-decoration-color: var(--lpa-sauge);
+}
+
+.lpa p.lpa-une__extrait {
+	display: -webkit-box;
+	margin-top: 16px;
+	overflow: hidden;
+	font-size: 17px;
+	line-height: 28px;
+	color: var(--lpa-texte);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 4;
+	line-clamp: 4;
+}
+
+.lpa .lpa-une__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 16px 28px;
+	margin-top: 32px;
+	padding-top: 28px;
+	border-top: 1px solid var(--lpa-filet);
+}
+
+/* Bouton principal : vert adouci, arrondi, icône dans une pastille. Sa zone cliquable couvre toute la carte. */
+.lpa a.lpa-bouton {
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
+	min-height: 52px;
+	padding: 6px 6px 6px 24px;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 24px;
+	color: #fff;
+	text-decoration: none;
+	background: var(--lpa-vert-bouton);
+	border-radius: 999px;
+	box-shadow: 0 10px 22px -12px rgba(19, 97, 46, 0.7);
+	transition: background-color var(--lpa-transition), box-shadow var(--lpa-transition);
+}
+
+.lpa a.lpa-bouton:visited {
+	color: #fff;
+}
+
+.lpa .lpa-bouton__icone {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	color: var(--lpa-vert-bouton);
+	background: #fff;
+	border-radius: 50%;
+	transition: transform var(--lpa-transition), color var(--lpa-transition);
+}
+
+.lpa .lpa-une__article:hover a.lpa-bouton,
+.lpa a.lpa-bouton:hover,
+.lpa a.lpa-bouton:focus-visible {
+	color: #fff;
+	background: var(--lpa-vert-bouton-survol);
+	box-shadow: 0 14px 28px -12px rgba(19, 97, 46, 0.8);
+}
+
+.lpa .lpa-une__article:hover .lpa-bouton__icone,
+.lpa a.lpa-bouton:hover .lpa-bouton__icone,
+.lpa a.lpa-bouton:focus-visible .lpa-bouton__icone {
+	color: var(--lpa-vert-bouton-survol);
+	transform: translateX(3px);
+}
+
+/* Pas de transform sur le bouton : sa zone cliquable (::after) couvre toute la carte et doit rester stable pendant le clic. */
+
+.lpa a.lpa-bouton:focus-visible {
+	outline: 3px solid var(--lpa-encre);
+	outline-offset: 3px;
+	border-radius: 999px;
+}
+
+/* Toute la carte « À la une » ouvre l'article (zone du bouton étendue) */
+.lpa a.lpa-une__lien::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	border-radius: 24px;
+}
+
+/* Lien secondaire : descendre directement à la liste (au-dessus de la zone cliquable de la carte) */
+.lpa a.lpa-une__secondaire {
+	position: relative;
+	z-index: 3;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--lpa-encre);
+	text-decoration: underline;
+	text-decoration-color: var(--lpa-filet);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 6px;
+	transition: text-decoration-color var(--lpa-transition);
+}
+
+.lpa a.lpa-une__secondaire:hover {
+	text-decoration-color: var(--lpa-sauge);
+}
+
+.lpa a.lpa-une__secondaire .lpa-picto {
+	width: 16px;
+	height: 16px;
+}
+
+@media (max-width: 1024px) {
+	.lpa .lpa-une__article {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.lpa .lpa-une__media {
+		min-height: 0;
+		aspect-ratio: 16 / 9;
+	}
+
+	.lpa .lpa-une__texte {
+		padding: 40px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lpa nav.lpa-ariane ol {
+		margin-bottom: 4px;
+	}
+
+	.lpa h1.lpa-entete__titre {
+		font-size: 36px;
+		line-height: 44px;
+	}
+
+	.lpa p.lpa-entete__intro {
+		font-size: 17px;
+		line-height: 28px;
+	}
+
+	.lpa ul.lpa-reperes {
+		gap: 4px 16px;
+		margin-top: 20px;
+		padding-top: 16px;
+		font-size: 13px;
+	}
+
+	.lpa .lpa-reperes li + li {
+		margin-left: 0;
+		padding-left: 0;
+		border-left: 0;
+	}
+
+	.lpa .lpa-reperes strong {
+		font-size: 16px;
+	}
+
+	.lpa-une {
+		padding-bottom: 56px;
+	}
+
+	.lpa .lpa-une__article {
+		border-radius: var(--lpa-rayon);
+	}
+
+	.lpa a.lpa-une__lien::after {
+		border-radius: var(--lpa-rayon);
+	}
+
+	.lpa .lpa-une__media {
+		aspect-ratio: 4 / 3;
+	}
+
+	.lpa .lpa-une__texte {
+		padding: 24px 20px 24px;
+	}
+
+	.lpa .lpa-une__infos {
+		gap: 8px 16px;
+		font-size: 13px;
+	}
+
+	.lpa .lpa-une .lpa-une__texte h3.lpa-une__titre { /* plus fort que la règle Kadence des widgets Elementor */
+		margin-top: 16px;
+		font-size: 26px;
+		line-height: 34px;
+	}
+
+	.lpa p.lpa-une__extrait {
+		font-size: 16px;
+		line-height: 26px;
+	}
+
+	.lpa .lpa-une__actions {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 8px;
+		margin-top: 24px;
+		padding-top: 20px;
+	}
+
+	.lpa a.lpa-bouton {
+		justify-content: space-between;
+	}
+
+	.lpa a.lpa-une__secondaire {
+		justify-content: center;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpa .lpa-une__article:hover .lpa-bouton__icone,
+	.lpa a.lpa-bouton:hover .lpa-bouton__icone,
+	.lpa a.lpa-bouton:focus-visible .lpa-bouton__icone {
+		transform: none;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 4. Filtres et recherche : zone distincte DANS le flux de la page, au-dessus de la grille.
+ *    Elle n'est pas collante : elle ne flotte jamais sur les articles et ne masque aucun contenu.
+ * ---------------------------------------------------------------------- */
+.lpa-liste {
+	margin-bottom: var(--lpa-section);
+	scroll-margin-top: 24px;
+}
+
+.lpa-liste__entete {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px 24px;
+	padding: 0 0 24px;
+}
+
+.lpa h2.lpa-liste__titre {
+	font-size: 32px;
+	font-weight: 600;
+	line-height: 40px;
+	letter-spacing: -0.01em;
+	color: var(--lpa-encre);
+}
+
+.lpa p.lpa-resultats {
+	font-size: 15px;
+	line-height: 24px;
+	color: var(--lpa-texte);
+}
+
+.lpa .lpa-barre {
+	position: static;
+	margin-bottom: 40px;
+	padding: 8px;
+	background: var(--lpa-doux);
+	border: 1px solid var(--lpa-filet);
+	border-radius: var(--lpa-rayon);
+}
+
+.lpa .lpa-barre__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 24px;
+}
+
+.lpa .lpa-onglets {
+	min-width: 0;
+}
+
+.lpa .lpa-onglets ul {
+	display: flex;
+	gap: 4px;
+	padding: 2px;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.lpa .lpa-onglets ul::-webkit-scrollbar {
+	display: none;
+}
+
+.lpa .lpa-onglets li {
+	flex: 0 0 auto;
+}
+
+.lpa a.lpa-onglet {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 18px;
+	font-size: 15px;
+	font-weight: 500;
+	color: var(--lpa-encre);
+	text-decoration: none;
+	white-space: nowrap;
+	background: transparent;
+	border: 0;
+	border-radius: 999px;
+	transition: background-color var(--lpa-transition), color var(--lpa-transition);
+}
+
+.lpa a.lpa-onglet:hover {
+	background: var(--lpa-blanc);
+}
+
+.lpa a.lpa-onglet--actif,
+.lpa a.lpa-onglet--actif:hover {
+	color: var(--lpa-blanc);
+	background: var(--lpa-encre);
+}
+
+.lpa .lpa-recherche {
+	position: relative;
+	flex: 0 1 320px;
+}
+
+.lpa .lpa-recherche input[type="search"] {
+	box-sizing: border-box;
+	width: 100%;
+	height: 44px;
+	min-height: 44px;
+	margin: 0;
+	padding: 8px 48px 8px 20px;
+	font-family: var(--lpa-police);
+	font-size: 16px;
+	color: var(--lpa-encre);
+	background: var(--lpa-blanc);
+	border: 1px solid var(--lpa-meta);
+	border-radius: 999px;
+	box-shadow: none;
+	transition: border-color var(--lpa-transition);
+}
+
+.lpa .lpa-recherche input[type="search"]:hover {
+	border-color: var(--lpa-encre);
+}
+
+.lpa .lpa-recherche input[type="search"]::placeholder {
+	color: var(--lpa-meta);
+	opacity: 1;
+}
+
+/* Le thème retire le contour des champs de recherche : on le rétablit */
+.lpa .lpa-recherche input[type="search"]:focus-visible,
+.single-content .lpa .lpa-recherche input[type="search"]:focus-visible {
+	outline: 2px solid var(--lpa-encre) !important;
+	outline-offset: 2px;
+	border-color: var(--lpa-encre);
+}
+
+.lpa .lpa-recherche__bouton {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	min-height: 0;
+	padding: 0;
+	color: var(--lpa-encre);
+	background: transparent;
+	border: 0;
+	border-radius: 999px;
+	box-shadow: none;
+	cursor: pointer;
+}
+
+.lpa .lpa-recherche__bouton:hover,
+.lpa .lpa-recherche__bouton:focus {
+	color: var(--lpa-encre);
+	background: transparent;
+}
+
+/* -------------------------------------------------------------------------
+ * 5. Grille des articles : 3 colonnes (2 tablette, 1 mobile), hauteurs alignées
+ * ---------------------------------------------------------------------- */
+.lpa-liste__entete {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px 24px;
+	padding: 48px 0 32px;
+}
+
+.lpa h2.lpa-liste__titre,
+.lpa-article-zone h2.lpa-aussi__titre {
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 40px;
+	color: var(--lpa-encre);
+}
+
+.lpa p.lpa-resultats {
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-meta);
+}
+
+.lpa .lpa-grille,
+.lpa-article-zone .lpa-grille {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 48px 32px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lpa .lpa-grille > li,
+.lpa-article-zone .lpa-grille > li {
+	display: flex;
+	margin: 0;
+	padding: 0;
+}
+
+.lpa-carte__inner {
+	position: relative;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+}
+
+.lpa-carte__inner > .lpa-carte__media {
+	margin-bottom: 16px;
+}
+
+.lpa .lpa-carte__cat,
+.lpa-article-zone .lpa-carte__cat {
+	margin: 0 0 8px;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 24px;
+	color: var(--lpa-vert);
+}
+
+.lpa .lpa-carte__titre,
+.lpa-article-zone .lpa-carte__titre {
+	display: -webkit-box;
+	margin: 0 0 8px;
+	overflow: hidden;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 28px;
+	color: var(--lpa-encre);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+}
+
+.lpa-carte__inner > .lpa-meta {
+	margin-top: auto;
+}
+
+/* Une seule carte : image et texte côte à côte (pas de grand vide) */
+.lpa .lpa-grille--une-carte,
+.lpa-article-zone .lpa-grille--une-carte {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.lpa-grille--une-carte .lpa-carte__inner {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	grid-template-rows: 1fr auto auto 1fr;
+	column-gap: 48px;
+}
+
+.lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__media {
+	grid-row: 1 / span 4;
+	grid-column: 1;
+	margin-bottom: 0;
+}
+
+.lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__cat {
+	grid-column: 2;
+	grid-row: 1;
+	align-self: end;
+}
+
+.lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__titre {
+	grid-column: 2;
+	grid-row: 2;
+}
+
+.lpa-grille--une-carte .lpa-carte__inner > .lpa-meta {
+	grid-column: 2;
+	grid-row: 3;
+	margin-top: 0;
+}
+
+/* Deux cartes : deux colonnes égales */
+.lpa .lpa-grille--deux,
+.lpa-article-zone .lpa-grille--deux {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Pagination et état vide (page Actualités)
+ * ---------------------------------------------------------------------- */
+.lpa-pagination {
+	margin-top: 56px;
+}
+
+.lpa .lpa-pagination ul {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+}
+
+.lpa .lpa-pagination :is(a, span.lpa-pagination__num) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0 12px;
+	font-size: 15px;
+	font-weight: 500;
+	color: var(--lpa-encre);
+	text-decoration: none;
+	background: var(--lpa-blanc);
+	border: 1px solid var(--lpa-filet);
+	border-radius: 999px;
+	transition: background-color var(--lpa-transition), border-color var(--lpa-transition);
+}
+
+.lpa .lpa-pagination a:hover {
+	background: var(--lpa-doux);
+	border-color: #c9ced8;
+}
+
+.lpa .lpa-pagination span.lpa-pagination__num[aria-current="page"] {
+	font-weight: 600;
+	color: var(--lpa-blanc);
+	background: var(--lpa-encre);
+	border-color: var(--lpa-encre);
+}
+
+.lpa .lpa-pagination a.lpa-pagination__pas {
+	padding: 0 20px;
+}
+
+.lpa .lpa-pagination__ellipse {
+	padding: 0 4px;
+	color: var(--lpa-texte);
+}
+
+.lpa-vide {
+	padding: 56px 24px;
+	text-align: center;
+	background: var(--lpa-doux);
+	border: 1px solid var(--lpa-filet);
+	border-radius: var(--lpa-rayon);
+}
+
+.lpa p.lpa-vide__texte {
+	margin-bottom: 8px;
+	font-size: 20px;
+	font-weight: 500;
+	line-height: 32px;
+	color: var(--lpa-encre);
+}
+
+.lpa .lpa-vide p + p {
+	color: var(--lpa-texte);
+}
+
+.lpa .lpa-vide a {
+	font-weight: 600;
+	color: var(--lpa-vert);
+	text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------------
+ * 7. Page d'un article
+ * ---------------------------------------------------------------------- */
+.lpa-article-zone,
+.content-area.lpa-article-zone {
+	box-sizing: border-box;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding: 64px var(--lpa-gouttiere) var(--lpa-section);
+}
+
+.lpa-article-zone .site-main {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.lpa-article__entete,
+.lpa-lecture {
+	max-width: 680px;
+	margin: 0 auto;
+}
+
+.lpa-article-zone p.lpa-retour {
+	margin-bottom: 32px;
+	font-size: 14px;
+	line-height: 24px;
+}
+
+.lpa-article-zone .lpa-retour a {
+	color: var(--lpa-texte);
+	text-decoration: none;
+}
+
+.lpa-article-zone .lpa-retour a::before {
+	content: "←";
+	margin-right: 8px;
+}
+
+.lpa-article-zone .lpa-retour a:hover {
+	color: var(--lpa-encre);
+	text-decoration: underline;
+}
+
+.lpa-article-zone h1.lpa-article__titre {
+	margin: 16px 0 0;
+	font-size: 48px;
+	font-weight: 600;
+	line-height: 56px;
+	letter-spacing: -0.02em;
+	color: var(--lpa-encre);
+}
+
+.lpa-article-zone p.lpa-article__chapeau {
+	margin-top: 24px;
+	font-size: 20px;
+	line-height: 32px;
+	color: var(--lpa-texte);
+}
+
+/* Partage : une ligne discrète de liens texte */
+.lpa-partage {
+	margin-top: 24px;
+}
+
+.lpa-article-zone p.lpa-partage__ligne {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0 24px;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-meta);
+}
+
+.lpa-article-zone .lpa-partage__ligne a,
+.lpa-article-zone button.lpa-partage__copier {
+	display: inline-flex;
+	align-items: center;
+	min-height: 40px;
+	margin: 0;
+	padding: 0;
+	font-family: var(--lpa-police);
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 24px;
+	color: var(--lpa-encre);
+	text-decoration: underline;
+	text-decoration-color: var(--lpa-filet);
+	text-transform: none;
+	letter-spacing: 0;
+	text-underline-offset: 4px;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+}
+
+.lpa-article-zone .lpa-partage__ligne a:hover,
+.lpa-article-zone button.lpa-partage__copier:hover,
+.lpa-article-zone button.lpa-partage__copier:focus {
+	color: var(--lpa-encre);
+	text-decoration-color: currentColor;
+	background: none;
+}
+
+.lpa-article-zone p.lpa-partage__statut {
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-vert);
+}
+
+/* Image 16/9 avec légende */
+.lpa-article-zone .lpa-article__image {
+	max-width: 1200px;
+	margin: 48px auto;
+}
+
+.lpa-article__image img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	background: var(--lpa-fond-image);
+	border-radius: 12px;
+}
+
+.lpa-article__image figcaption {
+	max-width: 680px;
+	margin: 16px auto 0;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-meta);
+}
+
+/* Sommaire : bloc simple au début de l'article (3 H2 ou plus) */
+.lpa-sommaire {
+	margin: 0 0 48px;
+	padding: 24px;
+	border: 1px solid var(--lpa-filet);
+	border-radius: 12px;
+}
+
+.lpa-article-zone .lpa-lecture .lpa-sommaire h2.lpa-sommaire__titre {
+	margin: 0 0 8px;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 24px;
+	color: var(--lpa-meta);
+}
+
+.lpa-article-zone .lpa-lecture .lpa-sommaire ol {
+	margin: 0;
+	padding: 0 0 0 24px;
+	list-style: decimal;
+}
+
+.lpa-article-zone .lpa-lecture .lpa-sommaire li {
+	margin: 0;
+	padding: 4px 0;
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--lpa-meta);
+}
+
+.lpa-article-zone .lpa-lecture .lpa-sommaire a {
+	color: var(--lpa-encre);
+	text-decoration: none;
+}
+
+.lpa-article-zone .lpa-lecture .lpa-sommaire a:hover {
+	text-decoration: underline;
+}
+
+/* Corps du texte : Jost 19 px, colonne de 680 px, interligne 1,7 */
+.lpa-lecture {
+	font-size: 19px;
+	line-height: 1.7;
+	color: var(--lpa-encre);
+}
+
+.lpa-lecture > * {
+	margin-top: 0;
+	margin-bottom: 24px;
+}
+
+.lpa-article-zone .lpa-lecture h2 {
+	margin: 48px 0 16px;
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 40px;
+	color: var(--lpa-encre);
+	scroll-margin-top: 96px;
+}
+
+.lpa-article-zone .lpa-lecture h3 {
+	margin: 40px 0 8px;
+	font-size: 22px;
+	font-weight: 600;
+	line-height: 32px;
+	color: var(--lpa-encre);
+}
+
+.lpa-article-zone .lpa-lecture a {
+	color: var(--lpa-vert);
+	text-decoration: underline;
+}
+
+.lpa-lecture :is(ul, ol) {
+	padding-left: 24px;
+}
+
+.lpa-lecture li {
+	margin-bottom: 8px;
+}
+
+.lpa-lecture blockquote,
+.lpa-lecture .wp-block-quote {
+	margin: 40px 0;
+	padding: 0 0 0 24px;
+	font-style: normal;
+	background: none;
+	border: 0;
+	border-left: 3px solid var(--lpa-vert);
+	border-radius: 0;
+}
+
+.lpa-lecture blockquote p {
+	margin: 0 0 8px;
+	font-size: 22px;
+	font-style: normal;
+	line-height: 1.6;
+	color: var(--lpa-encre);
+}
+
+.lpa-lecture blockquote cite {
+	font-size: 14px;
+	font-style: normal;
+	color: var(--lpa-meta);
+}
+
+.lpa-lecture figure,
+.lpa-lecture .wp-block-image {
+	margin: 40px 0;
+}
+
+.lpa-lecture img {
+	height: auto;
+	border-radius: 12px;
+}
+
+.lpa-lecture figcaption,
+.lpa-lecture .wp-element-caption {
+	margin-top: 8px;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--lpa-meta);
+	text-align: left;
+}
+
+.lpa-article-zone p.lpa-etiquettes {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 24px;
+	margin-top: 48px;
+	font-size: 14px;
+}
+
+.lpa-article-zone .lpa-etiquettes a {
+	color: var(--lpa-texte);
+}
+
+/* À lire aussi + précédent / suivant */
+.lpa-aussi {
+	margin-top: var(--lpa-section);
+	padding-top: 48px;
+	border-top: 1px solid var(--lpa-filet);
+}
+
+.lpa-article-zone h2.lpa-aussi__titre {
+	margin: 0 0 32px;
+}
+
+.lpa-voisins {
+	margin-top: 64px;
+	padding-top: 32px;
+	border-top: 1px solid var(--lpa-filet);
+}
+
+.lpa-article-zone .lpa-voisins ul {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 24px 48px;
+}
+
+.lpa-article-zone .lpa-voisins li {
+	margin: 0;
+}
+
+.lpa-article-zone .lpa-voisins__suiv {
+	text-align: right;
+}
+
+.lpa-article-zone .lpa-voisins a {
+	display: block;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 28px;
+	text-decoration: none;
+}
+
+.lpa-article-zone .lpa-voisins a:hover {
+	text-decoration: underline;
+}
+
+.lpa-voisins__label {
+	display: block;
+	margin-bottom: 4px;
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 24px;
+	color: var(--lpa-meta);
+}
+
+/* -------------------------------------------------------------------------
+ * 8. Tablette (2 colonnes) et mobile (1 colonne, sections de 64 px)
+ * ---------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+	.lpa .lpa-grille,
+	.lpa-article-zone .lpa-grille {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767px) {
+	.lpa,
+	.lpa-article-zone {
+		--lpa-section: 64px;
+		--lpa-gouttiere: 16px;
+	}
+
+
+	.lpa h2.lpa-liste__titre,
+	.lpa-article-zone h2.lpa-aussi__titre {
+		font-size: 24px;
+		line-height: 32px;
+	}
+
+	.lpa .lpa-grille,
+	.lpa-article-zone .lpa-grille,
+	.lpa .lpa-grille--deux,
+	.lpa-article-zone .lpa-grille--deux {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 40px;
+	}
+
+	.lpa-grille--une-carte .lpa-carte__inner {
+		display: flex;
+	}
+
+	.lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__media {
+		margin-bottom: 16px;
+	}
+
+	.lpa-article-zone,
+	.content-area.lpa-article-zone {
+		padding-top: 40px;
+	}
+
+	.lpa-article-zone h1.lpa-article__titre {
+		font-size: 32px;
+		line-height: 40px;
+	}
+
+	.lpa-article-zone p.lpa-article__chapeau {
+		font-size: 18px;
+		line-height: 28px;
+	}
+
+	.lpa-article-zone .lpa-article__image {
+		margin: 32px auto;
+	}
+
+	.lpa-lecture {
+		font-size: 18px;
+	}
+
+	.lpa-article-zone .lpa-lecture h2 {
+		font-size: 24px;
+		line-height: 32px;
+	}
+
+	.lpa-article-zone .lpa-voisins ul {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.lpa-article-zone .lpa-voisins__suiv {
+		text-align: left;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpa img,
+	.lpa-article-zone img {
+		transition: none !important;
+		transform: none !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 9. Page Actualités : cartes de la grille (prioritaires sur les règles de base)
+ *    Carte blanche, bordure fine, image 3/2, catégorie en pastille, titre (3 lignes max),
+ *    extrait (3 lignes max), date · lecture alignée en bas de toutes les cartes.
+ * ---------------------------------------------------------------------- */
+.lpa .lpa-grille {
+	gap: 32px;
+}
+
+.lpa .lpa-grille .lpa-carte__inner {
+	overflow: hidden;
+	background: var(--lpa-blanc);
+	border: 1px solid var(--lpa-filet);
+	border-radius: var(--lpa-rayon);
+	box-shadow: var(--lpa-ombre);
+	transition: box-shadow var(--lpa-transition), border-color var(--lpa-transition), transform var(--lpa-transition);
+}
+
+.lpa .lpa-grille .lpa-carte__inner:hover {
+	border-color: #c9ced8;
+	box-shadow: var(--lpa-ombre-survol);
+	transform: translateY(-2px);
+}
+
+:is(.lpa .lpa-une__article, .lpa .lpa-grille .lpa-carte__inner):has(.lpa-lien-etendu:focus-visible) {
+	outline: 2px solid var(--lpa-encre);
+	outline-offset: 4px;
+}
+
+.lpa .lpa-grille .lpa-carte__inner:has(.lpa-lien-etendu:focus-visible) {
+	border-radius: var(--lpa-rayon);
+}
+
+.lpa .lpa-une__article:has(.lpa-lien-etendu:focus-visible) {
+	border-radius: 24px;
+}
+
+.lpa .lpa-grille .lpa-carte__media {
+	margin: 0;
+	border-radius: 0;
+}
+
+.lpa .lpa-grille .lpa-carte__inner > .lpa-carte__media {
+	margin-bottom: 0;
+}
+
+.lpa .lpa-grille p.lpa-carte__cat {
+	align-self: flex-start;
+	margin: 24px 24px 12px;
+}
+
+.lpa .lpa-grille .lpa-carte__titre {
+	margin: 0 24px;
+	font-size: 20px;
+	line-height: 28px;
+}
+
+.lpa .lpa-grille p.lpa-carte__extrait {
+	display: -webkit-box;
+	margin: 12px 24px 0;
+	overflow: hidden;
+	font-size: 15px;
+	line-height: 24px;
+	color: var(--lpa-texte);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+}
+
+/* Date · lecture poussée en bas : alignée sur toutes les cartes d'une rangée, sous un filet fin. */
+.lpa .lpa-grille .lpa-carte__inner > .lpa-meta {
+	position: relative;
+	margin: auto 0 0;
+	padding: 24px 24px 20px;
+}
+
+.lpa .lpa-grille .lpa-carte__inner > .lpa-meta::before {
+	content: "";
+	position: absolute;
+	top: 12px;
+	right: 24px;
+	left: 24px;
+	border-top: 1px solid var(--lpa-filet);
+}
+
+/* Espace minimal entre l'extrait (ou le titre) et la date, même si la carte est la plus haute de la rangée */
+.lpa .lpa-grille .lpa-carte__inner > :is(.lpa-carte__titre, .lpa-carte__extrait):nth-last-child(2) {
+	margin-bottom: 12px;
+}
+
+/* Une seule carte : image à gauche, texte à droite */
+.lpa .lpa-grille--une-carte .lpa-carte__inner {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	grid-template-rows: 1fr auto auto auto 1fr;
+	column-gap: 0;
+}
+
+.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__media {
+	grid-row: 1 / span 5;
+	grid-column: 1;
+}
+
+.lpa .lpa-grille--une-carte .lpa-carte__inner > :not(.lpa-carte__media) {
+	grid-column: 2;
+	margin-right: 40px;
+	margin-left: 40px;
+}
+
+.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__cat {
+	grid-row: 1;
+	align-self: end;
+	justify-self: start;
+}
+
+.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__titre {
+	grid-row: 2;
+	font-size: 26px;
+	line-height: 34px;
+}
+
+.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__extrait {
+	grid-row: 3;
+}
+
+.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-meta {
+	grid-row: 4;
+	align-self: start;
+	margin-top: 0;
+	padding-right: 0;
+	padding-left: 0;
+}
+
+.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-meta::before {
+	right: 0;
+	left: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * 10. Page Actualités : tablette et mobile
+ * ---------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+	.lpa .lpa-barre__inner {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.lpa .lpa-recherche {
+		flex: 0 0 auto;
+	}
+
+	.lpa .lpa-grille {
+		gap: 24px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lpa h2.lpa-liste__titre {
+		font-size: 26px;
+		line-height: 34px;
+	}
+
+	.lpa .lpa-barre {
+		margin-bottom: 32px;
+		padding: 8px;
+	}
+
+	/* Sur mobile, toutes les catégories restent visibles (retour à la ligne plutôt que défilement caché). */
+	.lpa .lpa-onglets ul {
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+
+	.lpa .lpa-grille {
+		gap: 24px;
+	}
+
+	.lpa .lpa-grille--une-carte .lpa-carte__inner {
+		display: flex;
+	}
+
+	.lpa .lpa-grille--une-carte .lpa-carte__inner > :not(.lpa-carte__media) {
+		margin-right: 24px;
+		margin-left: 24px;
+	}
+
+	.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__cat {
+		align-self: flex-start;
+	}
+
+	.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__titre {
+		font-size: 20px;
+		line-height: 28px;
+	}
+
+	.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-meta {
+		margin-top: auto;
+	}
+
+	.lpa-pagination {
+		margin-top: 40px;
+	}
+
+	.lpa .lpa-pagination a.lpa-pagination__pas {
+		padding: 0 14px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpa *,
+	.lpa *::before,
+	.lpa *::after {
+		transition: none !important;
+	}
+
+	.lpa .lpa-grille .lpa-carte__inner:hover {
+		transform: none;
+	}
+}
+
+/* =========================================================================
+ * 11. Page Actualités – direction visuelle inspirée du modèle « Cosion » (v3.3)
+ *     Bandeau contrasté avec formes vert doux, surtitres en pastille, cartes de catégories
+ *     qui chevauchent le bandeau, sections alternées, cartes d'articles avec icône et « Lire la suite ».
+ *     Couleurs : bleu marine et verts (le vert doux remplace l'orange, à la demande de DieuMerci). Contenu réel uniquement.
+ * ====================================================================== */
+.lpa {
+	--lpa-fond-section: #eef2f6;          /* nuance claire du bleu marine, pour les sections alternées */
+	--lpa-ombre-carte: 0 18px 40px -22px rgba(7, 27, 56, 0.35);
+}
+
+/* Surtitre en pastille (« • Toutes les actualités ») */
+.lpa p.lpa-surtitre {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 16px;
+	padding: 4px 12px 4px 10px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	letter-spacing: 0.03em;
+	color: var(--lpa-vert);
+	background: var(--lpa-vert-doux);
+	border-radius: 999px;
+}
+
+.lpa p.lpa-surtitre::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	background: var(--lpa-sauge);
+	border-radius: 50%;
+}
+
+.lpa p.lpa-surtitre--sombre {
+	color: var(--lpa-sauge);              /* sauge sur bleu marine : 7,5:1 */
+	background: rgba(127, 184, 148, 0.14);
+}
+
+/* ---------- Bandeau ---------- */
+.lpa .lpa-hero {
+	position: relative;
+	overflow: hidden;
+	padding: 72px 0 96px;
+	color: #fff;
+	background-color: var(--lpa-encre);
+	background-image: radial-gradient(circle at 85% 15%, rgba(29, 122, 69, 0.28), transparent 45%), radial-gradient(circle at 10% 110%, rgba(127, 184, 148, 0.16), transparent 40%);
+}
+
+.lpa .lpa-hero:has(+ .lpa-rubriques) {
+	padding-bottom: 136px;
+}
+
+.lpa .lpa-hero__inner {
+	position: relative;
+	z-index: 1;
+}
+
+.lpa .lpa-hero__inner > :not(.lpa-ariane) {
+	max-width: 720px;
+}
+
+.lpa .lpa-hero nav.lpa-ariane ol {
+	margin: 0 0 40px;
+	color: rgba(255, 255, 255, 0.82);
+}
+
+.lpa .lpa-hero .lpa-ariane li + li::before {
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.lpa .lpa-hero .lpa-ariane a {
+	color: rgba(255, 255, 255, 0.82);
+}
+
+.lpa .lpa-hero .lpa-ariane a:hover,
+.lpa .lpa-hero .lpa-ariane [aria-current="page"] {
+	color: #fff;
+}
+
+.lpa .lpa-hero h1.lpa-entete__titre {
+	font-size: 64px;
+	line-height: 72px;
+	color: #fff;
+}
+
+.lpa .lpa-hero p.lpa-entete__intro {
+	max-width: 600px;
+	margin-top: 20px;
+	font-size: 19px;
+	line-height: 30px;
+	color: rgba(255, 255, 255, 0.86);
+}
+
+.lpa .lpa-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 20px 32px;
+	margin-top: 36px;
+}
+
+.lpa a.lpa-bouton-doux {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 52px;
+	padding: 0 26px;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 24px;
+	color: var(--lpa-encre);               /* bleu marine sur sauge : 7,5:1 */
+	text-decoration: none;
+	background: var(--lpa-sauge);
+	border-radius: 999px;
+	box-shadow: 0 12px 26px -14px rgba(127, 184, 148, 0.9);
+	transition: background-color var(--lpa-transition), box-shadow var(--lpa-transition);
+}
+
+.lpa a.lpa-bouton-doux:hover {
+	color: var(--lpa-encre);
+	background: #95c6a7;
+	box-shadow: 0 16px 30px -14px rgba(127, 184, 148, 1);
+}
+
+.lpa a.lpa-bouton-doux:focus-visible {
+	outline: 3px solid #fff;
+	outline-offset: 3px;
+	border-radius: 999px;
+}
+
+.lpa a.lpa-bouton-doux .lpa-picto {
+	width: 18px;
+	height: 18px;
+}
+
+.lpa .lpa-hero ul.lpa-reperes {
+	margin: 0;
+	padding: 0;
+	color: rgba(255, 255, 255, 0.82);
+	border: 0;
+}
+
+.lpa .lpa-hero .lpa-reperes li + li {
+	border-left-color: rgba(255, 255, 255, 0.25);
+}
+
+.lpa .lpa-hero .lpa-reperes strong,
+.lpa .lpa-hero .lpa-reperes time {
+	color: #fff;
+}
+
+/* Formes décoratives (CSS uniquement) */
+.lpa .lpa-hero__deco {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.lpa .lpa-hero__chevron {
+	position: absolute;
+	top: 50%;
+	right: -24px;
+	width: 200px;
+	height: 340px;
+	background: var(--lpa-sauge);
+	opacity: 0.92;
+	clip-path: polygon(0 0, 46% 0, 100% 50%, 46% 100%, 0 100%, 54% 50%);
+	transform: translateY(-50%);
+}
+
+
+.lpa .lpa-hero__triangles {
+	position: absolute;
+	bottom: 128px;
+	left: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.lpa .lpa-hero__triangles i {
+	display: block;
+	width: 18px;
+	height: 16px;
+	background: var(--lpa-sauge);
+	clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.lpa .lpa-hero__arc {
+	position: absolute;
+	bottom: -90px;
+	left: -90px;
+	width: 220px;
+	height: 220px;
+	border: 2px solid rgba(127, 184, 148, 0.45);
+	border-radius: 50%;
+}
+
+/* ---------- Cartes des catégories (chevauchent le bandeau) ---------- */
+.lpa .lpa-rubriques {
+	position: relative;
+	z-index: 2;
+	margin-top: -56px;
+	margin-bottom: 88px;
+}
+
+.lpa .lpa-rubriques ul {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 24px;
+}
+
+.lpa .lpa-rubrique-carte {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--lpa-filet);
+	border-radius: var(--lpa-rayon);
+	box-shadow: var(--lpa-ombre-carte);
+	transition: box-shadow var(--lpa-transition), transform var(--lpa-transition), border-color var(--lpa-transition);
+}
+
+.lpa .lpa-rubrique-carte:hover {
+	border-color: #c9ced8;
+	box-shadow: 0 24px 48px -22px rgba(7, 27, 56, 0.45);
+	transform: translateY(-3px);
+}
+
+.lpa .lpa-rubrique-carte:has(a:focus-visible) {
+	outline: 2px solid var(--lpa-encre);
+	outline-offset: 4px;
+}
+
+.lpa .lpa-rubrique-carte__icone {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	color: var(--lpa-sauge);
+	background: var(--lpa-encre);
+	border-radius: 50%;
+}
+
+.lpa .lpa-rubrique-carte__texte {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.lpa a.lpa-rubrique-carte__lien {
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 26px;
+	color: var(--lpa-encre);
+	text-decoration: none;
+}
+
+.lpa a.lpa-rubrique-carte__lien:focus-visible {
+	outline: none;
+}
+
+.lpa a.lpa-rubrique-carte__lien::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	border-radius: var(--lpa-rayon);
+}
+
+.lpa .lpa-rubrique-carte__nb {
+	font-size: 14px;
+	line-height: 22px;
+	color: var(--lpa-texte);
+}
+
+.lpa .lpa-rubrique-carte__fleche {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	margin-left: auto;
+	color: var(--lpa-encre);
+	background: var(--lpa-doux);
+	border-radius: 50%;
+	transition: background-color var(--lpa-transition);
+}
+
+.lpa .lpa-rubrique-carte:hover .lpa-rubrique-carte__fleche {
+	background: var(--lpa-sauge);
+}
+
+.lpa .lpa-rubrique-carte__fleche .lpa-picto {
+	width: 16px;
+	height: 16px;
+}
+
+/* ---------- Titre de section (surtitre + grand titre) ---------- */
+.lpa .lpa-section-tete {
+	margin-bottom: 32px;
+}
+
+.lpa .lpa-section-tete h2.lpa-section-tete__titre,
+.lpa .lpa-liste h2.lpa-liste__titre {
+	font-size: 40px;
+	font-weight: 600;
+	line-height: 48px;
+	letter-spacing: -0.015em;
+	color: var(--lpa-encre);
+}
+
+.lpa .lpa-hero + .lpa-une {
+	padding-top: 80px;
+}
+
+.lpa .lpa-une {
+	padding-bottom: 96px;
+}
+
+/* ---------- Liste sur fond alterné ---------- */
+.lpa .lpa-liste {
+	margin-bottom: 0;
+	padding: 96px 0;
+	background: var(--lpa-fond-section);
+}
+
+.lpa .lpa-liste__entete {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px 48px;
+	padding: 0 0 32px;
+}
+
+.lpa .lpa-liste__aide {
+	max-width: 380px;
+}
+
+.lpa p.lpa-liste__consigne {
+	font-size: 16px;
+	line-height: 26px;
+	color: var(--lpa-texte);
+}
+
+.lpa .lpa-liste p.lpa-resultats {
+	margin-top: 4px;
+	font-weight: 600;
+	color: var(--lpa-encre);
+}
+
+.lpa .lpa-liste .lpa-barre {
+	background: #fff;
+	box-shadow: var(--lpa-ombre);
+}
+
+.lpa .lpa-liste a.lpa-onglet:hover {
+	background: var(--lpa-doux);
+}
+
+.lpa .lpa-liste a.lpa-onglet--actif,
+.lpa .lpa-liste a.lpa-onglet--actif:hover {
+	background: var(--lpa-encre);
+}
+
+.lpa .lpa-liste .lpa-grille .lpa-carte__inner {
+	border-color: transparent;
+	box-shadow: var(--lpa-ombre-carte);
+}
+
+/* Icône de catégorie posée sur la photo */
+.lpa .lpa-carte__icone {
+	position: absolute;
+	right: 16px;
+	bottom: 16px;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	color: var(--lpa-sauge);
+	background: var(--lpa-encre);
+	border: 3px solid #fff;
+	border-radius: 50%;
+}
+
+.lpa .lpa-carte__icone .lpa-picto {
+	width: 22px;
+	height: 22px;
+}
+
+/* Pied de carte : date · lecture | Lire la suite → */
+.lpa .lpa-grille .lpa-carte__inner > .lpa-carte__extrait:nth-last-child(2),
+.lpa .lpa-grille .lpa-carte__inner > .lpa-carte__titre:nth-last-child(2) {
+	margin-bottom: 20px;
+}
+
+.lpa .lpa-grille .lpa-carte__pied {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 12px;
+	margin: auto 24px 0;
+	padding: 16px 0 20px;
+	border-top: 1px solid var(--lpa-filet);
+}
+
+.lpa .lpa-carte__pied .lpa-meta {
+	font-size: 13px;
+}
+
+.lpa .lpa-carte__suite {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 22px;
+	color: var(--lpa-encre);
+}
+
+.lpa .lpa-carte__suite .lpa-picto {
+	width: 16px;
+	height: 16px;
+	color: var(--lpa-vert);
+	transition: transform var(--lpa-transition);
+}
+
+.lpa .lpa-grille .lpa-carte__inner:hover .lpa-carte__suite .lpa-picto {
+	transform: translateX(3px);
+}
+
+/* Une seule carte : le pied prend la 4e rangée de la colonne de texte */
+.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__pied {
+	grid-row: 4;
+	align-self: start;
+	margin-top: 0;
+}
+
+/* ---------- Tablette et mobile ---------- */
+@media (max-width: 1024px) {
+	.lpa .lpa-hero h1.lpa-entete__titre {
+		font-size: 52px;
+		line-height: 60px;
+	}
+
+	.lpa .lpa-hero__chevron {
+		right: -96px;
+		opacity: 0.7;
+	}
+
+	.lpa .lpa-hero__triangles {
+		display: none;
+	}
+}
+
+@media (max-width: 767px) {
+	.lpa .lpa-hero {
+		padding: 40px 0 72px;
+	}
+
+	.lpa .lpa-hero:has(+ .lpa-rubriques) {
+		padding-bottom: 112px;
+	}
+
+	.lpa .lpa-hero nav.lpa-ariane ol {
+		margin-bottom: 28px;
+	}
+
+	.lpa .lpa-hero h1.lpa-entete__titre {
+		font-size: 40px;
+		line-height: 48px;
+	}
+
+	.lpa .lpa-hero p.lpa-entete__intro {
+		font-size: 17px;
+		line-height: 28px;
+	}
+
+	.lpa .lpa-hero__actions {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+		margin-top: 28px;
+	}
+
+	.lpa .lpa-hero__chevron,
+	.lpa .lpa-hero__triangles {
+		display: none;
+	}
+
+	.lpa .lpa-rubriques {
+		margin-top: -72px;
+		margin-bottom: 56px;
+	}
+
+	.lpa .lpa-rubriques ul {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 12px;
+	}
+
+	.lpa .lpa-rubrique-carte {
+		padding: 16px;
+	}
+
+	.lpa .lpa-rubrique-carte__icone {
+		width: 48px;
+		height: 48px;
+	}
+
+	.lpa .lpa-hero + .lpa-une {
+		padding-top: 56px;
+	}
+
+	.lpa .lpa-une {
+		padding-bottom: 64px;
+	}
+
+	.lpa .lpa-section-tete h2.lpa-section-tete__titre,
+	.lpa .lpa-liste h2.lpa-liste__titre {
+		font-size: 30px;
+		line-height: 38px;
+	}
+
+	.lpa .lpa-liste {
+		padding: 64px 0;
+	}
+
+	.lpa .lpa-liste__entete {
+		gap: 8px;
+	}
+
+	.lpa .lpa-grille--une-carte .lpa-carte__inner > .lpa-carte__pied {
+		margin-top: auto;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpa .lpa-rubrique-carte:hover,
+	.lpa .lpa-grille .lpa-carte__inner:hover .lpa-carte__suite .lpa-picto {
+		transform: none;
+	}
+}
+
+/* =========================================================================
+ * 12. Page Actualités v3.4 : photo de fond du bandeau, vert doux, touches créatives
+ *     – photo réelle de la Médiathèque derrière le bandeau, assombrie, avec un zoom très lent (« respiration ») ;
+ *     – deux chevrons vert doux ;
+ *     – pavé « calendrier » sur la photo « À la une » ;
+ *     – barre de proportion dans chaque carte de catégorie ;
+ *     – apparition douce des blocs au défilement (désactivée si « réduire les animations »).
+ * ====================================================================== */
+.lpa .lpa-hero__photo {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+}
+
+.lpa .lpa-hero__photo img,
+.single-content .lpa .lpa-hero__photo img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: center 40%;
+	transform-origin: 65% 40%;
+	animation: lpa-respiration 26s ease-in-out infinite alternate;
+}
+
+@keyframes lpa-respiration {
+	from {
+		transform: scale(1);
+	}
+
+	to {
+		transform: scale(1.08);
+	}
+}
+
+/* Voile bleu marine : très dense côté texte (contraste du texte blanc), plus léger à droite pour laisser voir la photo */
+.lpa .lpa-hero__photo::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(90deg, rgba(7, 27, 56, 0.96) 0%, rgba(7, 27, 56, 0.88) 45%, rgba(7, 27, 56, 0.58) 78%, rgba(7, 27, 56, 0.5) 100%),
+		linear-gradient(0deg, rgba(7, 27, 56, 0.85) 0%, rgba(7, 27, 56, 0) 45%),
+		linear-gradient(120deg, rgba(29, 122, 69, 0) 55%, rgba(29, 122, 69, 0.22) 100%);
+}
+
+.lpa .lpa-hero__chevron {
+	opacity: 0.85;
+}
+
+.lpa .lpa-hero__chevron--2 {
+	right: 150px;
+	width: 110px;
+	height: 190px;
+	opacity: 0.35;
+}
+
+/* Pavé calendrier sur la photo « À la une » */
+.lpa .lpa-une__media {
+	position: relative;
+}
+
+.lpa .lpa-une__pave {
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 76px;
+	padding: 10px 12px 8px;
+	text-align: center;
+	background: #fff;
+	border-radius: 14px;
+	box-shadow: 0 14px 30px -16px rgba(7, 27, 56, 0.55);
+}
+
+.lpa .lpa-une__pave b {
+	font-size: 30px;
+	font-weight: 700;
+	line-height: 32px;
+	color: var(--lpa-encre);
+}
+
+.lpa .lpa-une__pave span {
+	margin-top: 2px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 18px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--lpa-vert);
+}
+
+.lpa .lpa-une__pave small {
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--lpa-texte);
+}
+
+/* Barre de proportion dans les cartes de catégories */
+.lpa .lpa-rubrique-carte__part {
+	display: block;
+	width: 140px;
+	max-width: 100%;
+	height: 4px;
+	margin-top: 10px;
+	overflow: hidden;
+	background: #e3e8ee;
+	border-radius: 2px;
+}
+
+.lpa .lpa-rubrique-carte__part span {
+	display: block;
+	height: 100%;
+	background: linear-gradient(90deg, var(--lpa-sauge), var(--lpa-vert-bouton));
+	border-radius: 2px;
+}
+
+.lpa .lpa-rubrique-carte__icone {
+	color: var(--lpa-sauge-pale);
+}
+
+.lpa .lpa-carte__icone {
+	color: var(--lpa-sauge-pale);
+}
+
+/* Apparition douce au défilement (le script n'ajoute ces classes que si le mouvement est autorisé) */
+.lpa.lpa-anime [data-lpa-apparition] {
+	opacity: 0;
+	transform: translateY(28px);
+}
+
+.lpa.lpa-anime [data-lpa-apparition].lpa-visible {
+	opacity: 1;
+	transform: none;
+	transition: opacity 0.7s ease var(--lpa-delai, 0ms), transform 0.7s cubic-bezier(0.2, 0.65, 0.3, 1) var(--lpa-delai, 0ms);
+}
+
+@media (max-width: 767px) {
+	.lpa .lpa-hero__photo::after {
+		background:
+			linear-gradient(180deg, rgba(7, 27, 56, 0.86) 0%, rgba(7, 27, 56, 0.92) 60%, rgba(7, 27, 56, 0.96) 100%);
+	}
+
+	.lpa .lpa-une__pave {
+		top: 12px;
+		left: 12px;
+		min-width: 64px;
+		padding: 8px 10px 6px;
+	}
+
+	.lpa .lpa-une__pave b {
+		font-size: 24px;
+		line-height: 26px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpa .lpa-hero__photo img {
+		animation: none;
+	}
+
+	.lpa.lpa-anime [data-lpa-apparition] {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* =========================================================================
+ * 13. Page Actualités v3.5 : bandeau plus vivant
+ *     – grille de points retirée (à la demande de DieuMerci) ;
+ *     – collage de 3 vraies photos d'articles en cadres inclinés qui flottent (ordinateur) ;
+ *     – anneau vert doux en pointillés qui tourne très lentement derrière le collage ;
+ *     – vague blanche en bas du bandeau ; voile au survol des photos des cartes ;
+ *     – compteur d'articles animé (script). Tout s'arrête si « réduire les animations ».
+ * ====================================================================== */
+.lpa .lpa-hero__vague {
+	position: absolute;
+	right: 0;
+	bottom: -1px;
+	left: 0;
+	z-index: 1;
+	display: block;
+	width: 100%;
+	height: 72px;
+}
+
+.lpa .lpa-hero__collage {
+	display: none;
+}
+
+@media (min-width: 1101px) {
+	.lpa .lpa-hero--collage .lpa-hero__inner {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 440px;
+		gap: 48px;
+		align-items: center;
+	}
+
+	.lpa .lpa-hero--collage .lpa-hero__chevron {
+		display: none;
+	}
+
+	.lpa .lpa-hero__collage {
+		position: relative;
+		display: block;
+		height: 420px;
+	}
+}
+
+.lpa .lpa-hero__anneau {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 320px;
+	height: 320px;
+	margin: -160px 0 0 -160px;
+	border: 2px dashed rgba(127, 184, 148, 0.55);
+	border-radius: 50%;
+	animation: lpa-rotation 70s linear infinite;
+}
+
+.lpa .lpa-hero__cadre {
+	--lpa-r: 0deg;
+	position: absolute;
+	display: block;
+	overflow: hidden;
+	border: 6px solid #fff;
+	border-radius: 20px;
+	box-shadow: 0 32px 60px -26px rgba(0, 0, 0, 0.65);
+	transform: rotate(var(--lpa-r));
+	animation: lpa-flotte 8s ease-in-out infinite;
+}
+
+.lpa .lpa-hero__cadre img,
+.single-content .lpa .lpa-hero__cadre img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+}
+
+.lpa .lpa-hero__cadre--1 {
+	--lpa-r: 4deg;
+	top: 0;
+	right: 16px;
+	width: 250px;
+	height: 300px;
+}
+
+.lpa .lpa-hero__cadre--2 {
+	--lpa-r: -6deg;
+	bottom: 8px;
+	left: 0;
+	width: 220px;
+	height: 190px;
+	animation-delay: -3s;
+}
+
+.lpa .lpa-hero__cadre--3 {
+	top: 36px;
+	left: 36px;
+	width: 140px;
+	height: 140px;
+	border-color: var(--lpa-sauge-pale);
+	border-radius: 50%;
+	animation-delay: -5.5s;
+}
+
+@keyframes lpa-flotte {
+	0%,
+	100% {
+		transform: translateY(0) rotate(var(--lpa-r));
+	}
+
+	50% {
+		transform: translateY(-12px) rotate(var(--lpa-r));
+	}
+}
+
+@keyframes lpa-rotation {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Voile au survol des photos des cartes (la photo zoome déjà légèrement) */
+.lpa .lpa-grille .lpa-carte__media::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgba(7, 27, 56, 0) 45%, rgba(7, 27, 56, 0.5) 100%);
+	opacity: 0;
+	transition: opacity var(--lpa-transition);
+	pointer-events: none;
+}
+
+.lpa .lpa-grille .lpa-carte__inner:hover .lpa-carte__media::after {
+	opacity: 1;
+}
+
+@media (max-width: 767px) {
+	.lpa .lpa-hero__vague {
+		height: 40px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpa .lpa-hero__cadre,
+	.lpa .lpa-hero__anneau {
+		animation: none;
+	}
+}
+
+/* =========================================================================
+ * 14. Page d'un article v3.6 : mise en page alignée sur une grille unique de 1080 px
+ *     (bandeau, photo, texte + outils, fin d'article : tous les bords gauches sont alignés).
+ *     Touches innovantes et sobres : photo qui chevauche le bandeau, barre de progression fine,
+ *     anneau « % lu », sommaire qui suit la lecture, partage en boutons, voisins illustrés.
+ *     Même palette que la page Actualités : bleu marine, verts (pas d'orange).
+ * ====================================================================== */
+.lpa-art {
+	--lpa-art-largeur: 1080px;
+	--lpa-sauge: #7fb894;
+	--lpa-sauge-pale: #a9d2b8;
+	--lpa-vert-doux: #e8f2eb;
+	--lpa-vert-bouton: #1d7a45;
+	--lpa-doux: #f5f6f8;
+	--lpa-fond-section: #eef2f6;
+	--lpa-transition: 0.2s ease;
+}
+
+.content-area.lpa-art.lpa-article-zone {
+	margin: 0;
+	padding: 0;
+	background: #fff;
+}
+
+.lpa-art .site-main {
+	max-width: none;
+	margin: 0;
+}
+
+.lpa-art-cadre {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: calc(var(--lpa-art-largeur) + 2 * var(--lpa-gouttiere));
+	margin-right: auto;
+	margin-left: auto;
+	padding-right: var(--lpa-gouttiere);
+	padding-left: var(--lpa-gouttiere);
+}
+
+/* Barre de progression de lecture (fine, en haut de l'écran) */
+.lpa-progression {
+	position: fixed;
+	top: var(--wp-admin--admin-bar--height, 0px);
+	right: 0;
+	left: 0;
+	z-index: 9999;
+	height: 3px;
+	pointer-events: none;
+}
+
+.lpa-progression span {
+	display: block;
+	height: 100%;
+	background: linear-gradient(90deg, var(--lpa-sauge), var(--lpa-vert-bouton));
+	transform: scaleX(0);
+	transform-origin: 0 50%;
+}
+
+/* ---------- Bandeau ---------- */
+.lpa-art-hero {
+	position: relative;
+	overflow: hidden;
+	padding: 56px 0 176px;
+	color: #fff;
+	background-color: var(--lpa-encre);
+	background-image: radial-gradient(circle at 88% 8%, rgba(29, 122, 69, 0.32), transparent 45%), radial-gradient(circle at 0% 100%, rgba(127, 184, 148, 0.14), transparent 40%);
+}
+
+.lpa-art:not(:has(.lpa-art-image)) .lpa-art-hero {
+	padding-bottom: 72px;
+}
+
+.lpa-art-hero__deco span {
+	position: absolute;
+	pointer-events: none;
+}
+
+.lpa-art-hero__deco span:first-child {
+	top: 40px;
+	right: 6%;
+	width: 120px;
+	height: 210px;
+	background: var(--lpa-sauge);
+	opacity: 0.4;
+	clip-path: polygon(0 0, 46% 0, 100% 50%, 46% 100%, 0 100%, 54% 50%);
+}
+
+.lpa-art-hero__deco span:last-child {
+	right: -90px;
+	bottom: -120px;
+	width: 300px;
+	height: 300px;
+	border: 2px dashed rgba(127, 184, 148, 0.45);
+	border-radius: 50%;
+}
+
+.lpa-art-hero__inner {
+	position: relative;
+	z-index: 1;
+}
+
+.lpa-art a.lpa-art-retour {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	font-size: 15px;
+	font-weight: 500;
+	color: rgba(255, 255, 255, 0.85);
+	text-decoration: none;
+	transition: color var(--lpa-transition), gap var(--lpa-transition);
+}
+
+.lpa-art a.lpa-art-retour:hover {
+	gap: 12px;
+	color: #fff;
+}
+
+.lpa-art a.lpa-art-retour:focus-visible,
+.lpa-art .lpa-art-cat a:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 4px;
+}
+
+.lpa-art p.lpa-art-cat {
+	margin: 24px 0 0;
+}
+
+.lpa-art .lpa-art-cat a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 12px 4px 10px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	color: var(--lpa-sauge-pale);          /* sur bleu marine : 10:1 */
+	text-decoration: none;
+	background: rgba(127, 184, 148, 0.16);
+	border-radius: 999px;
+	transition: background-color var(--lpa-transition);
+}
+
+.lpa-art .lpa-art-cat a::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	background: var(--lpa-sauge);
+	border-radius: 50%;
+}
+
+.lpa-art .lpa-art-cat a:hover {
+	background: rgba(127, 184, 148, 0.28);
+}
+
+.lpa-art h1.lpa-article__titre {
+	max-width: 860px;
+	margin: 20px 0 0;
+	font-size: 52px;
+	font-weight: 600;
+	line-height: 60px;
+	letter-spacing: -0.02em;
+	color: #fff;
+}
+
+.lpa-art p.lpa-article__chapeau {
+	max-width: 720px;
+	margin: 20px 0 0;
+	font-size: 20px;
+	line-height: 32px;
+	color: rgba(255, 255, 255, 0.86);
+}
+
+.lpa-art ul.lpa-art-infos {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 24px;
+	margin: 28px 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 14px;
+	line-height: 24px;
+	color: rgba(255, 255, 255, 0.82);
+}
+
+.lpa-art .lpa-art-infos li {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+}
+
+.lpa-art .lpa-art-infos li + li {
+	padding-left: 24px;
+	border-left: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.lpa-art .lpa-art-infos .lpa-picto {
+	width: 16px;
+	height: 16px;
+	color: var(--lpa-sauge-pale);
+}
+
+/* ---------- Photo principale (chevauche le bandeau) ---------- */
+.lpa-art figure.lpa-art-image {
+	position: relative;
+	z-index: 2;
+	margin-top: -120px;
+	margin-bottom: 0;
+}
+
+.lpa-art .lpa-art-image__cadre {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	background: var(--lpa-doux);
+	border-radius: 24px;
+	box-shadow: 0 40px 80px -40px rgba(7, 27, 56, 0.55);
+}
+
+.lpa-art .lpa-art-image__cadre img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	border-radius: 0;
+}
+
+.lpa-art .lpa-art-image figcaption {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	margin-top: 14px;
+	font-size: 14px;
+	line-height: 22px;
+	color: var(--lpa-texte);
+}
+
+.lpa-art .lpa-art-image figcaption::before {
+	content: "";
+	flex: 0 0 20px;
+	height: 2px;
+	background: var(--lpa-sauge);
+	transform: translateY(-4px);
+}
+
+/* ---------- Texte + colonne d'outils ---------- */
+.lpa-art .lpa-art-corps {
+	display: grid;
+	grid-template-columns: minmax(0, 680px) 300px;
+	justify-content: space-between;
+	align-items: start;
+	gap: 48px 64px;
+	padding-top: 64px;
+}
+
+.lpa-art .lpa-art-corps .lpa-lecture {
+	grid-row: 1;
+	grid-column: 1;
+	max-width: none;
+	margin: 0;
+}
+
+.lpa-art .lpa-art-outils {
+	position: sticky;
+	top: calc(var(--wp-admin--admin-bar--height, 0px) + 24px);
+	grid-row: 1;
+	grid-column: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.lpa-art .lpa-art-bloc {
+	padding: 20px;
+	background: #fff;
+	border: 1px solid var(--lpa-filet);
+	border-radius: 16px;
+}
+
+.lpa-art p.lpa-art-bloc__titre {
+	margin: 0 0 12px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 16px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--lpa-texte);
+}
+
+/* Anneau « % lu » */
+.lpa-art .lpa-art-avancement {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	background: var(--lpa-doux);
+}
+
+.lpa-art .lpa-art-anneau {
+	flex: 0 0 auto;
+	transform: rotate(-90deg);
+}
+
+.lpa-art .lpa-art-anneau circle {
+	fill: none;
+	stroke-width: 4;
+}
+
+.lpa-art .lpa-art-anneau__fond {
+	stroke: #dfe5ec;
+}
+
+.lpa-art .lpa-art-anneau__trait {
+	stroke: var(--lpa-vert-bouton);
+	stroke-linecap: round;
+	stroke-dasharray: 138.23;
+	stroke-dashoffset: 138.23;
+}
+
+.lpa-art .lpa-art-avancement__texte {
+	display: flex;
+	flex-direction: column;
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--lpa-texte);
+}
+
+.lpa-art .lpa-art-avancement__texte strong {
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 24px;
+	color: var(--lpa-encre);
+}
+
+.lpa-art .lpa-art-avancement__texte span:last-child {
+	font-size: 13px;
+}
+
+/* Sommaire qui suit la lecture */
+.lpa-art .lpa-art-sommaire ol {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lpa-art .lpa-art-sommaire li {
+	margin: 0;
+	padding: 0;
+}
+
+.lpa-art .lpa-art-sommaire a {
+	display: flex;
+	gap: 10px;
+	padding: 8px 10px;
+	font-size: 15px;
+	line-height: 22px;
+	color: var(--lpa-encre);
+	text-decoration: none;
+	border-radius: 10px;
+	transition: background-color var(--lpa-transition), color var(--lpa-transition);
+}
+
+.lpa-art .lpa-art-sommaire a:hover {
+	background: var(--lpa-doux);
+}
+
+.lpa-art .lpa-art-sommaire a[aria-current="true"] {
+	font-weight: 600;
+	color: var(--lpa-vert);
+	background: var(--lpa-vert-doux);
+}
+
+.lpa-art .lpa-art-sommaire__num {
+	flex: 0 0 auto;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 22px;
+	color: var(--lpa-texte);
+}
+
+.lpa-art .lpa-art-sommaire a[aria-current="true"] .lpa-art-sommaire__num {
+	color: var(--lpa-vert);
+}
+
+/* Partage en boutons */
+.lpa-art .lpa-art-partage {
+	margin: 0;
+}
+
+.lpa-art .lpa-art-partage__liste {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lpa-art .lpa-art-partage__liste li {
+	margin: 0;
+}
+
+.lpa-art .lpa-art-partage__btn,
+.lpa-art button.lpa-art-partage__btn {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 44px;
+	margin: 0;
+	padding: 0 14px;
+	font-family: var(--lpa-police);
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 22px;
+	color: var(--lpa-encre);
+	text-align: left;
+	text-decoration: none;
+	text-transform: none;
+	letter-spacing: 0;
+	background: #fff;
+	border: 1px solid var(--lpa-filet);
+	border-radius: 12px;
+	box-shadow: none;
+	cursor: pointer;
+	transition: background-color var(--lpa-transition), border-color var(--lpa-transition);
+}
+
+.lpa-art .lpa-art-partage__btn:hover,
+.lpa-art button.lpa-art-partage__btn:hover,
+.lpa-art button.lpa-art-partage__btn:focus {
+	color: var(--lpa-encre);
+	background: var(--lpa-doux);
+	border-color: #c9ced8;
+}
+
+.lpa-art .lpa-art-partage__btn svg {
+	flex: 0 0 auto;
+	color: var(--lpa-vert-bouton);
+}
+
+.lpa-art p.lpa-partage__statut {
+	margin: 8px 0 0;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--lpa-vert);
+}
+
+.lpa-art p.lpa-partage__statut:empty {
+	display: none;
+}
+
+/* Texte : premier paragraphe mis en avant, intertitres avec un trait vert doux, citation encadrée */
+.lpa-art .lpa-lecture > p:first-child {
+	font-size: 21px;
+	line-height: 1.65;
+}
+
+/* Ancres du sommaire : le titre arrive un peu sous le haut de l'écran (et sous la barre d'admin). */
+.lpa-art .lpa-lecture h2[id] {
+	scroll-margin-top: calc(var(--wp-admin--admin-bar--height, 0px) + 32px);
+}
+
+.lpa-art .lpa-lecture h2::before {
+	content: "";
+	display: block;
+	width: 32px;
+	height: 3px;
+	margin-bottom: 14px;
+	background: var(--lpa-sauge);
+	border-radius: 2px;
+}
+
+.lpa-art .lpa-lecture blockquote,
+.lpa-art .lpa-lecture .wp-block-quote {
+	position: relative;
+	padding: 24px 56px 24px 28px;
+	background: #f3f8f5;
+	border-left: 4px solid var(--lpa-sauge);
+	border-radius: 0 16px 16px 0;
+}
+
+.lpa-art .lpa-lecture blockquote::after {
+	content: "\201D";
+	position: absolute;
+	top: 4px;
+	right: 18px;
+	font-size: 72px;
+	line-height: 1;
+	color: var(--lpa-sauge);
+	opacity: 0.45;
+}
+
+.lpa-art .lpa-lecture img {
+	border-radius: 16px;
+}
+
+.lpa-art p.lpa-etiquettes {
+	gap: 8px;
+	margin-top: 40px;
+}
+
+.lpa-art .lpa-etiquettes a {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 12px;
+	font-size: 14px;
+	line-height: 22px;
+	color: var(--lpa-texte);
+	text-decoration: none;
+	background: var(--lpa-doux);
+	border: 1px solid var(--lpa-filet);
+	border-radius: 999px;
+	transition: border-color var(--lpa-transition);
+}
+
+.lpa-art .lpa-etiquettes a::before {
+	content: "#";
+	margin-right: 2px;
+	color: var(--lpa-vert);
+}
+
+.lpa-art .lpa-etiquettes a:hover {
+	border-color: var(--lpa-sauge);
+}
+
+/* ---------- Précédent / suivant avec miniature ---------- */
+.lpa-art .lpa-art-voisins {
+	margin-top: 64px;
+}
+
+.lpa-art .lpa-art-voisins ul {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 24px;
+	margin: 0;
+	padding: 40px 0 0;
+	list-style: none;
+	border-top: 1px solid var(--lpa-filet);
+}
+
+.lpa-art .lpa-art-voisin {
+	margin: 0;
+}
+
+.lpa-art .lpa-art-voisin--suiv:only-child {
+	grid-column: 2;
+}
+
+.lpa-art .lpa-art-voisin a {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	height: 100%;
+	box-sizing: border-box;
+	padding: 14px;
+	color: var(--lpa-encre);
+	text-decoration: none;
+	background: #fff;
+	border: 1px solid var(--lpa-filet);
+	border-radius: 16px;
+	transition: border-color var(--lpa-transition), box-shadow var(--lpa-transition), transform var(--lpa-transition);
+}
+
+.lpa-art .lpa-art-voisin a:hover {
+	border-color: #c9ced8;
+	box-shadow: 0 18px 40px -22px rgba(7, 27, 56, 0.35);
+	transform: translateY(-2px);
+}
+
+.lpa-art .lpa-art-voisin__media {
+	position: relative;
+	flex: 0 0 72px;
+	height: 72px;
+	overflow: hidden;
+	background: var(--lpa-doux);
+	border-radius: 12px;
+}
+
+.lpa-art .lpa-art-voisin__media img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+}
+
+.lpa-art .lpa-art-voisin__texte {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.lpa-art .lpa-art-voisin__label {
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--lpa-texte);
+}
+
+.lpa-art .lpa-art-voisin__titre {
+	display: -webkit-box;
+	overflow: hidden;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 24px;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.lpa-art .lpa-art-voisin__fleche {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	color: var(--lpa-encre);
+	background: var(--lpa-doux);
+	border-radius: 50%;
+	transition: background-color var(--lpa-transition);
+}
+
+.lpa-art .lpa-art-voisin a:hover .lpa-art-voisin__fleche {
+	background: var(--lpa-sauge);
+}
+
+.lpa-art .lpa-art-voisin--prec .lpa-art-voisin__fleche {
+	order: -1;
+	transform: rotate(180deg);
+}
+
+.lpa-art .lpa-art-voisin__fleche .lpa-picto {
+	width: 16px;
+	height: 16px;
+}
+
+/* ---------- À lire aussi (même cartes que la page Actualités) ---------- */
+/* Espace sous l'article, même quand il n'y a ni voisins ni suggestions (la colonne d'outils ne touche jamais le pied de page). */
+.lpa-art .lpa-article {
+	padding-bottom: 96px;
+}
+
+.lpa-art .lpa.lpa-art-aussi {
+	display: block;
+	margin-top: 0;
+	padding: 80px 0 96px;
+	background: var(--lpa-fond-section);
+}
+
+.lpa-art .lpa-art-aussi__tete {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px 32px;
+	margin-bottom: 32px;
+}
+
+.lpa-art .lpa-art-aussi h2.lpa-art-aussi__titre {
+	margin: 0;
+	font-size: 40px;
+	font-weight: 600;
+	line-height: 48px;
+	letter-spacing: -0.015em;
+	color: var(--lpa-encre);
+}
+
+.lpa-art a.lpa-art-aussi__tout {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--lpa-encre);
+	text-decoration: underline;
+	text-decoration-color: var(--lpa-sauge);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 6px;
+}
+
+.lpa-art .lpa-art-aussi .lpa-grille .lpa-carte__inner {
+	border-color: transparent;
+	box-shadow: var(--lpa-ombre-carte);
+}
+
+/* Focus clavier visible partout */
+.lpa-art .lpa-art-outils :is(a, button):focus-visible,
+.lpa-art .lpa-art-voisin a:focus-visible,
+.lpa-art a.lpa-art-aussi__tout:focus-visible {
+	outline: 2px solid var(--lpa-encre);
+	outline-offset: 3px;
+}
+
+/* ---------- Tablette et mobile ---------- */
+@media (max-width: 1100px) {
+	.lpa-art .lpa-art-corps {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 32px;
+	}
+
+	.lpa-art .lpa-art-outils {
+		position: static;
+		grid-row: 1;
+		grid-column: 1;
+	}
+
+	.lpa-art .lpa-art-corps .lpa-lecture {
+		grid-row: 2;
+		max-width: 720px;
+	}
+
+	.lpa-art .lpa-art-avancement {
+		display: none;
+	}
+
+	.lpa-art .lpa-art-partage__liste {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.lpa-art .lpa-art-partage__liste li {
+		flex: 1 1 160px;
+	}
+}
+
+@media (max-width: 767px) {
+	.lpa-art-hero {
+		padding: 24px 0 112px;
+	}
+
+	.lpa-art h1.lpa-article__titre {
+		font-size: 32px;
+		line-height: 40px;
+	}
+
+	.lpa-art p.lpa-article__chapeau {
+		font-size: 17px;
+		line-height: 28px;
+	}
+
+	.lpa-art ul.lpa-art-infos {
+		gap: 6px 16px;
+		margin-top: 20px;
+		font-size: 13px;
+	}
+
+	.lpa-art .lpa-art-infos li + li {
+		padding-left: 0;
+		border-left: 0;
+	}
+
+	.lpa-art-hero__deco span:first-child {
+		display: none;
+	}
+
+	.lpa-art figure.lpa-art-image {
+		margin-top: -80px;
+	}
+
+	.lpa-art .lpa-art-image__cadre {
+		border-radius: 16px;
+	}
+
+	.lpa-art .lpa-art-corps {
+		padding-top: 40px;
+	}
+
+	.lpa-art .lpa-lecture > p:first-child {
+		font-size: 19px;
+	}
+
+	.lpa-art .lpa-lecture blockquote {
+		padding: 20px 40px 20px 20px;
+	}
+
+	.lpa-art .lpa-art-voisins ul {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.lpa-art .lpa-art-voisin--suiv:only-child {
+		grid-column: 1;
+	}
+
+	.lpa-art .lpa-article {
+		padding-bottom: 64px;
+	}
+
+	.lpa-art .lpa.lpa-art-aussi {
+		padding: 56px 0 64px;
+	}
+
+	.lpa-art .lpa-art-aussi h2.lpa-art-aussi__titre {
+		font-size: 28px;
+		line-height: 36px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpa-art *,
+	.lpa-art *::before,
+	.lpa-art *::after {
+		transition: none !important;
+	}
+
+	.lpa-art .lpa-art-voisin a:hover {
+		transform: none;
+	}
+}
+
+/* =========================================================================
+ * 15. v3.7 : réglages (widget Elementor « Actualités » et « Articles → Page d'un article »)
+ * ====================================================================== */
+
+/* Animations désactivées dans les réglages */
+.lpa.lpa--calme .lpa-hero__photo img,
+.lpa.lpa--calme .lpa-hero__cadre,
+.lpa.lpa--calme .lpa-hero__anneau {
+	animation: none;
+}
+
+/* Fond du bandeau de l'article (couleur choisie dans les réglages) */
+.lpa-art-hero {
+	background-color: var(--lpa-encre-bandeau, var(--lpa-encre));
+}
+
+/* Colonne d'outils entièrement désactivée : le texte reste aligné à gauche, sur 680 px */
+.lpa-art .lpa-art-corps--seul {
+	grid-template-columns: minmax(0, 680px);
+}
