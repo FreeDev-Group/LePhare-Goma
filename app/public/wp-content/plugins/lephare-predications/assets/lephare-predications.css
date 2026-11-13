@@ -1,0 +1,2031 @@
+/*
+ * LePhare – Prédications & Ressources – v1.0.0
+ *
+ * Met en forme :
+ *   - le contenu du shortcode [lephare_predications] (page /predications-ressources/) ;
+ *   - la fiche affichée sur la page d'une prédication (vidéo, audio, PDF, prédications liées).
+ * Design identique à la page Événements (#05) : mêmes jetons, cartes, badges, boutons verts.
+ *
+ * Couleurs : uniquement la palette globale Kadence (var(--global-paletteN)).
+ *   palette1 orange · palette3/4 bleu nuit · palette5/6 gris texte · palette7/8 gris clairs · palette9 blanc · palette11 vert.
+ * Police : Jost (variables Kadence). Contrastes AA vérifiés (valeurs en commentaire).
+ */
+
+/* -------------------------------------------------------------------------
+ * Jetons
+ * ---------------------------------------------------------------------- */
+.lpp,
+.lpp-fiche,
+.lpp-liees,
+.lpp-texte {
+	--lpp-police: var(--global-heading-font-family, "Jost"), sans-serif;
+	--lpp-texte: var(--global-body-font-family, "Jost"), sans-serif;
+	--lpp-rayon: 16px;
+	--lpp-ombre: 0 1px 2px rgba(7, 27, 56, 0.04), 0 8px 24px rgba(7, 27, 56, 0.07);
+	--lpp-ombre-forte: 0 2px 6px rgba(7, 27, 56, 0.06), 0 20px 48px rgba(7, 27, 56, 0.14);
+	--lpp-transition: 0.3s cubic-bezier(0.2, 0.65, 0.3, 1);
+	/* Vert doux (palette11 éclairci de 12 % ≈ #2f7447) : texte blanc 5,6:1. Survol : palette11 plein. */
+	--lpp-vert: color-mix(in srgb, var(--global-palette11, #13612e) 88%, #fff);
+	--lpp-vert-fonce: var(--global-palette11, #13612e);
+	font-family: var(--lpp-texte);
+}
+
+.lpp {
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+	scroll-margin-top: 120px;
+}
+
+/* Le thème ajoute des marges et retraits aux listes, paragraphes et titres du contenu */
+.lpp ul,
+.lpp-fiche ul,
+.lpp-liees ul,
+.single-content .lpp ul,
+.single-content .lpp-fiche ul,
+.single-content .lpp-liees ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.single-content .lpp p,
+.single-content .lpp h3,
+.single-content .lpp-fiche p,
+.single-content .lpp-fiche h2,
+.single-content .lpp-liees p,
+.single-content .lpp-liees h2,
+.single-content .lpp-liees h3,
+.lpp li,
+.lpp-fiche li,
+.lpp-liees li {
+	margin: 0;
+}
+
+/* Le thème impose « img { height: auto } » : les images remplissent leur cadre */
+.lpp-une__media img,
+.lpp-carte__media img,
+.single-content .lpp-une__media img,
+.single-content .lpp-carte__media img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+}
+
+.screen-reader-text {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * Éléments communs
+ * ---------------------------------------------------------------------- */
+.lpp-icone {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+	color: var(--global-palette1, #f67d4c);
+}
+
+.lpp-meta {
+	display: grid;
+	gap: 8px;
+	font-size: 0.9375rem;
+	line-height: 1.45;
+	color: var(--global-palette5, #374352); /* sur blanc : 10:1 */
+}
+
+.lpp-meta li {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.lpp-meta .lpp-icone {
+	margin-top: 1px;
+}
+
+/* Type (Prédication, Enseignement…) en surtitre vert : palette11 sur blanc 7,9:1 */
+.lpp-type,
+.single-content p.lpp-type {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--lpp-police);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--global-palette11, #13612e);
+}
+
+.lpp-type::before {
+	content: "";
+	width: 24px;
+	height: 2px;
+	background: currentColor;
+	border-radius: 2px;
+}
+
+/* Titres : casse telle que saisie */
+.lpp-une__titre,
+.lpp-carte__titre,
+.lpp-liees__titre {
+	text-transform: none;
+}
+
+/* Bouton vert doux, texte blanc (5,6:1) */
+.lpp-bouton,
+.single-content a.lpp-bouton,
+.single-content button.lpp-bouton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	align-self: flex-start;
+	min-height: 48px;
+	padding: 14px 26px;
+	font-family: var(--lpp-police);
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert);
+	border: 0;
+	border-radius: 999px;
+	text-decoration: none;
+	cursor: pointer;
+	box-shadow: 0 6px 16px rgba(19, 97, 46, 0.22);
+	transition: background-color var(--lpp-transition), transform var(--lpp-transition), box-shadow var(--lpp-transition);
+}
+
+a.lpp-bouton::after {
+	content: "→";
+	transition: transform var(--lpp-transition);
+}
+
+.lpp-bouton:hover,
+.single-content a.lpp-bouton:hover,
+.single-content button.lpp-bouton:hover {
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert-fonce);
+	box-shadow: 0 12px 28px rgba(19, 97, 46, 0.3);
+	transform: translateY(-2px);
+}
+
+a.lpp-bouton:hover::after {
+	transform: translateX(4px);
+}
+
+.lpp-bouton:focus-visible,
+.lpp a:focus-visible,
+.lpp-fiche a:focus-visible,
+.lpp-liees a.lpp-lien-retour:focus-visible,
+.lpp-filtres input:focus-visible,
+.lpp-filtres select:focus-visible {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 3px;
+}
+
+/* Lien étendu : un seul lien, toute la carte est cliquable */
+.lpp-lien-etendu,
+.single-content a.lpp-lien-etendu {
+	color: inherit;
+	text-decoration: none;
+}
+
+.lpp-lien-etendu::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	border-radius: inherit;
+}
+
+.lpp-fleche {
+	display: inline-block;
+	transition: transform var(--lpp-transition);
+}
+
+/* Focus clavier : contour bleu nuit autour de toute la carte */
+.lpp-grille a.lpp-lien-etendu:focus-visible {
+	outline: none;
+}
+
+.lpp-carte__inner:has(a.lpp-lien-etendu:focus-visible) {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 4px;
+}
+
+/* Pastilles « Vidéo / Audio / PDF » */
+.lpp-pastilles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.lpp-pastille {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 10px 5px 8px;
+	font-family: var(--lpp-police);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	color: var(--global-palette3, #071b38); /* sur palette8 : 15:1 */
+	background: var(--global-palette8, #edeff3);
+	border-radius: 999px;
+}
+
+.lpp-pastille .lpp-icone {
+	width: 15px;
+	height: 15px;
+	color: var(--global-palette11, #13612e);
+}
+
+/* -------------------------------------------------------------------------
+ * 1. Prédication à la une
+ * ---------------------------------------------------------------------- */
+.lpp-une {
+	display: grid;
+	grid-template-columns: 58fr 42fr;
+	overflow: hidden;
+	background: var(--global-palette9, #fff);
+	border-radius: var(--lpp-rayon);
+	box-shadow: var(--lpp-ombre-forte);
+}
+
+.lpp-une__media {
+	position: relative;
+	min-height: 440px;
+	overflow: hidden;
+	background: var(--global-palette8, #edeff3);
+}
+
+.lpp-une__media img {
+	position: absolute;
+	inset: 0;
+	transition: transform 0.9s cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+.lpp-une:hover .lpp-une__media img {
+	transform: scale(1.04);
+}
+
+.lpp-une__contenu {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 18px;
+	padding: 56px 44px;
+}
+
+.lpp-une__titre,
+.single-content .lpp h3.lpp-une__titre {
+	margin: 0;
+	font-family: var(--lpp-police);
+	font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.125rem);
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-une .lpp-meta {
+	font-size: 1rem;
+}
+
+.lpp-une__extrait {
+	font-size: 1rem;
+	line-height: 1.7;
+	color: var(--global-palette5, #374352);
+}
+
+/* Étiquette « À la une » sur l'image (blanc sur vert doux : 5,6:1) */
+.lpp-etiquette {
+	position: absolute;
+	top: 24px;
+	left: 24px;
+	z-index: 2;
+	padding: 7px 14px;
+	font-family: var(--lpp-police);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert);
+	border-radius: 999px;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 1024px) and (min-width: 901px) {
+	.lpp-une {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.lpp-une__contenu {
+		padding: 40px 36px;
+	}
+}
+
+@media (max-width: 900px) {
+	.lpp-une {
+		grid-template-columns: 1fr;
+	}
+
+	.lpp-une__media {
+		min-height: 0;
+		aspect-ratio: 16 / 10;
+	}
+
+	.lpp-une__contenu {
+		padding: 28px 24px 32px;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Filtres et recherche (formulaire GET : fonctionne sans JavaScript)
+ * ---------------------------------------------------------------------- */
+/* Flex : la barre s'adapte au nombre de champs choisis dans le widget (1 à 4) */
+.lpp-filtres {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 16px;
+	padding: 24px;
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: var(--lpp-rayon);
+	box-shadow: var(--lpp-ombre);
+}
+
+.lpp-filtres__champ {
+	display: flex;
+	flex: 1 1 170px;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+
+.lpp-filtres__champ--recherche {
+	flex: 2 1 280px;
+}
+
+.lpp-filtres label {
+	font-family: var(--lpp-police);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-filtres input[type="search"],
+.lpp-filtres select,
+.single-content .lpp-filtres input[type="search"],
+.single-content .lpp-filtres select {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 48px;
+	margin: 0;
+	padding: 10px 14px;
+	font-family: var(--lpp-texte);
+	font-size: 1rem;
+	color: var(--global-palette3, #071b38);
+	background-color: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette6, #697380); /* contour sur blanc : 4,8:1 (≥ 3:1) */
+	border-radius: 12px;
+	box-shadow: none;
+}
+
+.lpp-filtres__recherche {
+	position: relative;
+	display: block;
+}
+
+.lpp-filtres__recherche .lpp-icone {
+	position: absolute;
+	top: 50%;
+	left: 14px;
+	color: var(--global-palette6, #697380);
+	transform: translateY(-50%);
+	pointer-events: none;
+}
+
+.lpp-filtres__recherche input[type="search"],
+.single-content .lpp-filtres__recherche input[type="search"] {
+	padding-left: 42px;
+}
+
+/* Focus clavier visible sur les champs (le thème retire le contour des champs de recherche) */
+.lpp .lpp-filtres input[type="search"]:focus-visible,
+.lpp .lpp-filtres select:focus-visible,
+.single-content .lpp .lpp-filtres input[type="search"]:focus-visible,
+.single-content .lpp .lpp-filtres select:focus-visible {
+	outline: 3px solid var(--global-palette3, #071b38) !important;
+	outline-offset: 2px;
+	border-color: var(--global-palette3, #071b38);
+}
+
+.lpp-filtres__actions {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 14px;
+}
+
+.lpp-filtres .lpp-bouton {
+	box-shadow: none;
+}
+
+.lpp-lien-reset,
+.single-content a.lpp-lien-reset {
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--global-palette11, #13612e);
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+	.lpp-filtres__champ--recherche {
+		flex-basis: 100%;
+	}
+}
+
+@media (max-width: 767px) {
+	.lpp-filtres {
+		padding: 20px;
+	}
+
+	.lpp-filtres__champ {
+		flex-basis: 100%;
+	}
+}
+
+/* Nombre de résultats */
+.lpp-resultats,
+.single-content p.lpp-resultats {
+	margin: -12px 0 0;
+	font-size: 0.9375rem;
+	color: var(--global-palette5, #374352);
+}
+
+/* -------------------------------------------------------------------------
+ * 3. Grille de cartes
+ * ---------------------------------------------------------------------- */
+/* Colonnes : automatiques, ou fixées dans le widget Elementor (variable --lpp-colonnes) */
+.lpp-grille {
+	display: grid;
+	grid-template-columns: var(--lpp-colonnes, repeat(auto-fill, minmax(min(100%, 300px), 1fr)));
+	gap: 32px;
+}
+
+.lpp-carte {
+	display: flex;
+}
+
+.lpp-carte__inner {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	overflow: hidden;
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: var(--lpp-rayon);
+	box-shadow: var(--lpp-ombre);
+	transition: transform var(--lpp-transition), box-shadow var(--lpp-transition);
+}
+
+.lpp-carte__media {
+	position: relative;
+	aspect-ratio: 16 / 10;
+	overflow: hidden;
+	background: var(--global-palette8, #edeff3);
+}
+
+.lpp-carte__media img {
+	transition: transform 0.6s cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+.lpp-carte__media::after,
+.lpp-une__media::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(180deg, rgba(7, 27, 56, 0) 55%, rgba(7, 27, 56, 0.3) 100%);
+}
+
+/* Badge Type sur l'image (bleu nuit sur blanc : 17:1) */
+.lpp-carte__type {
+	position: absolute;
+	top: 16px;
+	left: 16px;
+	z-index: 2;
+	padding: 7px 12px;
+	font-family: var(--lpp-police);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette9, #fff);
+	border-radius: 999px;
+	box-shadow: 0 6px 18px rgba(7, 27, 56, 0.2);
+}
+
+.lpp-carte__contenu {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 12px;
+	padding: 24px;
+}
+
+.lpp-carte__titre,
+.single-content .lpp h3.lpp-carte__titre,
+.single-content .lpp-liees h3.lpp-carte__titre {
+	margin: 0;
+	font-family: var(--lpp-police);
+	font-size: 1.25rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-carte__pied {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: auto;
+	padding: 16px 24px;
+	border-top: 1px solid var(--global-palette8, #edeff3);
+}
+
+.lpp-carte__suite {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+	padding: 10px 18px;
+	font-family: var(--lpp-police);
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert);
+	border-radius: 999px;
+	transition: background-color var(--lpp-transition);
+}
+
+.lpp-carte__inner:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--lpp-ombre-forte);
+}
+
+.lpp-carte__inner:hover .lpp-carte__suite {
+	background: var(--lpp-vert-fonce);
+}
+
+.lpp-carte__inner:hover .lpp-carte__media img {
+	transform: scale(1.05);
+}
+
+.lpp-carte__inner:hover .lpp-fleche {
+	transform: translateX(4px);
+}
+
+/* Prédication sans image à la une : fond bleu nuit dégradé + icône livre (décoratif) */
+.lpp-image-vide {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(135deg, var(--global-palette3, #071b38), var(--global-palette4, #0e2341));
+}
+
+.lpp-image-vide .lpp-icone {
+	width: 48px;
+	height: 48px;
+	color: color-mix(in srgb, var(--global-palette11, #13612e) 60%, #fff);
+}
+
+/* -------------------------------------------------------------------------
+ * 4. Pagination
+ * ---------------------------------------------------------------------- */
+.lpp-pagination ul {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.lpp-pagination a,
+.lpp-pagination__actuel,
+.single-content .lpp-pagination a {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 48px;
+	height: 48px;
+	padding: 0 14px;
+	font-family: var(--lpp-police);
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: 999px;
+	text-decoration: none;
+	transition: border-color var(--lpp-transition), background-color var(--lpp-transition);
+}
+
+.lpp-pagination a:hover {
+	border-color: var(--global-palette11, #13612e);
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 8%, #fff);
+}
+
+.lpp-pagination__actuel {
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert);
+	border-color: transparent;
+}
+
+/* -------------------------------------------------------------------------
+ * 5. État vide
+ * ---------------------------------------------------------------------- */
+.lpp-vide {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 48px 32px;
+	text-align: center;
+	background: var(--global-palette9, #fff);
+	border: 1px dashed var(--global-palette7, #dadde4);
+	border-radius: var(--lpp-rayon);
+}
+
+.lpp-vide .lpp-icone {
+	box-sizing: content-box;
+	width: 32px;
+	height: 32px;
+	margin-bottom: 8px;
+	padding: 14px;
+	color: var(--global-palette11, #13612e);
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 10%, #fff);
+	border-radius: 50%;
+}
+
+.lpp-vide__texte,
+.single-content p.lpp-vide__texte {
+	font-family: var(--lpp-police);
+	font-size: 1.125rem;
+	font-weight: 600;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-vide__lien {
+	font-size: 0.9375rem;
+	color: var(--global-palette5, #374352);
+}
+
+.lpp-vide__lien a {
+	font-weight: 600;
+	color: var(--global-palette11, #13612e);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Page d'une prédication
+ * ---------------------------------------------------------------------- */
+.lpp-fiche {
+	display: flex;
+	flex-direction: column;
+	gap: 28px;
+	margin: 0 0 40px;
+}
+
+.lpp-fiche__infos {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 24px;
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: var(--lpp-rayon);
+	box-shadow: var(--lpp-ombre);
+}
+
+.lpp-fiche__infos .lpp-meta {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+	gap: 12px 24px;
+	font-size: 1rem;
+}
+
+.lpp-bloc {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.lpp-bloc__titre,
+.single-content .lpp-fiche h2.lpp-bloc__titre {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--lpp-police);
+	font-size: 1.25rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-bloc__titre .lpp-icone {
+	box-sizing: content-box;
+	padding: 7px;
+	color: var(--global-palette11, #13612e);
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 10%, #fff);
+	border-radius: 50%;
+}
+
+/* Vidéo responsive 16/9 */
+.lpp-video {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	background: var(--global-palette3, #071b38);
+	border-radius: var(--lpp-rayon);
+	box-shadow: var(--lpp-ombre-forte);
+}
+
+.lpp-video iframe,
+.lpp-video video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.lpp-video video {
+	object-fit: contain;
+}
+
+.lpp-audio {
+	padding: 16px;
+	background: var(--global-palette8, #edeff3);
+	border-radius: var(--lpp-rayon);
+}
+
+.lpp-audio .wp-audio-shortcode,
+.lpp-audio .mejs-container {
+	width: 100% !important;
+	max-width: 100%;
+}
+
+.lpp-bloc__lien,
+.single-content p.lpp-bloc__lien {
+	font-size: 0.9375rem;
+}
+
+.lpp-bloc__lien a,
+.single-content .lpp-bloc__lien a {
+	font-weight: 600;
+	color: var(--global-palette11, #13612e);
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+.lpp-bouton--pdf .lpp-icone {
+	color: currentColor;
+}
+
+a.lpp-bouton--pdf::after {
+	content: none;
+}
+
+.lpp-bouton__taille {
+	padding: 4px 8px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	background: rgba(255, 255, 255, 0.18);
+	border-radius: 999px;
+}
+
+/* Prédications liées */
+.lpp-liees {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	margin-top: 48px;
+	padding-top: 40px;
+	border-top: 1px solid var(--global-palette7, #dadde4);
+}
+
+.lpp-liees__entete {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px 24px;
+}
+
+.lpp-liees__titre,
+.single-content .lpp-liees h2.lpp-liees__titre {
+	margin: 0;
+	font-family: var(--lpp-police);
+	font-size: 1.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-lien-retour,
+.single-content a.lpp-lien-retour {
+	font-weight: 600;
+	color: var(--global-palette11, #13612e);
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--global-palette11, #13612e) 35%, #fff);
+	text-underline-offset: 4px;
+}
+
+.lpp-lien-retour:hover {
+	text-decoration-color: currentColor;
+}
+
+.lpp-grille--liees {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+	gap: 24px;
+}
+
+/* -------------------------------------------------------------------------
+ * 7. Aides de mise en page de la page Elementor (classe « lph-page »)
+ *    Copies des règles du plugin Événements : celui-ci ne charge ses styles que sur sa propre page.
+ * ---------------------------------------------------------------------- */
+.single-content .lph-page .elementor-heading-title,
+.single-content .lph-page .elementor-widget-text-editor p:last-child {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.lph-surtitre .elementor-heading-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.lph-surtitre .elementor-heading-title::before {
+	content: "";
+	width: 32px;
+	height: 2px;
+	background: var(--global-palette1, #f67d4c);
+	border-radius: 2px;
+}
+
+.lph-surtitre--vert .elementor-heading-title::before {
+	background: currentColor;
+}
+
+.elementor-heading-title .lph-accent {
+	color: var(--global-palette11, #13612e);
+}
+
+/* =========================================================================
+ * 8. Concept « Médiathèque » (page Prédications & ressources) – v1.3
+ *    Barre d'outils (onglets + recherche) · liste média (vignette, date, actions, PDF direct)
+ *    · carte « Dernière prédication » sombre en pile · chiffres clés · séries numérotées · décors.
+ *    Couleurs : palette Kadence uniquement ; police Jost. Contrastes AA indiqués en commentaire.
+ * ====================================================================== */
+.lpp-vedette-pile,
+.lpp-series,
+.lpp-chiffres {
+	--lpp-police: var(--global-heading-font-family, "Jost"), sans-serif;
+	--lpp-texte: var(--global-body-font-family, "Jost"), sans-serif;
+	--lpp-rayon: 20px;
+	--lpp-ombre: 0 1px 2px rgba(7, 27, 56, 0.04), 0 8px 24px rgba(7, 27, 56, 0.07);
+	--lpp-ombre-forte: 0 2px 6px rgba(7, 27, 56, 0.06), 0 24px 56px rgba(7, 27, 56, 0.16);
+	--lpp-transition: 0.3s cubic-bezier(0.2, 0.65, 0.3, 1);
+	--lpp-vert: color-mix(in srgb, var(--global-palette11, #13612e) 88%, #fff);
+	--lpp-vert-fonce: var(--global-palette11, #13612e);
+	font-family: var(--lpp-texte);
+}
+
+/* Le thème ajoute marges et puces aux listes, paragraphes et titres du contenu */
+.lpp-vedette p,
+.lpp-vedette h2,
+.lpp-vedette h3,
+.lpp-series li,
+.lpp-chiffres li,
+.lpp-ligne p,
+.lpp-ligne h2,
+.lpp-ligne h3,
+.lpp-ligne h4,
+.single-content .lpp-vedette p,
+.single-content .lpp-vedette h2,
+.single-content .lpp-vedette h3,
+.single-content .lpp .lpp-ligne p,
+.single-content .lpp .lpp-ligne h3 {
+	margin: 0;
+}
+
+.lpp-series,
+.lpp-chiffres,
+.lpp-onglets ul,
+.lpp-ligne__infos,
+.lpp-vedette ul,
+.single-content .lpp-vedette ul,
+.single-content ul.lpp-series,
+.single-content ul.lpp-chiffres,
+.single-content .lpp .lpp-onglets ul,
+.single-content .lpp ul.lpp-ligne__infos {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Pastille « Nouveau » : bleu nuit sur orange (6,5:1) */
+.lpp-nouveau,
+.single-content .lpp p.lpp-nouveau {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 10px;
+	font-family: var(--lpp-police);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette1, #f67d4c);
+	border-radius: 999px;
+}
+
+/* --- Barre d'outils : onglets + recherche + filtres compacts ----------- */
+.lpp-barre {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding: 18px;
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: 22px;
+	box-shadow: var(--lpp-ombre);
+}
+
+.lpp-barre .lpp-filtres {
+	align-items: center;
+	gap: 12px;
+	padding: 18px 0 0;
+	background: transparent;
+	border: 0;
+	border-top: 1px solid var(--global-palette8, #edeff3);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+/* Libellés présents pour les lecteurs d'écran, masqués à l'écran (la 1re option les remplace) */
+.lpp-barre .lpp-filtres label {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.lpp-barre .lpp-filtres__champ {
+	flex: 1 1 190px;
+}
+
+.lpp-barre .lpp-filtres__champ--recherche {
+	flex: 3 1 320px;
+}
+
+.lpp-barre .lpp-filtres input[type="search"],
+.lpp-barre .lpp-filtres select,
+.single-content .lpp-barre .lpp-filtres input[type="search"],
+.single-content .lpp-barre .lpp-filtres select {
+	min-height: 52px;
+	background-color: color-mix(in srgb, var(--global-palette8, #edeff3) 55%, #fff);
+	border-color: transparent;
+	border-radius: 999px;
+}
+
+.lpp-barre .lpp-filtres select,
+.single-content .lpp-barre .lpp-filtres select {
+	padding-left: 20px;
+}
+
+.lpp-barre .lpp-filtres input[type="search"]:hover,
+.lpp-barre .lpp-filtres select:hover {
+	border-color: var(--global-palette7, #dadde4);
+}
+
+.lpp-barre .lpp-filtres input[type="search"]:focus,
+.lpp-barre .lpp-filtres select:focus {
+	background-color: var(--global-palette9, #fff);
+	border-color: var(--global-palette3, #071b38);
+}
+
+.lpp-barre .lpp-filtres__recherche .lpp-icone {
+	left: 18px;
+	color: var(--global-palette5, #374352);
+}
+
+.lpp-barre .lpp-filtres__recherche input[type="search"],
+.single-content .lpp-barre .lpp-filtres__recherche input[type="search"] {
+	padding-left: 48px;
+}
+
+.lpp-barre .lpp-bouton {
+	min-height: 52px;
+	padding: 14px 30px;
+}
+
+/* Onglets : contrôle segmenté */
+.lpp-onglets ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.lpp-onglet,
+.single-content a.lpp-onglet {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 44px;
+	padding: 8px 10px 8px 18px;
+	font-family: var(--lpp-police);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--global-palette3, #071b38);
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	text-decoration: none;
+	transition: background-color var(--lpp-transition), color var(--lpp-transition);
+}
+
+.lpp-onglet__nb {
+	min-width: 26px;
+	padding: 3px 8px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-align: center;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette8, #edeff3);
+	border-radius: 999px;
+}
+
+.lpp-onglet:hover,
+.single-content a.lpp-onglet:hover {
+	color: var(--global-palette3, #071b38);
+	background: color-mix(in srgb, var(--global-palette8, #edeff3) 70%, #fff);
+}
+
+/* Onglet actif : blanc sur bleu nuit (17:1) */
+.lpp-onglet--actif,
+.lpp-onglet--actif:hover,
+.single-content a.lpp-onglet--actif,
+.single-content a.lpp-onglet--actif:hover {
+	color: var(--global-palette9, #fff);
+	background: var(--global-palette3, #071b38);
+	box-shadow: 0 6px 16px rgba(7, 27, 56, 0.22);
+}
+
+.lpp-onglet--actif .lpp-onglet__nb {
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette9, #fff);
+}
+
+.lpp-onglet:focus-visible {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 3px;
+}
+
+/* --- Liste média (une carte horizontale par ressource) ---------------- */
+.lpp-lignes,
+.single-content ul.lpp-lignes {
+	display: grid;
+	gap: 16px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lpp-ligne__inner {
+	position: relative;
+	display: grid;
+	grid-template-columns: 220px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 16px 28px;
+	padding: 14px 24px 14px 14px;
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: 20px;
+	box-shadow: 0 1px 2px rgba(7, 27, 56, 0.04);
+	transition: transform var(--lpp-transition), box-shadow var(--lpp-transition), border-color var(--lpp-transition);
+}
+
+.lpp-ligne__inner:hover {
+	border-color: color-mix(in srgb, var(--global-palette11, #13612e) 35%, #fff);
+	box-shadow: var(--lpp-ombre-forte);
+	transform: translateY(-3px);
+}
+
+.lpp-ligne__inner:has(a.lpp-lien-etendu:focus-visible) {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 3px;
+}
+
+.lpp-ligne a.lpp-lien-etendu:focus-visible {
+	outline: none;
+}
+
+/* Vignette 16/10 avec voile, icône du média et date en badge */
+.lpp-ligne__vignette {
+	position: relative;
+	aspect-ratio: 16 / 10;
+	overflow: hidden;
+	background: linear-gradient(135deg, var(--global-palette3, #071b38), var(--global-palette4, #0e2341));
+	border-radius: 14px;
+}
+
+.lpp-ligne__vignette img,
+.single-content .lpp-ligne__vignette img {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.7s cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+.lpp-ligne__vignette::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: linear-gradient(180deg, rgba(7, 27, 56, 0.05) 30%, rgba(7, 27, 56, 0.55) 100%);
+}
+
+.lpp-ligne__inner:hover .lpp-ligne__vignette img {
+	transform: scale(1.06);
+}
+
+.lpp-ligne__media {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	color: var(--global-palette11, #13612e);
+	background: var(--global-palette9, #fff);
+	border-radius: 50%;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.lpp-ligne__media .lpp-icone {
+	width: 18px;
+	height: 18px;
+	color: currentColor;
+}
+
+/* Date : bleu nuit et vert sur blanc */
+.lpp-ligne__date {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 52px;
+	padding: 7px 8px 6px;
+	font-family: var(--lpp-police);
+	line-height: 1;
+	background: var(--global-palette9, #fff);
+	border-radius: 12px;
+	box-shadow: 0 6px 16px rgba(7, 27, 56, 0.2);
+}
+
+.lpp-ligne__jour {
+	font-size: 1.375rem;
+	font-weight: 700;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-ligne__mois {
+	margin-top: 4px;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--global-palette11, #13612e); /* 7,6:1 */
+}
+
+.lpp-ligne__corps {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+
+.lpp-ligne__haut {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Type : vert sur vert très clair (6,6:1) */
+.lpp-ligne__type,
+.single-content .lpp p.lpp-ligne__type {
+	display: inline-flex;
+	padding: 4px 10px;
+	font-family: var(--lpp-police);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--global-palette11, #13612e);
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 10%, #fff);
+	border-radius: 999px;
+}
+
+.lpp-ligne__haut .lpp-pastilles {
+	gap: 4px;
+}
+
+.lpp-ligne__haut .lpp-pastille {
+	padding: 3px 9px 3px 7px;
+	font-size: 0.6875rem;
+}
+
+.lpp-ligne__titre,
+.single-content .lpp .lpp-ligne__titre {
+	margin: 0;
+	font-family: var(--lpp-police);
+	font-size: 1.3125rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--global-palette3, #071b38);
+	text-transform: none;
+}
+
+.lpp-ligne__infos {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 20px;
+	font-size: 0.9375rem;
+	color: var(--global-palette5, #374352);
+}
+
+.lpp-ligne__infos li {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.lpp-ligne__infos .lpp-icone {
+	width: 16px;
+	height: 16px;
+}
+
+/* Actions : bouton principal (visuel) + PDF direct (vrai lien, au-dessus du lien étendu) */
+.lpp-ligne__actions {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 8px;
+	min-width: 150px;
+}
+
+.lpp-ligne__action,
+.lpp-ligne__pdf,
+.single-content a.lpp-ligne__pdf {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 10px 18px;
+	font-family: var(--lpp-police);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1;
+	border-radius: 999px;
+	text-decoration: none;
+	transition: background-color var(--lpp-transition), color var(--lpp-transition), border-color var(--lpp-transition);
+}
+
+.lpp-ligne__action {
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert);
+}
+
+.lpp-ligne__action .lpp-icone,
+.lpp-ligne__pdf .lpp-icone {
+	width: 16px;
+	height: 16px;
+	color: currentColor;
+}
+
+.lpp-ligne__inner:hover .lpp-ligne__action {
+	background: var(--lpp-vert-fonce);
+}
+
+.lpp-ligne__pdf,
+.single-content a.lpp-ligne__pdf {
+	position: relative;
+	z-index: 4;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+}
+
+.lpp-ligne__pdf:hover,
+.single-content a.lpp-ligne__pdf:hover {
+	color: var(--global-palette11, #13612e);
+	border-color: var(--global-palette11, #13612e);
+}
+
+.lpp-ligne__pdf:focus-visible {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 3px;
+}
+
+@media (max-width: 1024px) {
+	.lpp-ligne__inner {
+		grid-template-columns: 180px minmax(0, 1fr);
+	}
+
+	.lpp-ligne__actions {
+		grid-column: 2;
+		flex-direction: row;
+		flex-wrap: wrap;
+		min-width: 0;
+	}
+}
+
+@media (max-width: 640px) {
+	.lpp-ligne__inner {
+		grid-template-columns: 1fr;
+		gap: 14px;
+		padding: 12px 12px 18px;
+	}
+
+	.lpp-ligne__vignette {
+		aspect-ratio: 16 / 9;
+	}
+
+	.lpp-ligne__corps,
+	.lpp-ligne__actions {
+		grid-column: 1;
+		padding: 0 6px;
+	}
+
+	.lpp-ligne__actions > * {
+		flex: 1 1 auto;
+	}
+
+	.lpp-ligne__titre,
+	.single-content .lpp .lpp-ligne__titre {
+		font-size: 1.1875rem;
+	}
+
+	.lpp-barre {
+		padding: 14px;
+	}
+
+	/* Onglets sur une ligne qui défile (dans la barre, sans élargir la page) */
+	.lpp-onglets ul {
+		flex-wrap: nowrap;
+		margin: -4px;
+		padding: 4px;
+		overflow-x: auto;
+		scrollbar-width: thin;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.lpp-onglets li {
+		flex: 0 0 auto;
+	}
+}
+
+/* --- Carte « Dernière prédication » : sombre, en pile ------------------ */
+.lpp-vedette-pile {
+	position: relative;
+	padding-bottom: 22px;
+}
+
+/* Deux cartes fantômes derrière (décor) */
+.lpp-vedette-pile::before,
+.lpp-vedette-pile::after {
+	content: "";
+	position: absolute;
+	z-index: 0;
+	border-radius: 24px;
+}
+
+.lpp-vedette-pile::before {
+	top: 26px;
+	right: 5%;
+	bottom: 8px;
+	left: 5%;
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 30%, #fff);
+	transform: rotate(-2.5deg);
+}
+
+.lpp-vedette-pile::after {
+	top: 40px;
+	right: 11%;
+	bottom: 0;
+	left: 11%;
+	background: color-mix(in srgb, var(--global-palette3, #071b38) 18%, #fff);
+	transform: rotate(2deg);
+}
+
+/* Fond bleu nuit : texte blanc 17:1 */
+.lpp-vedette {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	color: var(--global-palette9, #fff);
+	background: linear-gradient(160deg, var(--global-palette4, #0e2341) 0%, var(--global-palette3, #071b38) 100%);
+	border-radius: 24px;
+	box-shadow: 0 30px 70px rgba(7, 27, 56, 0.35);
+}
+
+.lpp-vedette:has(a.lpp-lien-etendu:focus-visible) {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 5px;
+}
+
+.lpp-vedette a.lpp-lien-etendu:focus-visible {
+	outline: none;
+}
+
+.lpp-vedette__media {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	background: var(--global-palette3, #071b38);
+}
+
+.lpp-vedette__media img,
+.single-content .lpp-vedette__media img {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.9s cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+/* Fondu de l'image vers le bleu nuit de la carte */
+.lpp-vedette__media::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(180deg, rgba(7, 27, 56, 0.05) 40%, rgba(14, 35, 65, 0.95) 100%);
+}
+
+.lpp-vedette__lecture {
+	position: absolute;
+	top: 46%;
+	left: 50%;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 84px;
+	height: 84px;
+	padding-left: 4px;
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert);
+	border-radius: 50%;
+	box-shadow: 0 0 0 12px rgba(255, 255, 255, 0.16), 0 0 0 26px rgba(255, 255, 255, 0.07), 0 18px 44px rgba(0, 0, 0, 0.35);
+	transform: translate(-50%, -50%);
+	transition: transform var(--lpp-transition), box-shadow var(--lpp-transition);
+}
+
+.lpp-vedette:hover .lpp-vedette__lecture {
+	transform: translate(-50%, -50%) scale(1.07);
+}
+
+.lpp-vedette:hover .lpp-vedette__media img {
+	transform: scale(1.04);
+}
+
+.lpp-vedette .lpp-etiquette {
+	top: 20px;
+	left: 20px;
+}
+
+.lpp-nouveau--image {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	z-index: 2;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Pas de « position » ici : le lien étendu du titre doit couvrir toute la carte (image comprise) */
+.lpp-vedette__corps {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 6px 30px 28px;
+}
+
+/* Vert clair sur bleu nuit : 5,8:1 */
+.lpp-vedette__type,
+.single-content .lpp-vedette p.lpp-vedette__type {
+	font-family: var(--lpp-police);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--global-palette11, #13612e) 60%, #fff);
+}
+
+.lpp-vedette__titre,
+.single-content .lpp-vedette .lpp-vedette__titre {
+	margin: 0;
+	font-family: var(--lpp-police);
+	font-size: clamp(1.375rem, 1.05rem + 0.9vw, 1.875rem);
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--global-palette9, #fff);
+	text-transform: none;
+}
+
+.lpp-vedette__titre a,
+.single-content .lpp-vedette__titre a,
+.single-content .lpp-vedette__titre a:hover {
+	color: inherit;
+	text-decoration: none;
+}
+
+.lpp-vedette__infos {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 18px;
+	font-size: 0.9375rem;
+	color: rgba(255, 255, 255, 0.86);
+}
+
+.lpp-vedette__infos li {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Icônes orange sur bleu nuit : 6,5:1 */
+.lpp-vedette__infos .lpp-icone {
+	width: 16px;
+	height: 16px;
+	color: var(--global-palette1, #f67d4c);
+}
+
+.lpp-vedette__pied {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	margin-top: 6px;
+	padding-top: 18px;
+	border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.lpp-vedette__action {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 22px;
+	font-family: var(--lpp-police);
+	font-weight: 600;
+	line-height: 1;
+	color: var(--global-palette9, #fff);
+	background: var(--lpp-vert);
+	border-radius: 999px;
+	transition: background-color var(--lpp-transition);
+}
+
+.lpp-vedette__action .lpp-icone {
+	width: 16px;
+	height: 16px;
+	color: currentColor;
+}
+
+.lpp-vedette:hover .lpp-vedette__action {
+	background: var(--lpp-vert-fonce);
+}
+
+.lpp-vedette .lpp-pastille {
+	color: var(--global-palette9, #fff);
+	background: rgba(255, 255, 255, 0.12);
+}
+
+.lpp-vedette .lpp-pastille .lpp-icone {
+	color: color-mix(in srgb, var(--global-palette11, #13612e) 60%, #fff);
+}
+
+.lpp-vedette--vide {
+	padding: 32px;
+	color: var(--global-palette9, #fff);
+}
+
+@media (max-width: 480px) {
+	.lpp-vedette__lecture {
+		width: 62px;
+		height: 62px;
+		box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.16), 0 12px 32px rgba(0, 0, 0, 0.3);
+	}
+
+	.lpp-vedette .lpp-etiquette,
+	.lpp-nouveau--image {
+		top: 14px;
+	}
+
+	.lpp-vedette .lpp-etiquette {
+		left: 14px;
+	}
+
+	.lpp-nouveau--image {
+		right: 14px;
+	}
+
+	.lpp-vedette__corps {
+		padding: 4px 20px 22px;
+	}
+}
+
+/* --- Chiffres clés (bannière) ------------------------------------------ */
+.lpp-chiffres {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px 0;
+}
+
+.lpp-chiffres li {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 0 32px;
+	border-left: 1px solid var(--global-palette7, #dadde4);
+}
+
+.lpp-chiffres li:first-child {
+	padding-left: 0;
+	border-left: 0;
+}
+
+.lpp-chiffres__nb {
+	font-family: var(--lpp-police);
+	font-size: 2.5rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--global-palette3, #071b38);
+}
+
+.lpp-chiffres__label {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--global-palette5, #374352);
+}
+
+@media (max-width: 480px) {
+	.lpp-chiffres li {
+		padding: 0 18px;
+	}
+
+	.lpp-chiffres__nb {
+		font-size: 2rem;
+	}
+}
+
+/* --- Séries (couvertures numérotées) ----------------------------------- */
+.lpp-series {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+	gap: 24px;
+}
+
+.lpp-serie {
+	--lpp-voile: rgba(7, 27, 56, 0.9);
+	display: flex;
+}
+
+.lpp-serie__lien,
+.single-content a.lpp-serie__lien {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	width: 100%;
+	min-height: 300px;
+	overflow: hidden;
+	color: var(--global-palette9, #fff);
+	background: var(--global-palette3, #071b38);
+	border-radius: 22px;
+	box-shadow: var(--lpp-ombre);
+	text-decoration: none;
+	transition: transform var(--lpp-transition), box-shadow var(--lpp-transition);
+}
+
+.lpp-serie__couverture img,
+.single-content .lpp-serie__couverture img {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.7s cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+.lpp-serie__lien::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: linear-gradient(0deg, var(--lpp-voile) 0%, var(--lpp-voile) 34%, rgba(7, 27, 56, 0.15) 100%);
+}
+
+/* Numéro décoratif (masqué aux lecteurs d'écran) */
+.lpp-serie__index {
+	position: absolute;
+	top: 18px;
+	right: 22px;
+	z-index: 2;
+	font-family: var(--lpp-police);
+	font-size: 3rem;
+	font-weight: 600;
+	line-height: 1;
+	color: rgba(255, 255, 255, 0.85);
+	text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.lpp-serie__texte {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 26px;
+}
+
+.lpp-serie__surtitre {
+	font-family: var(--lpp-police);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--global-palette11, #13612e) 60%, #fff); /* 5,8:1 */
+}
+
+.lpp-serie__nom {
+	font-family: var(--lpp-police);
+	font-size: 1.5rem;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.lpp-serie__voir {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+	padding: 9px 16px;
+	font-family: var(--lpp-police);
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--global-palette9, #fff);
+	border: 1px solid rgba(255, 255, 255, 0.45);
+	border-radius: 999px;
+	transition: background-color var(--lpp-transition), color var(--lpp-transition);
+}
+
+.lpp-serie__lien:hover,
+.single-content a.lpp-serie__lien:hover {
+	color: var(--global-palette9, #fff);
+	box-shadow: var(--lpp-ombre-forte);
+	transform: translateY(-5px);
+}
+
+.lpp-serie__lien:hover img {
+	transform: scale(1.06);
+}
+
+.lpp-serie__lien:hover .lpp-serie__voir {
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette9, #fff);
+}
+
+.lpp-serie__lien:hover .lpp-fleche {
+	transform: translateX(4px);
+}
+
+.lpp-serie__lien:focus-visible {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 3px;
+}
+
+.lpp-series__vide {
+	color: var(--global-palette5, #374352);
+}
+
+/* --- Décors de la page (classes posées dans Elementor) ------------------ */
+/* Bannière : trame de points + halo vert, derrière le contenu */
+.lph-mediatheque-hero {
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+}
+
+.lph-mediatheque-hero::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--global-palette3, #071b38) 16%, transparent) 1.2px, transparent 0);
+	background-size: 24px 24px;
+	-webkit-mask-image: linear-gradient(105deg, #000 0%, transparent 55%);
+	mask-image: linear-gradient(105deg, #000 0%, transparent 55%);
+	pointer-events: none;
+}
+
+.lph-mediatheque-hero::after {
+	content: "";
+	position: absolute;
+	top: -180px;
+	right: -160px;
+	z-index: -1;
+	width: 640px;
+	height: 640px;
+	background: radial-gradient(closest-side, color-mix(in srgb, var(--global-palette11, #13612e) 20%, transparent), transparent);
+	border-radius: 50%;
+	pointer-events: none;
+}
+
+/* Bandeau final : panneau avec trame de points */
+.lph-appel-panneau {
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+}
+
+.lph-appel-panneau::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.14) 1.2px, transparent 0);
+	background-size: 22px 22px;
+	-webkit-mask-image: linear-gradient(270deg, #000 0%, transparent 60%);
+	mask-image: linear-gradient(270deg, #000 0%, transparent 60%);
+	pointer-events: none;
+}
+
+.lph-appel-panneau::after {
+	content: "";
+	position: absolute;
+	bottom: -220px;
+	left: -120px;
+	z-index: -1;
+	width: 520px;
+	height: 520px;
+	background: radial-gradient(closest-side, color-mix(in srgb, var(--global-palette11, #13612e) 45%, transparent), transparent);
+	border-radius: 50%;
+	pointer-events: none;
+}
+
+/* Mot mis en valeur sur fond sombre : vert clair (5,8:1 sur bleu nuit) */
+.elementor-heading-title .lph-accent--clair {
+	color: color-mix(in srgb, var(--global-palette11, #13612e) 60%, #fff);
+}
+
+/* Séries sur fond bleu nuit : légère bordure pour détacher les cartes */
+.lph-series-zone .lpp-serie__lien {
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.lph-series-zone .lpp-serie__lien:focus-visible {
+	outline-color: var(--global-palette9, #fff);
+}
+
+.lph-series-zone .lpp-series__vide {
+	color: rgba(255, 255, 255, 0.85);
+}
+
+/* Icône du bandeau final (widget Icône Elementor, classe lph-appel-icone) */
+.lph-appel-icone .elementor-icon {
+	box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.08);
+}
+
+/* =========================================================================
+ * Animations
+ * ====================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+	html.lpp-anim .lpp-reveal {
+		opacity: 0;
+		transform: translateY(28px);
+		transition:
+			opacity 0.7s cubic-bezier(0.2, 0.65, 0.3, 1) var(--lpp-delai, 0ms),
+			transform 0.7s cubic-bezier(0.2, 0.65, 0.3, 1) var(--lpp-delai, 0ms);
+	}
+
+	html.lpp-anim .lpp-reveal.lpp-visible {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lpp-une__media img,
+	.lpp-carte__inner,
+	.lpp-carte__media img,
+	.lpp-bouton,
+	a.lpp-bouton::after,
+	.lpp-fleche {
+		transition: none;
+	}
+
+	.lpp-une:hover .lpp-une__media img,
+	.lpp-bouton:hover,
+	.lpp-carte__inner:hover,
+	.lpp-carte__inner:hover .lpp-carte__media img,
+	a.lpp-bouton:hover::after,
+	.lpp-fleche {
+		transform: none !important;
+	}
+
+	.lph-page .elementor-invisible {
+		visibility: visible !important;
+	}
+
+	.lph-page .animated {
+		animation: none !important;
+	}
+
+	.lpp-ligne__inner,
+	.lpp-ligne__vignette img,
+	.lpp-vedette__lecture,
+	.lpp-vedette__media img,
+	.lpp-serie__lien,
+	.lpp-serie__couverture img {
+		transition: none;
+	}
+
+	.lpp-ligne__inner:hover,
+	.lpp-ligne__inner:hover .lpp-ligne__vignette img,
+	.lpp-serie__lien:hover,
+	.lpp-serie__lien:hover img,
+	.lpp-vedette:hover .lpp-vedette__media img {
+		transform: none !important;
+	}
+
+	.lpp-vedette:hover .lpp-vedette__lecture {
+		transform: translate(-50%, -50%) !important;
+	}
+}

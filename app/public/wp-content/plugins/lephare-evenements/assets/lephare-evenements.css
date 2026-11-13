@@ -1,0 +1,1219 @@
+/*
+ * LePhare – Liste des événements – v3.5.2
+ *
+ * Ce fichier ne met en forme QUE le contenu généré par le shortcode [lephare_evenements].
+ * La page elle-même (sections, titres, couleurs, boutons, animations d'entrée) est réglée
+ * avec les options natives d'Elementor.
+ *
+ * Couleurs : uniquement la palette globale Kadence (var(--global-paletteN)).
+ *   palette1 orange (accent) · palette3/4 bleu nuit · palette5/6 gris texte · palette7/8 gris clairs · palette9 blanc.
+ * Police : celle du thème (Jost) via les variables Kadence.
+ * Contrastes AA : pas de texte orange sur fond clair ; bleu nuit sur orange = 6,5:1.
+ * Grille d'espacement : 8 px. Coins arrondis : 16 px.
+ */
+
+/* -------------------------------------------------------------------------
+ * Jetons
+ * ---------------------------------------------------------------------- */
+.lph-une,
+.lph-grille,
+.lph-liste,
+.lph-mini,
+.lph-vide,
+.lph-apercu {
+	--lph-police: var(--global-heading-font-family, "Jost"), sans-serif;
+	--lph-texte: var(--global-body-font-family, "Jost"), sans-serif;
+	--lph-rayon: 16px;
+	--lph-ombre: 0 1px 2px rgba(7, 27, 56, 0.04), 0 8px 24px rgba(7, 27, 56, 0.07);
+	--lph-ombre-forte: 0 2px 6px rgba(7, 27, 56, 0.06), 0 20px 48px rgba(7, 27, 56, 0.14);
+	--lph-transition: 0.3s cubic-bezier(0.2, 0.65, 0.3, 1);
+	font-family: var(--lph-texte);
+}
+
+/* Le thème ajoute des marges et des retraits aux listes, paragraphes et titres du contenu */
+.lph-grille,
+.lph-liste,
+.lph-mini,
+.lph-meta,
+.single-content ul.lph-grille,
+.single-content ul.lph-liste,
+.single-content ul.lph-mini,
+.single-content ul.lph-meta {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.single-content .lph-une p,
+.single-content .lph-une h3,
+.single-content .lph-carte p,
+.single-content .lph-carte h3,
+.single-content .lph-carte h4,
+.single-content .lph-ligne p,
+.single-content .lph-ligne h3,
+.single-content .lph-mini h4,
+.single-content .lph-vide p,
+.lph-grille li,
+.lph-liste li,
+.lph-mini li,
+.lph-meta li {
+	margin: 0;
+}
+
+/* Le thème impose « img { height: auto } » : les images remplissent leur cadre */
+.lph-une__media img,
+.lph-carte__media img,
+.lph-ligne__media img,
+.single-content .lph-une__media img,
+.single-content .lph-carte__media img,
+.single-content .lph-ligne__media img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+}
+
+/* -------------------------------------------------------------------------
+ * Éléments communs
+ * ---------------------------------------------------------------------- */
+.lph-icone {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+	color: var(--global-palette1, #f67d4c);
+}
+
+.lph-meta {
+	display: grid;
+	gap: 8px;
+	font-size: 0.9375rem;
+	line-height: 1.45;
+	color: var(--global-palette5, #374352);
+}
+
+.lph-meta li {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.lph-meta .lph-icone {
+	margin-top: 1px;
+}
+
+/* Ligne « Lieu » sans lieu renseigné : « Lieu à confirmer » en italique (gris palette5 sur blanc : 10:1) */
+.lph-meta__lieu--a-confirmer span {
+	font-style: italic;
+}
+
+/* Titres d'événements : casse telle que saisie dans WordPress, jamais forcée en majuscules */
+.lph-une__titre,
+.lph-carte__titre,
+.lph-ligne__titre,
+.lph-mini__titre,
+.lph-apercu__titre {
+	text-transform: none;
+}
+
+/* Badge date « 22 / NOV » posé sur l'image */
+.lph-badge {
+	position: absolute;
+	top: 16px;
+	left: 16px;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	min-width: 64px;
+	padding: 8px 8px 10px;
+	font-family: var(--lph-police);
+	background: var(--global-palette9, #fff);
+	border-radius: 12px;
+	box-shadow: 0 6px 18px rgba(7, 27, 56, 0.2);
+}
+
+.lph-badge__jour {
+	font-size: 1.75rem;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-badge__mois {
+	padding: 2px 8px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+	letter-spacing: 0.08em;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette1, #f67d4c);
+	border-radius: 999px;
+}
+
+.lph-badge--grand {
+	top: 24px;
+	left: 24px;
+	min-width: 80px;
+	padding: 12px 12px 14px;
+}
+
+.lph-badge--grand .lph-badge__jour {
+	font-size: 2.25rem;
+}
+
+/* Boutons : vert DOUX dérivé du vert de la palette Kadence (palette11 « Success » éclairci de 12 %),
+   texte blanc. Contraste blanc sur ce vert (≈ #2f7447) ≈ 5,6:1 (AA). Survol : le vert palette11 plein. */
+.lph-btn,
+.single-content a.lph-btn,
+.lph-carte__suite {
+	--lph-vert: color-mix(in srgb, var(--global-palette11, #13612e) 88%, #fff);
+	--lph-vert-fonce: var(--global-palette11, #13612e);
+}
+
+.lph-btn,
+.single-content a.lph-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	align-self: flex-start;
+	padding: 16px 28px;
+	font-family: var(--lph-police);
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--global-palette9, #fff);
+	background: var(--lph-vert);
+	border-radius: 999px;
+	text-decoration: none;
+	box-shadow: 0 6px 16px rgba(19, 97, 46, 0.22);
+	transition: background-color var(--lph-transition), transform var(--lph-transition), box-shadow var(--lph-transition);
+}
+
+.lph-btn::after {
+	content: "→";
+	transition: transform var(--lph-transition);
+}
+
+.lph-btn:hover,
+.single-content a.lph-btn:hover {
+	color: var(--global-palette9, #fff);
+	background: var(--lph-vert-fonce);
+	box-shadow: 0 12px 28px rgba(19, 97, 46, 0.3);
+	transform: translateY(-2px);
+}
+
+.lph-btn:hover::after {
+	transform: translateX(4px);
+}
+
+/* Lien étendu : un seul lien, toute la carte est cliquable */
+.lph-lien-etendu,
+.single-content a.lph-lien-etendu {
+	color: inherit;
+	text-decoration: none;
+}
+
+.lph-lien-etendu::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	border-radius: inherit;
+}
+
+.lph-fleche {
+	display: inline-block;
+	transition: transform var(--lph-transition);
+}
+
+/* Focus clavier : contour bleu nuit autour de toute la carte */
+.lph-grille a.lph-lien-etendu:focus-visible,
+.lph-liste a.lph-lien-etendu:focus-visible,
+.lph-mini a.lph-lien-etendu:focus-visible {
+	outline: none;
+}
+
+.lph-grille a.lph-lien-etendu:focus-visible::after,
+.lph-liste a.lph-lien-etendu:focus-visible::after,
+.lph-mini a.lph-lien-etendu:focus-visible::after {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: -3px;
+}
+
+.lph-carte__inner:has(a.lph-lien-etendu:focus-visible),
+.lph-ligne__inner:has(a.lph-lien-etendu:focus-visible),
+.lph-mini__inner:has(a.lph-lien-etendu:focus-visible) {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 4px;
+}
+
+.lph-carte__inner:has(a.lph-lien-etendu:focus-visible) a.lph-lien-etendu::after,
+.lph-ligne__inner:has(a.lph-lien-etendu:focus-visible) a.lph-lien-etendu::after,
+.lph-mini__inner:has(a.lph-lien-etendu:focus-visible) a.lph-lien-etendu::after {
+	outline: none;
+}
+
+.lph-une a.lph-btn:focus-visible,
+.lph-vide a:focus-visible {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------
+ * 1. Prochain événement (carte à la une)
+ * ---------------------------------------------------------------------- */
+.lph-une {
+	display: grid;
+	grid-template-columns: 58fr 42fr;
+	overflow: hidden;
+	background: var(--global-palette9, #fff);
+	border-radius: var(--lph-rayon);
+	box-shadow: var(--lph-ombre-forte);
+}
+
+.lph-une__media {
+	position: relative;
+	min-height: 440px;
+	overflow: hidden;
+	background: var(--global-palette8, #edeff3);
+}
+
+.lph-une__media img {
+	position: absolute;
+	inset: 0;
+	transition: transform 0.9s cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+.lph-une:hover .lph-une__media img {
+	transform: scale(1.04);
+}
+
+.lph-une__contenu {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 18px;
+	padding: 56px 44px;
+}
+
+.lph-une__titre {
+	margin: 0;
+	font-family: var(--lph-police);
+	font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.125rem);
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-une .lph-meta {
+	font-size: 1rem;
+}
+
+.lph-une__extrait {
+	font-size: 1rem;
+	line-height: 1.7;
+	color: var(--global-palette5, #374352);
+}
+
+/* Actions de la carte à la une : bouton principal vert + bouton secondaire à contour */
+.lph-une__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.lph-btn-secondaire,
+.single-content a.lph-btn-secondaire {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 14px 18px;
+	font-family: var(--lph-police);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--global-palette11, #13612e); /* sur blanc : 7,9:1 */
+	background: transparent;
+	border: 1.5px solid color-mix(in srgb, var(--global-palette11, #13612e) 35%, #fff);
+	border-radius: 999px;
+	text-decoration: none;
+	transition: background-color var(--lph-transition), border-color var(--lph-transition);
+}
+
+.lph-btn-secondaire .lph-icone {
+	width: 16px;
+	height: 16px;
+	color: currentColor;
+}
+
+.lph-btn-secondaire:hover,
+.single-content a.lph-btn-secondaire:hover {
+	color: var(--global-palette11, #13612e);
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 8%, #fff);
+	border-color: var(--global-palette11, #13612e);
+}
+
+.lph-btn-secondaire:focus-visible,
+.lph-resume__lien:focus-visible {
+	outline: 3px solid var(--global-palette3, #071b38);
+	outline-offset: 3px;
+}
+
+/* Étiquette « À la une » sur l'image */
+.lph-une__etiquette {
+	position: absolute;
+	top: 24px;
+	right: 24px;
+	z-index: 2;
+	padding: 7px 14px;
+	font-family: var(--lph-police);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--global-palette9, #fff);
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 88%, #fff); /* 5,6:1 */
+	border-radius: 999px;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* Résumé de l'en-tête : nombre d'événements + abonnement à l'agenda */
+.lph-resume {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px 20px;
+	font-family: var(--lph-texte, "Jost"), sans-serif;
+}
+
+.lph-resume__total,
+.single-content p.lph-resume__total {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 8px 16px 8px 10px;
+	font-size: 0.9375rem;
+	color: var(--global-palette5, #374352);
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: 999px;
+	box-shadow: 0 2px 8px rgba(7, 27, 56, 0.05);
+}
+
+.lph-resume__total .lph-icone {
+	box-sizing: content-box;
+	padding: 6px;
+	color: var(--global-palette11, #13612e);
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 10%, #fff);
+	border-radius: 50%;
+}
+
+.lph-resume__total strong {
+	font-family: var(--global-heading-font-family, "Jost"), sans-serif;
+	font-size: 1.125rem;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-resume__lien,
+.single-content a.lph-resume__lien {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	font-size: 0.9375rem;
+	color: var(--global-palette11, #13612e);
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--global-palette11, #13612e) 35%, #fff);
+	text-underline-offset: 4px;
+}
+
+.lph-resume__lien .lph-icone {
+	width: 16px;
+	height: 16px;
+	color: currentColor;
+}
+
+.lph-resume__lien:hover {
+	text-decoration-color: currentColor;
+}
+
+/* Mot mis en valeur dans un titre Elementor : <span class="lph-accent">…</span> */
+.elementor-heading-title .lph-accent {
+	color: var(--global-palette11, #13612e);
+}
+
+/* Tablette : deux moitiés, marges plus serrées */
+@media (max-width: 1024px) and (min-width: 901px) {
+	.lph-une {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.lph-une__contenu {
+		padding: 40px 36px;
+	}
+}
+
+/* Sous-titre Elementor « À suivre » (classe lph-sous-titre) : trait fin qui prolonge le titre */
+.lph-sous-titre .elementor-heading-title {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.lph-sous-titre .elementor-heading-title::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--global-palette7, #dadde4);
+}
+
+/* Variante image en haut (colonne principale) */
+.lph-une--vertical {
+	grid-template-columns: 1fr;
+	grid-template-rows: auto 1fr;
+}
+
+.lph-une--vertical .lph-une__media {
+	min-height: 0;
+	aspect-ratio: 16 / 9;
+}
+
+.lph-une--vertical .lph-une__contenu {
+	justify-content: flex-start;
+	padding: 32px 40px 40px;
+}
+
+@media (max-width: 900px) {
+	.lph-une {
+		grid-template-columns: 1fr;
+	}
+
+	.lph-une__media {
+		min-height: 0;
+		aspect-ratio: 16 / 10;
+	}
+
+	.lph-une__contenu,
+	.lph-une--vertical .lph-une__contenu {
+		padding: 28px 24px 32px;
+	}
+}
+
+/* Compte à rebours */
+.lph-rebours,
+.single-content .lph-une p.lph-rebours {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	align-self: flex-start;
+	padding: 6px 14px;
+	font-family: var(--lph-police);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette8, #edeff3);
+	border-radius: 999px;
+}
+
+.lph-rebours__point {
+	width: 8px;
+	height: 8px;
+	background: var(--global-palette1, #f67d4c);
+	border-radius: 50%;
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Liste « À suivre » (colonne latérale)
+ * ---------------------------------------------------------------------- */
+.lph-mini {
+	display: grid;
+	/* Grille : 3 colonnes sur 1200 px, une seule sur mobile ; jamais de carte étirée sur toute la largeur */
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+	gap: 16px;
+}
+
+.lph-mini__inner {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	background: var(--global-palette9, #fff);
+	border-radius: var(--lph-rayon);
+	box-shadow: var(--lph-ombre);
+	transition: transform var(--lph-transition), box-shadow var(--lph-transition);
+}
+
+.lph-mini__inner:hover {
+	transform: translateX(4px);
+	box-shadow: var(--lph-ombre-forte);
+}
+
+.lph-mini__date {
+	display: flex;
+	flex: 0 0 64px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	height: 64px;
+	font-family: var(--lph-police);
+	color: var(--global-palette9, #fff);
+	background: var(--global-palette3, #071b38);
+	border-radius: 12px;
+}
+
+.lph-mini__jour {
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.lph-mini__mois {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	color: var(--global-palette1, #f67d4c); /* orange sur bleu nuit : 6,5:1 */
+}
+
+.lph-mini__contenu {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+
+.lph-mini__titre {
+	margin: 0;
+	font-family: var(--lph-police);
+	font-size: 1.0625rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-mini .lph-meta {
+	gap: 4px;
+	font-size: 0.875rem;
+}
+
+.lph-mini .lph-icone {
+	width: 16px;
+	height: 16px;
+}
+
+.lph-mini__fleche {
+	flex: 0 0 auto;
+	font-size: 1.125rem;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-mini__inner:hover .lph-mini__fleche {
+	transform: translateX(4px);
+}
+
+/* -------------------------------------------------------------------------
+ * 3. Grille de cartes
+ * ---------------------------------------------------------------------- */
+.lph-grille {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+	gap: 32px;
+}
+
+.lph-carte {
+	display: flex;
+}
+
+/* Carte « SaaS » : fond blanc, fin contour, ombre douce, image en haut, pied avec bouton */
+.lph-carte__inner {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	overflow: hidden;
+	background: var(--global-palette9, #fff);
+	border: 1px solid var(--global-palette7, #dadde4);
+	border-radius: var(--lph-rayon);
+	box-shadow: var(--lph-ombre);
+	transition: transform var(--lph-transition), box-shadow var(--lph-transition), border-color var(--lph-transition);
+}
+
+.lph-carte__media {
+	position: relative;
+	aspect-ratio: 16 / 10;
+	overflow: hidden;
+	background: var(--global-palette8, #edeff3);
+}
+
+.lph-carte__media img {
+	transition: transform 0.6s cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+.lph-carte__media::after,
+.lph-une__media::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(180deg, rgba(7, 27, 56, 0) 55%, rgba(7, 27, 56, 0.3) 100%);
+}
+
+.lph-carte__contenu {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 12px;
+	padding: 24px;
+}
+
+.lph-carte__titre {
+	margin: 0;
+	font-family: var(--lph-police);
+	font-size: 1.25rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-carte__extrait {
+	display: -webkit-box;
+	overflow: hidden;
+	font-size: 0.9375rem;
+	line-height: 1.6;
+	color: var(--global-palette5, #374352);
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+/* Pied de carte : séparé par un trait fin, bouton vert (visuel ; le lien est celui de la carte) */
+.lph-carte__pied {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: auto;
+	padding: 16px 24px;
+	border-top: 1px solid var(--global-palette8, #edeff3);
+}
+
+.lph-carte__rebours {
+	font-family: var(--lph-police);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--global-palette5, #374352);
+}
+
+.lph-carte__suite {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 18px;
+	font-family: var(--lph-police);
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--global-palette9, #fff);
+	background: var(--lph-vert);
+	border-radius: 999px;
+	transition: background-color var(--lph-transition);
+}
+
+.lph-carte__inner:hover {
+	transform: translateY(-4px);
+	border-color: var(--global-palette7, #dadde4);
+	box-shadow: var(--lph-ombre-forte);
+}
+
+.lph-carte__inner:hover .lph-carte__suite {
+	background: var(--lph-vert-fonce);
+}
+
+/* --- Variante « événement passé » : plus discrète, la photo reprend ses couleurs au survol --- */
+.lph-carte--passe .lph-carte__media img {
+	filter: grayscale(45%) saturate(0.85);
+	transition: transform 0.6s cubic-bezier(0.2, 0.65, 0.3, 1), filter 0.4s ease;
+}
+
+.lph-carte--passe .lph-carte__inner:hover .lph-carte__media img {
+	filter: none;
+}
+
+/* Statut « Terminé » sur l'image (texte blanc sur bleu nuit translucide : ≥ 9:1) */
+.lph-carte__statut {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	z-index: 2;
+	padding: 6px 12px;
+	font-family: var(--lph-police);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--global-palette9, #fff);
+	background: rgba(7, 27, 56, 0.78);
+	border-radius: 999px;
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+}
+
+/* Bouton à contour vert (cartes passées) : vert sur blanc 7,9:1 ; se remplit au survol */
+.lph-carte__suite--contour {
+	color: var(--global-palette11, #13612e);
+	background: transparent;
+	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--global-palette11, #13612e) 40%, #fff);
+}
+
+.lph-carte__inner:hover .lph-carte__suite--contour {
+	color: var(--global-palette9, #fff);
+	background: var(--lph-vert);
+	box-shadow: none;
+}
+
+.lph-carte__inner:hover .lph-carte__media img {
+	transform: scale(1.05);
+}
+
+.lph-carte__inner:hover .lph-fleche,
+.lph-ligne__inner:hover .lph-fleche {
+	transform: translateX(4px);
+}
+
+/* -------------------------------------------------------------------------
+ * 4. Liste compacte (événements passés)
+ * ---------------------------------------------------------------------- */
+.lph-liste {
+	display: grid;
+	/* 2 colonnes sur 1200 px : cartes assez larges pour la date et le lieu sur une ligne */
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+	gap: 16px;
+}
+
+.lph-ligne__inner {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	height: 100%;
+	padding: 16px;
+	background: var(--global-palette9, #fff);
+	border-radius: var(--lph-rayon);
+	box-shadow: var(--lph-ombre);
+	transition: transform var(--lph-transition), box-shadow var(--lph-transition);
+}
+
+.lph-ligne__inner:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--lph-ombre-forte);
+}
+
+.lph-ligne__media {
+	flex: 0 0 88px;
+	width: 88px;
+	height: 88px;
+	overflow: hidden;
+	background: var(--global-palette8, #edeff3);
+	border-radius: 12px;
+}
+
+.lph-ligne--passe .lph-ligne__media img {
+	filter: grayscale(60%);
+	transition: filter var(--lph-transition);
+}
+
+.lph-ligne--passe .lph-ligne__inner:hover .lph-ligne__media img {
+	filter: none;
+}
+
+.lph-ligne__contenu {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.lph-ligne__date {
+	font-family: var(--lph-police);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--global-palette5, #374352);
+}
+
+.lph-ligne__titre {
+	margin: 0;
+	font-family: var(--lph-police);
+	font-size: 1.0625rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-ligne .lph-meta {
+	font-size: 0.875rem;
+}
+
+.lph-ligne__suite {
+	flex: 0 0 auto;
+	font-family: var(--lph-police);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--global-palette3, #071b38);
+}
+
+@media (max-width: 480px) {
+	.lph-ligne__media {
+		flex-basis: 72px;
+		width: 72px;
+		height: 72px;
+	}
+
+	.lph-ligne__suite {
+		display: none;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 5. État vide
+ * ---------------------------------------------------------------------- */
+.lph-vide {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 40px 32px;
+	text-align: center;
+	background: var(--global-palette9, #fff);
+	border: 1px dashed var(--global-palette7, #dadde4);
+	border-radius: var(--lph-rayon);
+}
+
+.lph-vide .lph-icone {
+	box-sizing: content-box;
+	width: 32px;
+	height: 32px;
+	margin-bottom: 8px;
+	padding: 14px;
+	background: var(--global-palette8, #edeff3);
+	border-radius: 50%;
+}
+
+.lph-vide__texte {
+	font-family: var(--lph-police);
+	font-size: 1.0625rem;
+	font-weight: 600;
+	color: var(--global-palette3, #071b38);
+}
+
+.lph-vide__lien {
+	font-size: 0.9375rem;
+	color: var(--global-palette5, #374352);
+}
+
+.lph-vide__lien a {
+	font-weight: 600;
+	color: var(--global-palette3, #071b38);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.lph-vide--petit {
+	padding: 28px 20px;
+}
+
+.lph-image-vide {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+}
+
+.lph-image-vide .lph-icone {
+	width: 40px;
+	height: 40px;
+	color: var(--global-palette6, #697380);
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Carte « Prochain rendez-vous » (bannière, fond sombre) : effet verre dépoli
+ *    Texte blanc sur voile bleu nuit ≥ 10:1.
+ * ---------------------------------------------------------------------- */
+.lph-apercu {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding: 28px;
+	color: var(--global-palette9, #fff);
+	background: rgba(7, 27, 56, 0.55);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 20px;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+	transition: transform var(--lph-transition), border-color var(--lph-transition);
+}
+
+.lph-apercu:hover {
+	transform: translateY(-4px);
+	border-color: rgba(255, 255, 255, 0.35);
+}
+
+.lph-apercu__etiquette,
+.single-content .lph-apercu p.lph-apercu__etiquette {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--lph-police);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--global-palette9, #fff);
+}
+
+.lph-apercu__point {
+	width: 8px;
+	height: 8px;
+	background: color-mix(in srgb, var(--global-palette11, #13612e) 55%, #fff);
+	border-radius: 50%;
+}
+
+.lph-apercu__corps {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.lph-apercu__rebours {
+	align-self: flex-start;
+	padding: 5px 12px;
+	font-family: var(--lph-police);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--global-palette3, #071b38);
+	background: var(--global-palette9, #fff);
+	border-radius: 999px;
+}
+
+.lph-apercu__titre,
+.single-content .lph-apercu p.lph-apercu__titre {
+	margin: 0;
+	font-family: var(--lph-police);
+	font-size: 1.375rem;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--global-palette9, #fff);
+}
+
+.lph-apercu .lph-meta {
+	color: rgba(255, 255, 255, 0.92);
+}
+
+.lph-apercu .lph-icone {
+	color: var(--global-palette1, #f67d4c);
+}
+
+.lph-apercu__pied {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding-top: 16px;
+	border-top: 1px solid rgba(255, 255, 255, 0.18);
+	font-size: 0.9375rem;
+	color: rgba(255, 255, 255, 0.92);
+}
+
+.lph-apercu__total strong {
+	font-family: var(--lph-police);
+	font-size: 1.25rem;
+	color: var(--global-palette9, #fff);
+}
+
+.lph-apercu__suite {
+	font-family: var(--lph-police);
+	font-weight: 600;
+	color: var(--global-palette9, #fff);
+}
+
+.lph-apercu:hover .lph-fleche {
+	transform: translateX(4px);
+}
+
+.lph-apercu a.lph-lien-etendu {
+	color: inherit;
+	text-decoration: none;
+}
+
+.lph-apercu a.lph-lien-etendu:focus-visible {
+	outline: none;
+}
+
+.lph-apercu:has(a.lph-lien-etendu:focus-visible) {
+	outline: 3px solid var(--global-palette9, #fff);
+	outline-offset: 4px;
+}
+
+.lph-apercu__vide {
+	margin: 0;
+}
+
+/* Fil d'Ariane de la bannière (widget Texte Elementor, classe « lph-fil ») */
+.lph-fil nav,
+.lph-fil p {
+	margin: 0;
+}
+
+.lph-fil a {
+	color: var(--global-palette9, #fff);
+	text-decoration: underline;
+	text-decoration-color: rgba(255, 255, 255, 0.4);
+	text-underline-offset: 4px;
+}
+
+.lph-fil a:hover {
+	text-decoration-color: currentColor;
+}
+
+.lph-fil a:focus-visible {
+	outline: 2px solid var(--global-palette9, #fff);
+	outline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------
+ * Espacements : le thème ajoute des marges automatiques aux titres et paragraphes du contenu
+ * (.single-content h2 { margin… }). Sur les sections de la page Événements (classe « lph-page »),
+ * seuls les espacements réglés dans Elementor (padding, écarts) doivent compter.
+ * ---------------------------------------------------------------------- */
+.single-content .lph-page .elementor-heading-title,
+.single-content .lph-page .elementor-widget-text-editor p:last-child {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * 7. Petite touche sur les surtitres Elementor de la page (classe « lph-surtitre ») :
+ *    un trait orange décoratif devant le texte.
+ * ---------------------------------------------------------------------- */
+.lph-surtitre .elementor-heading-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.lph-surtitre .elementor-heading-title::before {
+	content: "";
+	width: 32px;
+	height: 2px;
+	background: var(--global-palette1, #f67d4c);
+	border-radius: 2px;
+}
+
+/* Variante verte (bannière) : le trait reprend la couleur du texte */
+.lph-surtitre--vert .elementor-heading-title::before {
+	background: currentColor;
+}
+
+/* =========================================================================
+ * Animations
+ * ====================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+
+	/* Apparition en cascade des cartes (classes posées par le script) */
+	html.lph-anim .lph-reveal {
+		opacity: 0;
+		transform: translateY(28px);
+		transition:
+			opacity 0.7s cubic-bezier(0.2, 0.65, 0.3, 1) var(--lph-delai, 0ms),
+			transform 0.7s cubic-bezier(0.2, 0.65, 0.3, 1) var(--lph-delai, 0ms);
+	}
+
+	html.lph-anim .lph-reveal.lph-visible {
+		opacity: 1;
+		transform: none;
+	}
+
+	html.lph-anim .lph-reveal .lph-badge {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.92);
+		transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.3, 1.4, 0.5, 1);
+		transition-delay: calc(var(--lph-delai, 0ms) + 0.35s);
+	}
+
+	html.lph-anim .lph-reveal.lph-visible .lph-badge {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* Point du compte à rebours : 3 pulsations */
+	@keyframes lph-pulse {
+		0% {
+			box-shadow: 0 0 0 0 rgba(246, 125, 76, 0.55);
+		}
+
+		70% {
+			box-shadow: 0 0 0 8px rgba(246, 125, 76, 0);
+		}
+
+		100% {
+			box-shadow: 0 0 0 0 rgba(246, 125, 76, 0);
+		}
+	}
+
+	.lph-rebours__point {
+		animation: lph-pulse 2s ease-out 0.8s 3;
+	}
+}
+
+/* Mouvement réduit : aucune animation, y compris les animations d'entrée Elementor de la page */
+@media (prefers-reduced-motion: reduce) {
+	.lph-une__media img,
+	.lph-carte__inner,
+	.lph-carte__media img,
+	.lph-ligne__inner,
+	.lph-mini__inner,
+	.lph-btn,
+	.lph-btn::after,
+	.lph-fleche {
+		transition: none;
+	}
+
+	.lph-une:hover .lph-une__media img,
+	.lph-apercu:hover,
+	.lph-btn:hover,
+	.lph-carte__inner:hover,
+	.lph-carte__inner:hover .lph-carte__media img,
+	.lph-ligne__inner:hover,
+	.lph-mini__inner:hover,
+	.lph-btn:hover::after,
+	.lph-fleche {
+		transform: none !important;
+	}
+
+	.lph-page .elementor-invisible {
+		visibility: visible !important;
+	}
+
+	.lph-page .animated {
+		animation: none !important;
+	}
+}
